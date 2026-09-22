@@ -1,0 +1,71 @@
+<div class="shell" [class.shell--menu-open]="menuOpen()">
+  <aside class="sidebar" aria-label="Navegação principal">
+    <a class="brand" routerLink="/dashboard" (click)="closeMenu()">
+      <img class="brand__mark" src="musicadagloria-profile.jpg" alt="" width="44" height="44" />
+      <span>
+        <strong>Pastoral da Música</strong>
+        <small>Nossa Senhora da Glória</small>
+      </span>
+    </a>
+
+    <nav class="nav">
+      <p class="nav__eyebrow">Organização</p>
+      @for (item of navigation; track item.route) {
+        <a
+          class="nav__item"
+          [routerLink]="item.route"
+          routerLinkActive="nav__item--active"
+          [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+          (click)="closeMenu()"
+        >
+          <span class="nav__icon" aria-hidden="true">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <a class="sidebar__instagram" href="https://www.instagram.com/musicadagloria/" target="_blank" rel="noopener noreferrer">
+      <span class="sidebar__instagram-icon" aria-hidden="true">♫</span>
+      <span><strong>Ao som da Glória</strong><small>Conheça nossa pastoral ↗</small></span>
+    </a>
+
+    <div class="sidebar__footer">
+      <div class="sidebar__profile">
+        <span class="avatar">{{ authFacade.user()?.initials ?? 'MG' }}</span>
+        <span class="sidebar__user">
+          <strong>{{ authFacade.user()?.name ?? 'Usuário' }}</strong>
+          <small>Líder de ministério</small>
+        </span>
+      </div>
+      <button type="button" class="logout" (click)="authFacade.logout()">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
+          <path d="M15 16l4-4-4-4M19 12H9" />
+        </svg>
+        <span>Sair da conta</span>
+      </button>
+    </div>
+  </aside>
+
+  @if (menuOpen()) {
+    <button class="backdrop" type="button" aria-label="Fechar menu" (click)="closeMenu()"></button>
+  }
+
+  <div class="workspace">
+    <header class="topbar">
+      <button class="menu-button" type="button" aria-label="Abrir menu" (click)="toggleMenu()">☰</button>
+      <div class="topbar__parish">
+        <span aria-hidden="true">✦</span>
+        <span>Paróquia Nossa Senhora da Glória</span>
+      </div>
+      <button class="notification" type="button" aria-label="Notificações">
+        <span aria-hidden="true">♢</span>
+        <span class="notification__dot"></span>
+      </button>
+    </header>
+
+    <main class="content" id="main-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

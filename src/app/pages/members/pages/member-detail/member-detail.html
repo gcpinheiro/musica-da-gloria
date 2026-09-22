@@ -1,0 +1,37 @@
+<a class="back-link" routerLink="/membros"><span aria-hidden="true">←</span> Voltar para membros</a>
+
+@if (facade.loading()) {
+  <section class="card detail-state">Carregando perfil…</section>
+} @else if (facade.error()) {
+  <section class="card detail-state" role="alert"><strong>{{ facade.error() }}</strong></section>
+} @else if (facade.selectedMember(); as member) {
+  <header class="profile-header card">
+    <span class="profile-avatar">{{ member.initials }}</span>
+    <div>
+      <div class="profile-name"><h1 class="display-title">{{ member.name }}</h1><span>{{ member.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}</span></div>
+      <p>{{ member.email }} · {{ member.phone }}</p>
+    </div>
+    <a class="button button--secondary" [routerLink]="['/membros', member.id, 'editar']">Editar perfil</a>
+  </header>
+
+  <div class="detail-grid">
+    <section class="card detail-card">
+      <h2>Talentos</h2>
+      <div class="chips">@for (talent of member.talents; track talent) { <span>{{ talent }}</span> }</div>
+    </section>
+    <section class="card detail-card">
+      <h2>Ministérios</h2>
+      @if (member.ministries.length) {
+        <ul>@for (ministry of member.ministries; track ministry) { <li><span aria-hidden="true">♪</span> Ministério {{ ministry }}</li> }</ul>
+      } @else { <p>Disponível apenas no banco de talentos.</p> }
+    </section>
+    <section class="card detail-card">
+      <h2>Disponibilidade habitual</h2>
+      <p>{{ member.availability | availabilityLabel }}</p>
+    </section>
+    <section class="card detail-card">
+      <h2>Observações do líder</h2>
+      <p>{{ member.notes || 'Nenhuma observação cadastrada.' }}</p>
+    </section>
+  </div>
+}

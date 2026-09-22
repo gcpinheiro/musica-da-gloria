@@ -1,0 +1,45 @@
+<a class="back-link" routerLink="/escalas"><span aria-hidden="true">←</span> Voltar para escalas</a>
+@if (facade.loading()) {
+  <section class="card state">Carregando escala…</section>
+} @else if (facade.error()) {
+  <section class="card state" role="alert">{{ facade.error() }}</section>
+} @else if (facade.selected(); as schedule) {
+  <header class="schedule-header card">
+    <div class="date-block"><strong>{{ schedule.date | date: 'dd' : 'UTC' }}</strong><span>{{ schedule.date | date: 'MMMM' : 'UTC' : 'pt-BR' }}</span></div>
+    <div class="schedule-header__title">
+      <div><span class="status status--{{ schedule.status.toLowerCase() }}">{{ schedule.status === 'PUBLISHED' ? 'Publicada' : schedule.status === 'DRAFT' ? 'Rascunho' : 'Atenção' }}</span></div>
+      <h1 class="display-title">{{ schedule.title }}</h1>
+      <p>{{ schedule.ministry }} · {{ schedule.liturgicalTime }}</p>
+    </div>
+    <button type="button" class="button button--secondary">Editar escala</button>
+  </header>
+
+  <section class="facts card" aria-label="Informações da celebração">
+    <div><span aria-hidden="true">◷</span><small>Horário</small><strong>{{ schedule.time }}</strong></div>
+    <div><span aria-hidden="true">⌖</span><small>Local</small><strong>{{ schedule.location }}</strong></div>
+    <div><span aria-hidden="true">♪</span><small>Ministério</small><strong>{{ schedule.ministry }}</strong></div>
+    <div><span aria-hidden="true">✦</span><small>Tempo litúrgico</small><strong>{{ schedule.liturgicalTime }}</strong></div>
+  </section>
+
+  <div class="detail-columns">
+    <section class="card panel">
+      <div class="panel__header"><div><h2>Formação desta escala</h2><p>A composição abaixo vale somente para esta ocorrência.</p></div><button type="button">＋ Adicionar</button></div>
+      <div class="people-list">
+        @for (person of schedule.people; track person.id) {
+          <article class="person"><span class="avatar">{{ person.initials }}</span><div><strong>{{ person.name }}</strong><small>{{ person.role }}</small></div><span class="confirmation confirmation--{{ person.confirmation.toLowerCase() }}">{{ person.confirmation === 'CONFIRMED' ? 'Confirmado' : person.confirmation === 'PENDING' ? 'Pendente' : 'Não poderá' }}</span><button type="button" aria-label="Mais opções para {{ person.name }}">•••</button></article>
+        } @empty { <p class="empty">Nenhum membro adicionado.</p> }
+      </div>
+    </section>
+
+    <section class="card panel">
+      <div class="panel__header"><div><h2>Repertório</h2><p>{{ schedule.songs.length }} músicas definidas para a celebração.</p></div><button type="button">＋ Música</button></div>
+      <ol class="song-list">
+        @for (song of schedule.songs; track song; let order = $index) {
+          <li><span>{{ order + 1 }}</span><div><strong>{{ song }}</strong><small>Tom a definir</small></div><button type="button" aria-label="Opções para {{ song }}">•••</button></li>
+        } @empty { <li class="empty">Nenhuma música definida.</li> }
+      </ol>
+    </section>
+  </div>
+
+  <section class="card notes"><h2>Orientações</h2><p>{{ schedule.notes || 'Nenhuma orientação cadastrada.' }}</p></section>
+}

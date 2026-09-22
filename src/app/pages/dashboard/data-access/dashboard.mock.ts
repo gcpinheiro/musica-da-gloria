@@ -1,0 +1,88 @@
+import { DashboardData } from '../models/dashboard.model';
+
+function isoDate(offset: number): string {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + offset);
+  return date.toISOString();
+}
+
+export const DASHBOARD_MOCK: DashboardData = {
+  weekLabel: 'Semana de 21 a 27 de setembro',
+  summary: {
+    celebrations: 5,
+    confirmedMembers: 18,
+    pendingConfirmations: 4,
+    openPositions: 2,
+  },
+  schedules: [
+    {
+      id: 'occ-001',
+      title: 'Santa Missa',
+      ministry: 'Ministério Magnificat',
+      date: isoDate(1),
+      time: '18:30',
+      location: 'Igreja Matriz',
+      liturgicalTime: 'Tempo Comum',
+      status: 'CONFIRMED',
+      members: [
+        { id: 'mem-001', name: 'Ana Clara', initials: 'AC', role: 'Voz', confirmed: true },
+        { id: 'mem-002', name: 'Rafael Lima', initials: 'RL', role: 'Violão', confirmed: true },
+        { id: 'mem-003', name: 'Bruno Melo', initials: 'BM', role: 'Teclado', confirmed: true },
+      ],
+      totalMembers: 6,
+      repertoireCount: 8,
+    },
+    {
+      id: 'occ-002',
+      title: 'Adoração ao Santíssimo',
+      ministry: 'Ministério Adoremus',
+      date: isoDate(3),
+      time: '19:30',
+      location: 'Capela do Santíssimo',
+      liturgicalTime: 'Adoração',
+      status: 'PENDING',
+      members: [
+        { id: 'mem-004', name: 'Camila Sousa', initials: 'CS', role: 'Voz', confirmed: true },
+        { id: 'mem-005', name: 'Daniel Rocha', initials: 'DR', role: 'Violão', confirmed: false },
+      ],
+      totalMembers: 5,
+      repertoireCount: 6,
+      alert: '2 confirmações pendentes',
+    },
+    {
+      id: 'occ-003',
+      title: 'Santa Missa Dominical',
+      ministry: 'Ministério São José',
+      date: isoDate(6),
+      time: '09:00',
+      location: 'Igreja Matriz',
+      liturgicalTime: '25º Domingo do Tempo Comum',
+      status: 'ATTENTION',
+      members: [
+        { id: 'mem-006', name: 'João Pedro', initials: 'JP', role: 'Voz', confirmed: true },
+        { id: 'mem-007', name: 'Lia Martins', initials: 'LM', role: 'Teclado', confirmed: true },
+      ],
+      totalMembers: 5,
+      repertoireCount: 7,
+      alert: 'Bateria ainda sem músico',
+    },
+    {
+      id: 'occ-004',
+      title: 'Santa Missa Dominical',
+      ministry: 'Ministério Magnificat',
+      date: isoDate(6),
+      time: '19:00',
+      location: 'Igreja Matriz',
+      liturgicalTime: '25º Domingo do Tempo Comum',
+      status: 'CONFIRMED',
+      members: [
+        { id: 'mem-001', name: 'Ana Clara', initials: 'AC', role: 'Voz', confirmed: true },
+        { id: 'mem-008', name: 'Paulo Nunes', initials: 'PN', role: 'Baixo', confirmed: true },
+        { id: 'mem-009', name: 'Sara Alves', initials: 'SA', role: 'Bateria', confirmed: true },
+      ],
+      totalMembers: 7,
+      repertoireCount: 9,
+    },
+  ],
+};

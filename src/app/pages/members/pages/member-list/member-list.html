@@ -1,0 +1,71 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Banco de talentos</p>
+    <h1 class="display-title">Membros</h1>
+    <p>{{ facade.activeCount() }} pessoas ativas e disponíveis para formar os ministérios.</p>
+  </div>
+  <a class="button button--primary" routerLink="novo"><span aria-hidden="true">＋</span> Novo membro</a>
+</header>
+
+<section class="toolbar card" aria-label="Filtros de membros">
+  <label class="search">
+    <span class="sr-only">Buscar membros</span>
+    <span aria-hidden="true">⌕</span>
+    <input type="search" placeholder="Buscar por nome, talento ou ministério" [value]="facade.query()" (input)="search($event)" />
+  </label>
+  <label class="filter">
+    <span class="sr-only">Filtrar por situação</span>
+    <select [value]="facade.status()" (change)="filter($event)">
+      <option value="ALL">Todos os status</option>
+      <option value="ACTIVE">Ativos</option>
+      <option value="INACTIVE">Inativos</option>
+    </select>
+  </label>
+</section>
+
+@if (facade.loading()) {
+  <div class="member-grid" aria-label="Carregando membros">
+    @for (item of [1, 2, 3, 4, 5, 6]; track item) { <div class="member-card skeleton"></div> }
+  </div>
+} @else if (facade.error()) {
+  <section class="card state-message" role="alert">
+    <strong>{{ facade.error() }}</strong>
+    <button class="button button--secondary" type="button" (click)="facade.load()">Tentar novamente</button>
+  </section>
+} @else {
+  <section class="member-grid" aria-label="Lista de membros">
+    @for (member of facade.filteredMembers(); track member.id) {
+      <article class="member-card card" [class.member-card--inactive]="member.status === 'INACTIVE'">
+        <div class="member-card__top">
+          <span class="member-avatar">{{ member.initials }}</span>
+          <span class="status" [class.status--inactive]="member.status === 'INACTIVE'">
+            {{ member.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
+          </span>
+        </div>
+        <h2>{{ member.name }}</h2>
+        <p class="contact">{{ member.email }}</p>
+        <div class="chips">
+          @for (talent of member.talents; track talent) { <span>{{ talent }}</span> }
+        </div>
+        <div class="member-card__meta">
+          <span><b>Ministério</b>{{ member.ministries.join(', ') || 'Banco de talentos' }}</span>
+          <span><b>Disponibilidade</b>{{ member.availability | availabilityLabel }}</span>
+        </div>
+        <div class="member-card__actions">
+          <a [routerLink]="[member.id]">Ver perfil</a>
+          <a [routerLink]="[member.id, 'editar']">Editar</a>
+          @if (member.status === 'ACTIVE') {
+            <button type="button" (click)="deactivate(member.id, member.name)">Desativar</button>
+          }
+        </div>
+      </article>
+    } @empty {
+      <section class="card state-message state-message--wide">
+        <span class="state-icon" aria-hidden="true">♙</span>
+        <h2>Nenhum membro encontrado</h2>
+        <p>Ajuste os filtros ou cadastre uma nova pessoa no banco de talentos.</p>
+        <a class="button button--primary" routerLink="novo">Cadastrar membro</a>
+      </section>
+    }
+  </section>
+}

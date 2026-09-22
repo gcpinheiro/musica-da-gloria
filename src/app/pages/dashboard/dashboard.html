@@ -1,0 +1,105 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Pastoral da Música · Visão geral</p>
+    <h1 class="display-title">Paz e bem, {{ authFacade.user()?.name?.split(' ')?.[0] ?? 'amigo' }}!</h1>
+    <p>Acompanhe as escalas e pendências dos ministérios nesta semana.</p>
+  </div>
+  <a class="button button--primary" routerLink="/escalas/nova"><span aria-hidden="true">＋</span> Nova escala</a>
+</header>
+
+@if (facade.loading()) {
+  <div class="loading-grid" aria-label="Carregando resumo da semana">
+    @for (item of [1, 2, 3, 4]; track item) { <div class="skeleton"></div> }
+  </div>
+} @else if (facade.error()) {
+  <section class="card error-state" role="alert">
+    <strong>{{ facade.error() }}</strong>
+    <button class="button button--secondary" type="button" (click)="facade.load()">Tentar novamente</button>
+  </section>
+} @else if (facade.data(); as data) {
+  <section class="summary-grid" aria-label="Resumo da semana">
+    <article class="summary-card summary-card--blue">
+      <span class="summary-card__icon" aria-hidden="true">▦</span>
+      <div><strong>{{ data.summary.celebrations }}</strong><span>Celebrações</span></div>
+      <small>nesta semana</small>
+    </article>
+    <article class="summary-card summary-card--green">
+      <span class="summary-card__icon" aria-hidden="true">✓</span>
+      <div><strong>{{ data.summary.confirmedMembers }}</strong><span>Confirmados</span></div>
+      <small>membros escalados</small>
+    </article>
+    <article class="summary-card summary-card--gold">
+      <span class="summary-card__icon" aria-hidden="true">◷</span>
+      <div><strong>{{ data.summary.pendingConfirmations }}</strong><span>Pendentes</span></div>
+      <small>aguardando resposta</small>
+    </article>
+    <article class="summary-card summary-card--red">
+      <span class="summary-card__icon" aria-hidden="true">!</span>
+      <div><strong>{{ data.summary.openPositions }}</strong><span>Vagas abertas</span></div>
+      <small>funções sem músico</small>
+    </article>
+  </section>
+
+  <div class="section-heading">
+    <div>
+      <h2>Escala da semana</h2>
+      <p>{{ data.weekLabel }}</p>
+    </div>
+    <a routerLink="/escalas">Ver todas <span aria-hidden="true">→</span></a>
+  </div>
+
+  <section class="schedule-list" aria-label="Celebrações da semana">
+    @for (schedule of facade.schedules(); track schedule.id) {
+      <article class="schedule-card" [class.schedule-card--attention]="schedule.status === 'ATTENTION'">
+        <div class="date-block">
+          <span>{{ schedule.date | date: 'EEE' : 'UTC' : 'pt-BR' }}</span>
+          <strong>{{ schedule.date | date: 'dd' : 'UTC' }}</strong>
+          <small>{{ schedule.date | date: 'MMM' : 'UTC' : 'pt-BR' }}</small>
+        </div>
+
+        <div class="schedule-card__main">
+          <div class="schedule-card__title">
+            <div>
+              <div class="title-row">
+                <h3>{{ schedule.title }}</h3>
+                <span class="status" [class]="'status status--' + schedule.status.toLowerCase()">
+                  {{ schedule.status === 'CONFIRMED' ? 'Confirmada' : schedule.status === 'PENDING' ? 'Pendente' : 'Atenção' }}
+                </span>
+              </div>
+              <p>{{ schedule.ministry }}</p>
+            </div>
+            <a class="details-link" [routerLink]="['/escalas', schedule.id]">Ver detalhes <span aria-hidden="true">→</span></a>
+          </div>
+
+          <div class="schedule-meta">
+            <span><b aria-hidden="true">◷</b> {{ schedule.time }}</span>
+            <span><b aria-hidden="true">⌖</b> {{ schedule.location }}</span>
+            <span><b aria-hidden="true">✦</b> {{ schedule.liturgicalTime }}</span>
+          </div>
+
+          <div class="schedule-card__footer">
+            <div class="member-stack" aria-label="Membros escalados">
+              @for (member of schedule.members; track member.id) {
+                <span class="member-avatar" [title]="member.name + ' — ' + member.role">{{ member.initials }}</span>
+              }
+              @if (schedule.totalMembers > schedule.members.length) {
+                <span class="member-avatar member-avatar--more">+{{ schedule.totalMembers - schedule.members.length }}</span>
+              }
+              <small>{{ schedule.totalMembers }} membros</small>
+            </div>
+            <div class="repertoire"><span aria-hidden="true">♫</span> {{ schedule.repertoireCount }} músicas</div>
+            @if (schedule.alert) {
+              <div class="schedule-alert"><span aria-hidden="true">!</span> {{ schedule.alert }}</div>
+            }
+          </div>
+        </div>
+      </article>
+    } @empty {
+      <section class="card empty-state">
+        <span aria-hidden="true">♪</span>
+        <h2>Nenhuma escala nesta semana</h2>
+        <p>Crie uma escala ou associe um ministério a uma celebração recorrente.</p>
+      </section>
+    }
+  </section>
+}

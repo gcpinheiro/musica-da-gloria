@@ -1,0 +1,30 @@
+<header class="page-header">
+  <div><p class="eyebrow">Planejamento</p><h1 class="display-title">Escalas</h1><p>Organize as próximas celebrações, formações e repertórios.</p></div>
+  <a class="button button--primary" routerLink="nova"><span aria-hidden="true">＋</span> Nova escala</a>
+</header>
+
+<section class="filter-bar card">
+  <div><strong>Próximas celebrações</strong><small>{{ facade.filtered().length }} escalas encontradas</small></div>
+  <label><span class="sr-only">Filtrar por situação</span><select [value]="facade.status()" (change)="filter($event)"><option value="ALL">Todos os status</option><option value="PUBLISHED">Publicadas</option><option value="DRAFT">Rascunhos</option><option value="ATTENTION">Com atenção</option></select></label>
+</section>
+
+@if (facade.loading()) {
+  <section class="card state">Carregando escalas…</section>
+} @else if (facade.error()) {
+  <section class="card state" role="alert">{{ facade.error() }} <button class="button button--secondary" (click)="facade.load()">Tentar novamente</button></section>
+} @else {
+  <section class="schedule-table card" aria-label="Lista de escalas">
+    @for (schedule of facade.filtered(); track schedule.id) {
+      <article class="schedule-row">
+        <div class="date"><strong>{{ schedule.date | date: 'dd' : 'UTC' }}</strong><span>{{ schedule.date | date: 'MMM' : 'UTC' : 'pt-BR' }}</span></div>
+        <div class="info"><h2>{{ schedule.title }}</h2><p>{{ schedule.ministry }} · {{ schedule.location }}</p></div>
+        <div class="time"><strong>{{ schedule.time }}</strong><span>{{ schedule.liturgicalTime }}</span></div>
+        <div class="counts"><span>{{ schedule.people.length }} membros</span><span>{{ schedule.songs.length }} músicas</span></div>
+        <span class="status status--{{ schedule.status.toLowerCase() }}">{{ schedule.status === 'PUBLISHED' ? 'Publicada' : schedule.status === 'DRAFT' ? 'Rascunho' : 'Atenção' }}</span>
+        <a class="open" [routerLink]="[schedule.id]" [attr.aria-label]="'Abrir ' + schedule.title">→</a>
+      </article>
+    } @empty {
+      <div class="state"><h2>Nenhuma escala neste filtro</h2><p>Selecione outro status ou crie uma nova escala.</p></div>
+    }
+  </section>
+}

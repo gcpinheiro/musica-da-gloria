@@ -1,0 +1,15 @@
+<header class="page-header"><div><a class="back-link" routerLink="/escalas">← Voltar para escalas</a><h1 class="display-title">Nova escala</h1><p>Crie uma ocorrência e use a formação habitual como ponto de partida.</p></div></header>
+<form class="card schedule-form" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="form-intro"><span aria-hidden="true">✦</span><div><h2>Dados da celebração</h2><p>A formação e o repertório serão configurados após a criação.</p></div></div>
+  <div class="form-grid">
+    <div class="field field--wide"><label for="title">Nome da celebração</label><input id="title" formControlName="title" /></div>
+    <div class="field"><label for="date">Data</label><input id="date" type="date" formControlName="date" /></div>
+    <div class="field"><label for="time">Horário</label><input id="time" type="time" formControlName="time" /></div>
+    <div class="field"><label for="location">Local</label><select id="location" formControlName="location"><option>Igreja Matriz</option><option>Capela do Santíssimo</option><option>Centro Pastoral</option></select></div>
+    <div class="field"><label for="ministry">Ministério</label><select id="ministry" formControlName="ministry"><option value="" disabled>Selecione</option><option>Magnificat</option><option>Adoremus</option><option>São José</option></select></div>
+    <div class="field field--wide"><label for="liturgicalTime">Tempo ou ocasião litúrgica</label><input id="liturgicalTime" formControlName="liturgicalTime" /></div>
+    <div class="field field--wide"><label for="notes">Orientações iniciais</label><textarea id="notes" formControlName="notes"></textarea></div>
+  </div>
+  @if (form.touched && form.invalid) { <p class="form-error" role="alert">Revise os campos obrigatórios antes de continuar.</p> }
+  <footer><a class="button button--secondary" routerLink="/escalas">Cancelar</a><button class="button button--primary" type="submit" [disabled]="facade.saving()">{{ facade.saving() ? 'Criando…' : 'Criar e montar formação' }}</button></footer>
+</form>

@@ -1,0 +1,102 @@
+<header class="page-header">
+  <div>
+    <a class="back-link" routerLink="/membros"><span aria-hidden="true">←</span> Voltar para membros</a>
+    <h1 class="display-title">{{ isEditing ? 'Editar membro' : 'Novo membro' }}</h1>
+    <p>{{ isEditing ? 'Atualize os dados, talentos e disponibilidade.' : 'Adicione uma pessoa ao banco de talentos da pastoral.' }}</p>
+  </div>
+</header>
+
+@if (isEditing && facade.loading()) {
+  <section class="card form-loading" aria-label="Carregando dados do membro">Carregando dados…</section>
+} @else {
+  <form class="member-form" [formGroup]="form" (ngSubmit)="submit()">
+    <section class="card form-section">
+      <div class="section-title">
+        <span aria-hidden="true">01</span>
+        <div><h2>Dados pessoais</h2><p>Informações usadas para identificação e contato.</p></div>
+      </div>
+      <div class="form-grid">
+        <div class="field field--wide">
+          <label for="name">Nome completo</label>
+          <input id="name" type="text" autocomplete="name" formControlName="name" />
+          @if (form.controls.name.touched && form.controls.name.invalid) { <small class="field-error">Informe o nome completo.</small> }
+        </div>
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" autocomplete="email" formControlName="email" />
+          @if (form.controls.email.touched && form.controls.email.invalid) { <small class="field-error">Informe um e-mail válido.</small> }
+        </div>
+        <div class="field">
+          <label for="phone">Telefone</label>
+          <input id="phone" type="tel" autocomplete="tel" placeholder="(85) 99999-9999" formControlName="phone" />
+          @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="field-error">Informe um telefone.</small> }
+        </div>
+      </div>
+    </section>
+
+    <section class="card form-section">
+      <div class="section-title">
+        <span aria-hidden="true">02</span>
+        <div><h2>Talentos e ministérios</h2><p>Use Ctrl/Cmd para selecionar mais de uma opção.</p></div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="talents">Instrumentos e funções</label>
+          <select id="talents" multiple size="6" formControlName="talents">
+            @for (talent of talents; track talent) { <option [value]="talent">{{ talent }}</option> }
+          </select>
+          @if (form.controls.talents.touched && form.controls.talents.invalid) { <small class="field-error">Selecione ao menos um talento.</small> }
+        </div>
+        <div class="field">
+          <label for="ministries">Ministérios atuais</label>
+          <select id="ministries" multiple size="6" formControlName="ministries">
+            @for (ministry of ministries; track ministry) { <option [value]="ministry">{{ ministry }}</option> }
+          </select>
+          <small class="field-help">Pode permanecer sem ministério para compor o banco de talentos.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="card form-section">
+      <div class="section-title">
+        <span aria-hidden="true">03</span>
+        <div><h2>Disponibilidade</h2><p>Registre a disponibilidade habitual e orientações importantes.</p></div>
+      </div>
+      <div class="form-grid">
+        <div class="availability-grid field--wide" formGroupName="availability">
+          <div class="field">
+            <label for="weekday">Dia da semana</label>
+            <select id="weekday" formControlName="weekday">
+              @for (day of weekdays; track day.value) { <option [value]="day.value">{{ day.label }}</option> }
+            </select>
+          </div>
+          <div class="field">
+            <label for="startTime">Horário inicial</label>
+            <input id="startTime" type="time" formControlName="startTime" />
+          </div>
+          <div class="field">
+            <label for="endTime">Horário final</label>
+            <input id="endTime" type="time" formControlName="endTime" />
+          </div>
+          @if (form.controls.availability.touched && form.controls.availability.hasError('invalidTimeRange')) {
+            <small class="field-error availability-error">O horário final deve ser posterior ao horário inicial.</small>
+          }
+        </div>
+        <div class="field field--wide">
+          <label for="notes">Observações privadas do líder</label>
+          <textarea id="notes" formControlName="notes"></textarea>
+          <small class="field-help">Estas observações não aparecem para o perfil de membro.</small>
+        </div>
+      </div>
+    </section>
+
+    @if (facade.error()) { <p class="form-error" role="alert">{{ facade.error() }}</p> }
+
+    <footer class="form-actions">
+      <a class="button button--secondary" routerLink="/membros">Cancelar</a>
+      <button class="button button--primary" type="submit" [disabled]="facade.saving()">
+        {{ facade.saving() ? 'Salvando…' : isEditing ? 'Salvar alterações' : 'Cadastrar membro' }}
+      </button>
+    </footer>
+  </form>
+}

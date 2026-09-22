@@ -1,0 +1,54 @@
+<main class="login-page">
+  <section class="welcome" aria-labelledby="welcome-title">
+    <div class="welcome__content">
+      <div class="welcome__brand"><img src="musicadagloria-profile.jpg" alt="" width="52" height="52" /> <span>Pastoral da Música<small>Paróquia Nossa Senhora da Glória</small></span></div>
+      <p class="welcome__eyebrow">Matriz e capelas · Fortaleza</p>
+      <h1 id="welcome-title" class="display-title">Uma só missão.<br />Muitas vozes.</h1>
+      <p class="welcome__copy">
+        Escalas, ministérios e repertórios reunidos para que a música acompanhe cada celebração com cuidado e comunhão.
+      </p>
+      <div class="welcome__signature"><span aria-hidden="true">♫</span> Ao som da Glória</div>
+    </div>
+    <p class="welcome__parish">Paróquia Nossa Senhora da Glória · Fortaleza, CE <a href="https://www.instagram.com/musicadagloria/" target="_blank" rel="noopener noreferrer">@musicadagloria ↗</a></p>
+  </section>
+
+  <section class="login-panel" aria-labelledby="login-title">
+    <form class="login-card" [formGroup]="form" (ngSubmit)="submit()">
+      <p class="login-card__eyebrow">Bem-vindo de volta</p>
+      <h2 id="login-title">Acesse sua conta</h2>
+      <p class="login-card__intro">Use seu acesso para acompanhar e organizar as próximas missões.</p>
+
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" autocomplete="email" formControlName="email" />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <small class="field-error">Informe um e-mail válido.</small>
+        }
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="password">Senha</label>
+          <button type="button" class="text-button">Esqueci minha senha</button>
+        </div>
+        <input id="password" type="password" autocomplete="current-password" formControlName="password" />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <small class="field-error">A senha deve possuir ao menos 6 caracteres.</small>
+        }
+      </div>
+
+      @if (authFacade.error()) {
+        <p class="form-error" role="alert">{{ authFacade.error() }}</p>
+      }
+
+      <button class="button button--primary submit" type="submit" [disabled]="authFacade.loading()">
+        {{ authFacade.loading() ? 'Entrando…' : 'Entrar' }}
+      </button>
+
+      <div class="demo-note">
+        <strong>Acesso de demonstração</strong>
+        <span>Os dados já estão preenchidos. Basta entrar.</span>
+      </div>
+    </form>
+  </section>
+</main>
