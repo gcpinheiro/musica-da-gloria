@@ -25,7 +25,23 @@ describe('SchedulesService', () => {
       ministry: 'Magnificat',
       liturgicalTime: 'Tempo Comum',
       notes: '',
+      people: [],
+      songs: [],
     }));
     expect(schedule.status).toBe('DRAFT');
+  });
+
+  it('changes only the concrete occurrence formation and repertoire', async () => {
+    const original = await firstValueFrom(service.getById('occ-001'));
+    const member = (await firstValueFrom(service.listMemberOptions())).find((item) => item.id === 'mem-004')!;
+    const withMember = await firstValueFrom(service.addMember('occ-001', member));
+    expect(withMember.people.length).toBe(original.people.length + 1);
+
+    const song = (await firstValueFrom(service.listSongOptions())).find((item) => item.songId === 'song-005')!;
+    const withSong = await firstValueFrom(service.addSong('occ-001', { ...song, id: 'item-test' }));
+    expect(withSong.songs.some((item) => item.songId === 'song-005')).toBeTrue();
+
+    const cleaned = await firstValueFrom(service.removeMember('occ-001', member.id));
+    expect(cleaned.people.some((item) => item.id === member.id)).toBeFalse();
   });
 });

@@ -35,3 +35,13 @@ export interface DashboardData {
   readonly summary: DashboardSummary;
   readonly schedules: readonly WeekSchedule[];
 }
+
+export interface NewsItem {
+  readonly id: string;
+  readonly title: string;
+  readonly body: string;
+  readonly publishedAt: string;
+  readonly author: string;
+}
+
+export interface NewsInput { readonly title: string; readonly body: string; }

@@ -89,7 +89,34 @@
 .schedule-list {
   display: grid;
   gap: 0.85rem;
+  margin-top: 1rem;
 }
+
+.week-calendar { display: grid; grid-template-columns: repeat(7, 1fr); overflow: hidden; }
+.week-calendar button { display: grid; justify-items: center; gap: .2rem; border-right: 1px solid var(--color-line); background: white; padding: .85rem .35rem; cursor: pointer; }
+.week-calendar button:last-child { border-right: 0; }
+.week-calendar button:hover { background: var(--color-surface-warm); }
+.week-calendar__day--selected { background: var(--color-navy-900) !important; color: white; }
+.week-calendar span { font-size: .66rem; font-weight: 700; text-transform: uppercase; }
+.week-calendar strong { font-family: 'Lora', serif; font-size: 1.3rem; font-weight: 500; }
+.week-calendar small { min-height: 1.8em; color: var(--color-muted); font-size: .58rem; text-align: center; }
+.week-calendar__day--selected small { color: #dbe9f4; }
+.news-heading { margin-top: 2.5rem; }
+.news-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.news-card { padding: 1.1rem; }
+.news-card__meta { display: flex; justify-content: space-between; color: var(--color-muted); font-size: .64rem; }
+.news-card h3 { margin: .7rem 0 .4rem; font-size: .95rem; font-weight: 600; }
+.news-card p { color: var(--color-muted); font-size: .76rem; line-height: 1.6; }
+.news-card footer { display: flex; gap: .8rem; border-top: 1px solid var(--color-line); padding-top: .7rem; }
+.news-card footer button { background: transparent; color: var(--color-sky); cursor: pointer; font-size: .68rem; font-weight: 700; }
+.news-card footer .news-delete { color: var(--color-danger); }
+.news-editor { display: grid; gap: .8rem; margin-bottom: 1rem; padding: 1.1rem; }
+.news-editor > div, .news-editor footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.news-editor h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+.news-editor > div button { background: transparent; cursor: pointer; font-size: 1.25rem; }
+.news-editor label { display: grid; gap: .35rem; }
+.news-editor label span { font-size: .7rem; font-weight: 600; }
+.news-editor footer { justify-content: flex-end; }
 
 .schedule-card {
   display: grid;
@@ -279,6 +306,9 @@
   .details-link { font-size: 0; }
   .details-link span { font-size: 1rem; }
   .title-row { align-items: flex-start; flex-direction: column; gap: 0.3rem; }
+  .week-calendar { grid-template-columns: repeat(4, 1fr); }
+  .week-calendar button { border-bottom: 1px solid var(--color-line); }
+  .news-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 430px) {

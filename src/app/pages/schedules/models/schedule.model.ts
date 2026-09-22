@@ -8,6 +8,17 @@ export interface ScheduledPerson {
   readonly confirmation: 'CONFIRMED' | 'PENDING' | 'DECLINED';
 }
 
+export interface ScheduledSong {
+  readonly id: string;
+  readonly songId: string;
+  readonly title: string;
+  readonly key: string;
+  readonly liturgicalMoment: string;
+}
+
+export interface ScheduleMemberOption extends ScheduledPerson { readonly available: boolean; }
+export type ScheduleSongOption = Omit<ScheduledSong, 'id'>;
+
 export interface Schedule {
   readonly id: string;
   readonly title: string;
@@ -18,7 +29,7 @@ export interface Schedule {
   readonly status: ScheduleStatus;
   readonly liturgicalTime: string;
   readonly people: readonly ScheduledPerson[];
-  readonly songs: readonly string[];
+  readonly songs: readonly ScheduledSong[];
   readonly notes: string;
 }
 
@@ -30,4 +41,6 @@ export interface ScheduleInput {
   readonly ministry: string;
   readonly liturgicalTime: string;
   readonly notes: string;
+  readonly people: readonly ScheduledPerson[];
+  readonly songs: readonly ScheduledSong[];
 }

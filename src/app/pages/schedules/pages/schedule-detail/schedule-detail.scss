@@ -30,6 +30,18 @@
 .person strong { font-size: .77rem; }
 .person small { color: var(--color-muted); font-size: .65rem; }
 .person button, .song-list button { background: transparent; color: var(--color-muted); cursor: pointer; }
+.picker { display: grid; gap: .35rem; border-bottom: 1px solid var(--color-line); background: var(--color-surface-warm); padding: .8rem; }
+.picker > strong { font-size: .72rem; font-weight: 600; }
+.picker button { display: flex; align-items: center; gap: .55rem; border: 1px solid var(--color-line); border-radius: 10px; background: white; padding: .55rem; text-align: left; cursor: pointer; }
+.picker button > span:nth-child(2) { display: grid; flex: 1; }
+.picker button b { font-size: .72rem; font-weight: 600; }
+.picker button small { color: var(--color-muted); font-size: .62rem; }
+.picker button > span:last-child { color: var(--color-sky); font-size: .65rem; font-weight: 700; }
+.picker button:disabled { cursor: not-allowed; opacity: .5; }
+.song-key { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 8px; background: var(--color-gold-soft); color: #715a29; font-size: .7rem; font-weight: 700; }
+.remove-action { color: var(--color-danger) !important; font-size: .65rem; font-weight: 700; }
+.song-list a { color: var(--color-sky); font-size: .65rem; font-weight: 700; }
+.inline-error { border-radius: 8px; background: var(--color-danger-soft); color: var(--color-danger); padding: .7rem; font-size: .75rem; }
 .confirmation { border-radius: 100px; padding: .2rem .45rem; font-size: .58rem; font-weight: 800; }
 .confirmation--confirmed { background: var(--color-success-soft); color: var(--color-success); }
 .confirmation--pending { background: var(--color-warning-soft); color: var(--color-warning); }

@@ -48,8 +48,18 @@
     <a routerLink="/escalas">Ver todas <span aria-hidden="true">→</span></a>
   </div>
 
-  <section class="schedule-list" aria-label="Celebrações da semana">
-    @for (schedule of facade.schedules(); track schedule.id) {
+  <section class="week-calendar card" aria-label="Calendário da semana">
+    @for (day of facade.calendarDays(); track day.key) {
+      <button type="button" [class.week-calendar__day--selected]="facade.selectedDate() === day.key" (click)="facade.selectDate(day.key)">
+        <span>{{ day.date | date: 'EEE' : 'UTC' : 'pt-BR' }}</span>
+        <strong>{{ day.date | date: 'dd' : 'UTC' }}</strong>
+        <small>{{ day.count ? day.count + (day.count === 1 ? ' celebração' : ' celebrações') : 'Livre' }}</small>
+      </button>
+    }
+  </section>
+
+  <section class="schedule-list" aria-label="Celebrações da data selecionada">
+    @for (schedule of facade.selectedSchedules(); track schedule.id) {
       <article class="schedule-card" [class.schedule-card--attention]="schedule.status === 'ATTENTION'">
         <div class="date-block">
           <span>{{ schedule.date | date: 'EEE' : 'UTC' : 'pt-BR' }}</span>
@@ -97,9 +107,29 @@
     } @empty {
       <section class="card empty-state">
         <span aria-hidden="true">♪</span>
-        <h2>Nenhuma escala nesta semana</h2>
-        <p>Crie uma escala ou associe um ministério a uma celebração recorrente.</p>
+        <h2>Nenhuma escala nesta data</h2>
+        <p>Selecione outro dia ou crie uma nova escala.</p>
       </section>
     }
+  </section>
+
+  <div class="section-heading news-heading">
+    <div><h2>Notícias da pastoral</h2><p>Comunicados para todos os ministérios</p></div>
+    <button class="button button--secondary" type="button" (click)="createNews()">＋ Nova notícia</button>
+  </div>
+
+  @if (newsEditorOpen()) {
+    <section class="card news-editor" aria-label="Editor de notícia">
+      <div><h3>{{ editingNewsId() ? 'Editar notícia' : 'Nova notícia' }}</h3><button type="button" aria-label="Fechar editor" (click)="newsEditorOpen.set(false)">×</button></div>
+      <label><span>Título</span><input [value]="newsTitle()" (input)="updateTitle($event)" /></label>
+      <label><span>Mensagem</span><textarea rows="4" [value]="newsBody()" (input)="updateBody($event)"></textarea></label>
+      <footer><button class="button button--secondary" type="button" (click)="newsEditorOpen.set(false)">Cancelar</button><button class="button button--primary" type="button" [disabled]="!newsTitle().trim() || !newsBody().trim() || facade.newsSaving()" (click)="saveNews()">Publicar</button></footer>
+    </section>
+  }
+
+  <section class="news-grid" aria-label="Feed de notícias">
+    @for (item of facade.news(); track item.id) {
+      <article class="card news-card"><div class="news-card__meta"><span>{{ item.publishedAt | date: 'dd MMM, HH:mm' : 'UTC' : 'pt-BR' }}</span><span>por {{ item.author }}</span></div><h3>{{ item.title }}</h3><p>{{ item.body }}</p><footer><button type="button" (click)="editNews(item.id, item.title, item.body)">Editar</button><button class="news-delete" type="button" (click)="facade.deleteNews(item.id)">Excluir</button></footer></article>
+    } @empty { <section class="card empty-state"><h2>Nenhuma notícia publicada</h2><p>Use “Nova notícia” para criar o primeiro comunicado.</p></section> }
   </section>
 }

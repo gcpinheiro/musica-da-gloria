@@ -23,6 +23,7 @@ export class AppShell {
     { label: 'Visão geral', route: '/dashboard', icon: '⌂', exact: true },
     { label: 'Escalas', route: '/escalas', icon: '▦' },
     { label: 'Membros', route: '/membros', icon: '♙' },
+    { label: 'Repertório', route: '/repertorio', icon: '♫' },
   ];
 
   protected toggleMenu(): void {

@@ -1,0 +1,13 @@
+<a class="back-link" routerLink="/repertorio">← Voltar ao repertório</a>
+<header class="page-header"><div><h1 class="display-title">{{ id ? 'Editar música' : 'Nova música' }}</h1><p>Cadastre a letra e a cifra usadas pelo ministério.</p></div></header>
+<form class="card song-form" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="form-grid">
+    <div class="field"><label for="title">Título</label><input id="title" formControlName="title" /></div>
+    <div class="field"><label for="author">Autor ou origem</label><input id="author" formControlName="author" /></div>
+    <div class="field"><label for="key">Tom padrão</label><input id="key" formControlName="defaultKey" /></div>
+    <div class="field"><label for="moments">Momentos litúrgicos</label><input id="moments" formControlName="moments" placeholder="Entrada, Envio" /></div>
+    <div class="field field--wide"><label for="chords">Cifra acompanhando a letra</label><textarea id="chords" rows="16" formControlName="chords" placeholder="G        D/F#&#10;Texto cantado nesta linha&#10;C        Am   D&#10;Texto cantado na linha seguinte"></textarea><small>Coloque os acordes na linha imediatamente acima do verso correspondente.</small></div>
+    <div class="field field--wide"><label for="lyrics">Letra limpa</label><textarea id="lyrics" rows="10" formControlName="lyrics"></textarea><small>Usada para consulta, pesquisa e futuras projeções.</small></div>
+  </div>
+  <footer><a class="button button--secondary" routerLink="/repertorio">Cancelar</a><button class="button button--primary" [disabled]="facade.saving()">Salvar música</button></footer>
+</form>
