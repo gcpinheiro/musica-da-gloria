@@ -26,6 +26,12 @@
                 "input": "public"
               }
             ],
+            "security": {
+              "allowedHosts": [
+                "musica-da-gloria.egcastro96.workers.dev",
+                "localhost"
+              ]
+            },
             "styles": [
               "src/styles.scss"
             ],
