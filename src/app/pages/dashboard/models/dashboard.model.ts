@@ -31,7 +31,6 @@ export interface WeekSchedule {
 }
 
 export interface DashboardData {
-  readonly weekLabel: string;
   readonly summary: DashboardSummary;
   readonly schedules: readonly WeekSchedule[];
 }

@@ -2,7 +2,7 @@
   <div>
     <p class="eyebrow">Pastoral da Música · Visão geral</p>
     <h1 class="display-title">Paz e bem, {{ authFacade.user()?.name?.split(' ')?.[0] ?? 'amigo' }}!</h1>
-    <p>Acompanhe as escalas e pendências dos ministérios nesta semana.</p>
+    <p>Acompanhe as escalas e pendências dos ministérios ao longo do mês.</p>
   </div>
   <a class="button button--primary" routerLink="/escalas/nova"><span aria-hidden="true">＋</span> Nova escala</a>
 </header>
@@ -17,46 +17,57 @@
     <button class="button button--secondary" type="button" (click)="facade.load()">Tentar novamente</button>
   </section>
 } @else if (facade.data(); as data) {
-  <section class="summary-grid" aria-label="Resumo da semana">
+  <section class="summary-grid" aria-label="Resumo do mês">
     <article class="summary-card summary-card--blue">
       <span class="summary-card__icon" aria-hidden="true">▦</span>
-      <div><strong>{{ data.summary.celebrations }}</strong><span>Celebrações</span></div>
-      <small>nesta semana</small>
+      <div><strong>{{ facade.monthSummary().celebrations }}</strong><span>Celebrações</span></div>
+      <small>neste mês</small>
     </article>
     <article class="summary-card summary-card--green">
       <span class="summary-card__icon" aria-hidden="true">✓</span>
-      <div><strong>{{ data.summary.confirmedMembers }}</strong><span>Confirmados</span></div>
+      <div><strong>{{ facade.monthSummary().confirmedMembers }}</strong><span>Confirmados</span></div>
       <small>membros escalados</small>
     </article>
     <article class="summary-card summary-card--gold">
       <span class="summary-card__icon" aria-hidden="true">◷</span>
-      <div><strong>{{ data.summary.pendingConfirmations }}</strong><span>Pendentes</span></div>
+      <div><strong>{{ facade.monthSummary().pendingConfirmations }}</strong><span>Pendentes</span></div>
       <small>aguardando resposta</small>
     </article>
     <article class="summary-card summary-card--red">
       <span class="summary-card__icon" aria-hidden="true">!</span>
-      <div><strong>{{ data.summary.openPositions }}</strong><span>Vagas abertas</span></div>
+      <div><strong>{{ facade.monthSummary().openPositions }}</strong><span>Vagas abertas</span></div>
       <small>funções sem músico</small>
     </article>
   </section>
 
-  <div class="section-heading">
+  <div class="section-heading calendar-heading">
     <div>
-      <h2>Escala da semana</h2>
-      <p>{{ data.weekLabel }}</p>
+      <h2>Escala do mês</h2>
+      <p>{{ facade.monthLabel() }}</p>
     </div>
-    <a routerLink="/escalas">Ver todas <span aria-hidden="true">→</span></a>
+    <div class="calendar-heading__actions">
+      <button type="button" (click)="facade.previousMonth()" aria-label="Mês anterior">←</button>
+      <button type="button" (click)="facade.currentMonth()">Hoje</button>
+      <button type="button" (click)="facade.nextMonth()" aria-label="Próximo mês">→</button>
+      <button type="button" (click)="calendarExpanded.set(!calendarExpanded())">{{ calendarExpanded() ? 'Recolher' : 'Expandir' }}</button>
+      <a routerLink="/escalas">Ver todas <span aria-hidden="true">→</span></a>
+    </div>
   </div>
 
-  <section class="week-calendar card" aria-label="Calendário da semana">
-    @for (day of facade.calendarDays(); track day.key) {
-      <button type="button" [class.week-calendar__day--selected]="facade.selectedDate() === day.key" (click)="facade.selectDate(day.key)">
-        <span>{{ day.date | date: 'EEE' : 'UTC' : 'pt-BR' }}</span>
-        <strong>{{ day.date | date: 'dd' : 'UTC' }}</strong>
-        <small>{{ day.count ? day.count + (day.count === 1 ? ' celebração' : ' celebrações') : 'Livre' }}</small>
-      </button>
-    }
-  </section>
+  @if (calendarExpanded()) {
+    <section class="month-calendar card" aria-label="Calendário mensal de escalas">
+      <div class="month-calendar__weekdays" aria-hidden="true"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div>
+      <div class="month-calendar__grid">
+        @for (day of facade.calendarDays(); track day.key) {
+          <button class="month-calendar__day" type="button" [class.month-calendar__day--selected]="facade.selectedDate() === day.key" [class.month-calendar__day--outside]="day.outsideMonth" [class.month-calendar__day--today]="day.today" (click)="facade.selectDate(day.key)">
+            <span>{{ day.date | date: 'dd' : 'UTC' }}</span>
+            @if (day.count) { <strong>{{ day.count }} {{ day.count === 1 ? 'escala' : 'escalas' }}</strong> }
+            @if (day.attention) { <small>Requer atenção</small> }
+          </button>
+        }
+      </div>
+    </section>
+  }
 
   <section class="schedule-list" aria-label="Celebrações da data selecionada">
     @for (schedule of facade.selectedSchedules(); track schedule.id) {

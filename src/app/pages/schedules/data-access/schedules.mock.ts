@@ -29,7 +29,25 @@ export const SCHEDULE_SONG_OPTIONS: readonly ScheduleSongOption[] = [
 
 const songs = (ids: readonly string[]) => SCHEDULE_SONG_OPTIONS.filter((song) => ids.includes(song.songId)).map((song, index) => ({ ...song, id: `item-${index}-${song.songId}` }));
 
+function recurringSchedules(): Schedule[] {
+  const schedules: Schedule[] = [];
+  for (let offset = -370; offset <= 370; offset += 1) {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() + offset);
+    if (date.getDay() === 0) {
+      schedules.push({ id: `occ-rec-${offset}-09`, title: 'Santa Missa Dominical', date: date.toISOString(), time: '09:00', location: 'Igreja Matriz', ministry: 'São José', status: 'PUBLISHED', liturgicalTime: 'Tempo Comum', notes: 'Chegada às 08h15 para passagem de som.', people: [SCHEDULE_MEMBER_OPTIONS[5], SCHEDULE_MEMBER_OPTIONS[2]], songs: songs(['song-001', 'song-003', 'song-008']) });
+      schedules.push({ id: `occ-rec-${offset}-19`, title: 'Santa Missa Dominical', date: date.toISOString(), time: '19:00', location: 'Igreja Matriz', ministry: 'Magnificat', status: offset % 3 === 0 ? 'ATTENTION' : 'PUBLISHED', liturgicalTime: 'Tempo Comum', notes: offset % 3 === 0 ? 'Uma função da formação ainda precisa ser preenchida.' : 'Chegada às 18h15 para passagem de som.', people: [SCHEDULE_MEMBER_OPTIONS[0], SCHEDULE_MEMBER_OPTIONS[1]], songs: songs(['song-001', 'song-004', 'song-007']) });
+    }
+    if (date.getDay() === 4) {
+      schedules.push({ id: `occ-rec-${offset}-adoracao`, title: 'Adoração ao Santíssimo', date: date.toISOString(), time: '19:30', location: 'Capela do Santíssimo', ministry: 'Adoremus', status: 'DRAFT', liturgicalTime: 'Adoração', notes: 'Repertório contemplativo.', people: [SCHEDULE_MEMBER_OPTIONS[3], SCHEDULE_MEMBER_OPTIONS[4]], songs: songs(['song-005', 'song-007']) });
+    }
+  }
+  return schedules;
+}
+
 export const SCHEDULES_MOCK: readonly Schedule[] = [
+  ...recurringSchedules(),
   { id: 'occ-001', title: 'Santa Missa', date: isoDate(1), time: '18:30', location: 'Igreja Matriz', ministry: 'Magnificat', status: 'PUBLISHED', liturgicalTime: 'Tempo Comum', notes: 'Chegada para passagem de som às 17h45.', people: [{ ...SCHEDULE_MEMBER_OPTIONS[0], confirmation: 'CONFIRMED' }, { ...SCHEDULE_MEMBER_OPTIONS[1], confirmation: 'CONFIRMED' }, { ...SCHEDULE_MEMBER_OPTIONS[2], confirmation: 'CONFIRMED' }], songs: songs(['song-001', 'song-002', 'song-003', 'song-004']) },
   { id: 'occ-002', title: 'Adoração ao Santíssimo', date: isoDate(3), time: '19:30', location: 'Capela do Santíssimo', ministry: 'Adoremus', status: 'DRAFT', liturgicalTime: 'Adoração', notes: 'Repertório mais contemplativo.', people: [{ ...SCHEDULE_MEMBER_OPTIONS[3], confirmation: 'CONFIRMED' }, SCHEDULE_MEMBER_OPTIONS[4]], songs: songs(['song-005']) },
   { id: 'occ-003', title: 'Santa Missa Dominical', date: isoDate(6), time: '09:00', location: 'Igreja Matriz', ministry: 'São José', status: 'ATTENTION', liturgicalTime: '25º Domingo do Tempo Comum', notes: 'A função de bateria precisa de substituição.', people: [SCHEDULE_MEMBER_OPTIONS[5]], songs: songs(['song-006']) },

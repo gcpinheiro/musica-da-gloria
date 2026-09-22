@@ -6,7 +6,7 @@ import { DASHBOARD_MOCK, NEWS_MOCK } from './dashboard.mock';
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private news: NewsItem[] = NEWS_MOCK.map((item) => ({ ...item }));
-  getWeek(): Observable<DashboardData> {
+  getCalendar(): Observable<DashboardData> {
     return of(DASHBOARD_MOCK).pipe(delay(350));
   }
   listNews(): Observable<readonly NewsItem[]> { return of(this.news.map((item) => ({ ...item }))).pipe(delay(220)); }

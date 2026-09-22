@@ -13,4 +13,11 @@ describe('DashboardService', () => {
     await firstValueFrom(service.deleteNews(item.id));
     expect((await firstValueFrom(service.listNews())).some((news) => news.id === item.id)).toBeFalse();
   });
+
+  it('provides previous and future recurring occurrences for the monthly calendar', async () => {
+    const data = await firstValueFrom(service.getCalendar());
+    const now = Date.now();
+    expect(data.schedules.some((item) => new Date(item.date).getTime() < now)).toBeTrue();
+    expect(data.schedules.some((item) => new Date(item.date).getTime() > now + 1000 * 60 * 60 * 24 * 30)).toBeTrue();
+  });
 });

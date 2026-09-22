@@ -16,6 +16,7 @@ export class Dashboard implements OnInit {
   protected readonly facade = inject(DashboardFacade);
   protected readonly authFacade = inject(AuthFacade);
   protected readonly newsEditorOpen = signal(false);
+  protected readonly calendarExpanded = signal(true);
   protected readonly editingNewsId = signal<string | null>(null);
   protected readonly newsTitle = signal('');
   protected readonly newsBody = signal('');
