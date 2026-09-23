@@ -4,7 +4,7 @@ import { AuthUser, LoginCredentials } from './auth.models';
 
 const DEMO_USER: AuthUser = {
   id: 'usr-leader-01',
-  name: 'Eury',
+  name: 'Gabriel',
   email: 'lider@musicadagloria.org.br',
   role: 'LEADER',
   initials: 'E',

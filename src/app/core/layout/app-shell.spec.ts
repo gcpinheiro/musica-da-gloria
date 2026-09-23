@@ -12,7 +12,7 @@ describe('AppShell', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
-        { provide: AuthFacade, useValue: { user: signal({ name: 'Eury', initials: 'E' }), logout } },
+        { provide: AuthFacade, useValue: { user: signal({ name: 'Gabriel', initials: 'E' }), logout } },
       ],
     }).compileComponents();
 
