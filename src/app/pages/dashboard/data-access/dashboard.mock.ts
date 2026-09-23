@@ -15,11 +15,11 @@ function recurringSchedules(): WeekSchedule[] {
     date.setHours(12, 0, 0, 0);
     date.setDate(date.getDate() + offset);
     if (date.getDay() === 0) {
-      schedules.push({ id: `occ-rec-${offset}-09`, title: 'Santa Missa Dominical', ministry: 'Ministério São José', date: date.toISOString(), time: '09:00', location: 'Igreja Matriz', liturgicalTime: 'Tempo Comum', status: 'CONFIRMED', members: [{ id: 'mem-006', name: 'João Pedro', initials: 'JP', role: 'Voz', confirmed: true }, { id: 'mem-007', name: 'Lia Martins', initials: 'LM', role: 'Teclado', confirmed: true }], totalMembers: 5, repertoireCount: 7 });
-      schedules.push({ id: `occ-rec-${offset}-19`, title: 'Santa Missa Dominical', ministry: 'Ministério Magnificat', date: date.toISOString(), time: '19:00', location: 'Igreja Matriz', liturgicalTime: 'Tempo Comum', status: offset % 3 === 0 ? 'ATTENTION' : 'CONFIRMED', members: [{ id: 'mem-001', name: 'Ana Clara', initials: 'AC', role: 'Voz', confirmed: true }, { id: 'mem-002', name: 'Rafael Lima', initials: 'RL', role: 'Violão', confirmed: true }], totalMembers: 6, repertoireCount: 8, alert: offset % 3 === 0 ? '1 função ainda sem músico' : undefined });
+      schedules.push({ id: `occ-rec-${offset}-09`, title: 'Santa Missa Dominical', ministry: 'Ministério Nossa Senhora da Glória', date: date.toISOString(), time: '09:00', location: 'Igreja Matriz', liturgicalTime: 'Tempo Comum', status: 'CONFIRMED', members: [{ id: 'mem-006', name: 'João Pedro', initials: 'JP', role: 'Voz', confirmed: true }, { id: 'mem-007', name: 'Lia Martins', initials: 'LM', role: 'Teclado', confirmed: true }], totalMembers: 5, repertoireCount: 7 });
+      schedules.push({ id: `occ-rec-${offset}-19`, title: 'Santa Missa Dominical', ministry: 'Ministério Santa Cecília', date: date.toISOString(), time: '19:00', location: 'Igreja Matriz', liturgicalTime: 'Tempo Comum', status: offset % 3 === 0 ? 'ATTENTION' : 'CONFIRMED', members: [{ id: 'mem-001', name: 'Ana Clara', initials: 'AC', role: 'Voz', confirmed: true }, { id: 'mem-002', name: 'Rafael Lima', initials: 'RL', role: 'Violão', confirmed: true }], totalMembers: 6, repertoireCount: 8, alert: offset % 3 === 0 ? '1 função ainda sem músico' : undefined });
     }
     if (date.getDay() === 4) {
-      schedules.push({ id: `occ-rec-${offset}-adoracao`, title: 'Adoração ao Santíssimo', ministry: 'Ministério Adoremus', date: date.toISOString(), time: '19:30', location: 'Capela do Santíssimo', liturgicalTime: 'Adoração', status: 'PENDING', members: [{ id: 'mem-004', name: 'Camila Sousa', initials: 'CS', role: 'Voz', confirmed: true }, { id: 'mem-005', name: 'Daniel Rocha', initials: 'DR', role: 'Violão', confirmed: false }], totalMembers: 4, repertoireCount: 5, alert: '1 confirmação pendente' });
+      schedules.push({ id: `occ-rec-${offset}-adoracao`, title: 'Adoração ao Santíssimo', ministry: 'Ministério São Gregório Magno', date: date.toISOString(), time: '19:30', location: 'Capela do Santíssimo', liturgicalTime: 'Adoração', status: 'PENDING', members: [{ id: 'mem-004', name: 'Camila Sousa', initials: 'CS', role: 'Voz', confirmed: true }, { id: 'mem-005', name: 'Daniel Rocha', initials: 'DR', role: 'Violão', confirmed: false }], totalMembers: 4, repertoireCount: 5, alert: '1 confirmação pendente' });
     }
   }
   return schedules;
@@ -37,7 +37,7 @@ export const DASHBOARD_MOCK: DashboardData = {
     {
       id: 'occ-001',
       title: 'Santa Missa',
-      ministry: 'Ministério Magnificat',
+      ministry: 'Ministério Santa Cecília',
       date: isoDate(1),
       time: '18:30',
       location: 'Igreja Matriz',
@@ -54,7 +54,7 @@ export const DASHBOARD_MOCK: DashboardData = {
     {
       id: 'occ-002',
       title: 'Adoração ao Santíssimo',
-      ministry: 'Ministério Adoremus',
+      ministry: 'Ministério São Gregório Magno',
       date: isoDate(3),
       time: '19:30',
       location: 'Capela do Santíssimo',
@@ -71,7 +71,7 @@ export const DASHBOARD_MOCK: DashboardData = {
     {
       id: 'occ-003',
       title: 'Santa Missa Dominical',
-      ministry: 'Ministério São José',
+      ministry: 'Ministério Nossa Senhora da Glória',
       date: isoDate(6),
       time: '09:00',
       location: 'Igreja Matriz',
@@ -88,7 +88,7 @@ export const DASHBOARD_MOCK: DashboardData = {
     {
       id: 'occ-004',
       title: 'Santa Missa Dominical',
-      ministry: 'Ministério Magnificat',
+      ministry: 'Ministério Santa Cecília',
       date: isoDate(6),
       time: '19:00',
       location: 'Igreja Matriz',
