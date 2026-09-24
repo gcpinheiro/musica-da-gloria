@@ -17,6 +17,7 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly activeTab = signal<ReaderTab>('chords');
   protected readonly autoScrolling = signal(false);
   protected readonly scrollSpeed = signal(4);
+  protected readonly fontSize = signal(18);
   protected readonly sheetLines = computed<readonly SheetLine[]>(() => {
     const song = this.facade.selected();
     const content = this.activeTab() === 'chords' ? song?.chords ?? '' : song?.lyrics ?? '';
@@ -34,6 +35,8 @@ export class SongDetail implements OnInit, OnDestroy {
     queueMicrotask(() => { const container = this.scrollContainer()?.nativeElement; if (container) container.scrollTop = this.scrollPositions[tab]; });
   }
   protected changeSpeed(event: Event): void { this.scrollSpeed.set(Number((event.target as HTMLInputElement).value)); }
+  protected adjustFontSize(change: number): void { this.fontSize.update((size) => Math.min(32, Math.max(14, size + change))); }
+  protected resetFontSize(): void { this.fontSize.set(18); }
   protected toggleAutoScroll(): void {
     if (this.autoScrolling()) { this.stopAutoScroll(); return; }
     this.autoScrolling.set(true);

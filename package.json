@@ -7,7 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:musica-da-gloria": "node dist/musica-da-gloria/server/server.mjs"
+    "serve:ssr:musica-da-gloria": "node dist/musica-da-gloria/server/server.mjs",
+    "docker:build": "docker build -t musica-da-gloria:local .",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
   },
   "prettier": {
     "printWidth": 100,
@@ -22,6 +25,9 @@
     ]
   },
   "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "dependencies": {
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",

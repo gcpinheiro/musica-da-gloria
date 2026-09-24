@@ -1,4 +1,25 @@
-# MusicaDaGloria
+# Música da Glória
+
+## Executar com Docker
+
+Pré-requisito: Docker Desktop ou Docker Engine com Docker Compose.
+
+```bash
+docker compose up --build
+```
+
+A aplicação estará disponível em `http://localhost:4200`. O servidor Angular SSR
+é executado internamente na porta `4000` e pode ser verificado em `/health`.
+
+Para executar em segundo plano ou encerrar:
+
+```bash
+docker compose up --build -d
+docker compose down
+```
+
+Também estão disponíveis os atalhos `npm run docker:build`, `npm run docker:up` e
+`npm run docker:down`.
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.7.
 

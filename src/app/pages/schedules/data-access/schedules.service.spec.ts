@@ -22,7 +22,7 @@ describe('SchedulesService', () => {
       date: '2026-10-10',
       time: '18:00',
       location: 'Igreja Matriz',
-      ministry: 'Magnificat',
+      ministry: 'Santa Cecília',
       liturgicalTime: 'Tempo Comum',
       notes: '',
       people: [],

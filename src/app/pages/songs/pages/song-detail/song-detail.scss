@@ -12,21 +12,26 @@
 .reader-tabs button { min-height:30px; border-radius:6px; background:transparent; padding:0 .7rem; color:var(--color-muted); cursor:pointer; font-size:.67rem; font-weight:600; }
 .reader-tabs .reader-tab--active { background:white; color:var(--color-navy-900); box-shadow:var(--shadow-sm); }
 .reader-actions { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:.5rem; }
+.font-controls { display:flex; align-items:center; overflow:hidden; border:1px solid var(--color-line); border-radius:8px; background:white; }
+.font-controls>span { padding:0 .5rem; color:var(--color-muted); font-size:.62rem; }
+.font-controls button { min-width:34px; min-height:34px; border-left:1px solid var(--color-line); background:white; color:var(--color-navy-900); cursor:pointer; font-size:.68rem; font-weight:700; }
+.font-controls button:disabled { cursor:not-allowed; opacity:.4; }
+.font-controls button:hover:not(:disabled) { background:var(--color-sky-soft); }
 .reader-button { min-height:36px; border:1px solid var(--color-line); border-radius:8px; background:white; padding:0 .7rem; color:var(--color-navy-900); cursor:pointer; font-size:.68rem; font-weight:700; }
 .reader-button:hover,.reader-button--active { border-color:var(--color-sky); background:var(--color-sky-soft); }
 .speed { display:flex; align-items:center; gap:.4rem; color:var(--color-muted); font-size:.65rem; }
 .speed input { width:90px; accent-color:var(--color-sky); }
-.sheet { max-height:62vh; overflow:auto; scroll-behavior:auto; background:linear-gradient(90deg,var(--color-surface-warm),white 15%,white 85%,var(--color-surface-warm)); padding:clamp(1.2rem,4vw,2.5rem); }
+.sheet { max-height:62vh; overflow:auto; scroll-behavior:auto; background:#090c10; padding:clamp(1.2rem,4vw,2.5rem); color-scheme:dark; scrollbar-color:#52606d #090c10; }
 .sheet:focus-visible { outline-offset:-4px; }
-.sheet__content { width:min(760px,100%); min-height:70vh; margin:auto; font-family:'Courier New',monospace; font-size:clamp(.78rem,1.2vw,.94rem); line-height:1.55; white-space:pre; }
+.sheet__content { width:min(800px,100%); min-height:70vh; margin:auto; font-family:'Courier New',monospace; line-height:1.65; white-space:pre; }
 .sheet-line { display:block; min-height:1.55em; }
-.sheet-line--section { margin-top:1.2rem; color:var(--color-muted); font-family:'Inter',sans-serif; font-size:.72rem; font-weight:600; text-transform:uppercase; }
-.sheet-line--chord { color:var(--color-sky); font-weight:700; }
-.sheet-line--lyric { color:var(--color-ink); }
+.sheet-line--section { margin-top:1.2rem; color:#aeb8c2; font-family:'Inter',sans-serif; font-size:.78em; font-weight:600; text-transform:uppercase; }
+.sheet-line--chord { color:#79c5ff; font-weight:700; }
+.sheet-line--lyric { color:#f7f9fb; }
 .song-reader--expanded { position:fixed; z-index:1000; inset:0; margin:0; border:0; border-radius:0; background:white; }
 .song-reader--expanded .reader-toolbar { min-height:68px; }
 .song-reader--expanded .sheet { height:calc(100vh - 68px); max-height:none; }
 .state { padding:3rem; text-align:center; }
 @media(max-width:900px){.reader-toolbar{align-items:flex-start;flex-wrap:wrap}.reader-actions{width:100%;justify-content:flex-start}}
-@media(max-width:760px){.song-header{align-items:flex-start;flex-wrap:wrap}.song-header .button{width:100%}.reader-toolbar{flex-direction:column}.reader-tabs{width:100%}.reader-tabs button{flex:1}.speed{width:100%}.speed input{flex:1}.sheet{max-height:65vh;padding:1rem}.sheet__content{overflow:visible;font-size:.76rem}.song-reader--expanded .sheet{height:calc(100vh - 180px)}}
+@media(max-width:760px){.song-header{align-items:flex-start;flex-wrap:wrap}.song-header .button{width:100%}.reader-toolbar{flex-direction:column}.reader-tabs{width:100%}.reader-tabs button{flex:1}.font-controls{width:100%}.font-controls>span{margin-right:auto}.speed{width:100%}.speed input{flex:1}.sheet{max-height:65vh;padding:1rem}.sheet__content{overflow:visible}.song-reader--expanded .sheet{height:calc(100vh - 220px)}}
 @media(prefers-reduced-motion:reduce){.reader-button{transition:none}}

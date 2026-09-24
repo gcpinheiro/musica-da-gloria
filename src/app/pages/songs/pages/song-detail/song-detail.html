@@ -12,6 +12,12 @@
         <button type="button" role="tab" [attr.aria-selected]="activeTab() === 'chords'" [class.reader-tab--active]="activeTab() === 'chords'" (click)="selectTab('chords')">Letra com cifra</button>
       </div>
       <div class="reader-actions">
+        <div class="font-controls" role="group" aria-label="Tamanho da letra">
+          <span>Tamanho</span>
+          <button type="button" (click)="adjustFontSize(-2)" [disabled]="fontSize() === 14" aria-label="Diminuir tamanho da letra">A−</button>
+          <button type="button" (click)="resetFontSize()" [attr.aria-label]="'Restaurar tamanho da letra. Tamanho atual ' + fontSize() + ' pixels'">{{ fontSize() }}px</button>
+          <button type="button" (click)="adjustFontSize(2)" [disabled]="fontSize() === 32" aria-label="Aumentar tamanho da letra">A＋</button>
+        </div>
         <label class="speed"><span>Velocidade</span><input type="range" min="1" max="10" [value]="scrollSpeed()" (input)="changeSpeed($event)" /></label>
         <button type="button" class="reader-button" (click)="restartScroll()" title="Voltar ao início">↥ Início</button>
         <button type="button" class="reader-button" [class.reader-button--active]="autoScrolling()" (click)="toggleAutoScroll()">{{ autoScrolling() ? 'Ⅱ Pausar' : '▶ Autorrolagem' }}</button>
@@ -19,12 +25,12 @@
       </div>
     </header>
     <div #scrollContainer class="sheet" tabindex="0">
-      <div class="sheet__content">
+      <div class="sheet__content" [style.font-size.px]="fontSize()">
         @for (line of sheetLines(); track $index) {
           <span class="sheet-line sheet-line--{{ line.type }}">{{ line.text || ' ' }}</span>
         }
       </div>
     </div>
-    <p class="scroll-status sr-only" aria-live="polite">{{ autoScrolling() ? 'Rolagem automática ativada' : 'Rolagem automática pausada' }}</p>
+    <p class="scroll-status sr-only" aria-live="polite">Tamanho da letra: {{ fontSize() }} pixels. {{ autoScrolling() ? 'Rolagem automática ativada' : 'Rolagem automática pausada' }}</p>
   </section>
 }
