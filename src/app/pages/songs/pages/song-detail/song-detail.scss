@@ -12,6 +12,13 @@
 .reader-tabs button { min-height:30px; border-radius:6px; background:transparent; padding:0 .7rem; color:var(--color-muted); cursor:pointer; font-size:.67rem; font-weight:600; }
 .reader-tabs .reader-tab--active { background:white; color:var(--color-navy-900); box-shadow:var(--shadow-sm); }
 .reader-actions { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:.5rem; }
+.key-controls { display:flex; align-items:center; overflow:hidden; border:1px solid #3b5368; border-radius:8px; background:#101820; }
+.key-controls>span { padding:0 .5rem; color:#aeb8c2; font-size:.62rem; }
+.key-controls strong { display:grid; min-width:38px; min-height:34px; place-items:center; border-left:1px solid #3b5368; color:#79c5ff; font-size:.78rem; font-weight:600; }
+.key-controls button { min-width:34px; min-height:34px; border-left:1px solid #3b5368; background:#101820; color:#f7f9fb; cursor:pointer; font-size:.8rem; font-weight:600; }
+.key-controls button:hover:not(:disabled) { background:#1c3040; }
+.key-controls button:disabled { cursor:not-allowed; opacity:.4; }
+.key-controls .key-controls__reset { padding:0 .55rem; color:#b8c2ca; font-size:.64rem; }
 .font-controls { display:flex; align-items:center; overflow:hidden; border:1px solid var(--color-line); border-radius:8px; background:white; }
 .font-controls>span { padding:0 .5rem; color:var(--color-muted); font-size:.62rem; }
 .font-controls button { min-width:34px; min-height:34px; border-left:1px solid var(--color-line); background:white; color:var(--color-navy-900); cursor:pointer; font-size:.68rem; font-weight:700; }
@@ -33,5 +40,5 @@
 .song-reader--expanded .sheet { height:calc(100vh - 68px); max-height:none; }
 .state { padding:3rem; text-align:center; }
 @media(max-width:900px){.reader-toolbar{align-items:flex-start;flex-wrap:wrap}.reader-actions{width:100%;justify-content:flex-start}}
-@media(max-width:760px){.song-header{align-items:flex-start;flex-wrap:wrap}.song-header .button{width:100%}.reader-toolbar{flex-direction:column}.reader-tabs{width:100%}.reader-tabs button{flex:1}.font-controls{width:100%}.font-controls>span{margin-right:auto}.speed{width:100%}.speed input{flex:1}.sheet{max-height:65vh;padding:1rem}.sheet__content{overflow:visible}.song-reader--expanded .sheet{height:calc(100vh - 220px)}}
+@media(max-width:760px){.song-header{align-items:flex-start;flex-wrap:wrap}.song-header .button{width:100%}.reader-toolbar{flex-direction:column}.reader-tabs{width:100%}.reader-tabs button{flex:1}.key-controls,.font-controls{width:100%}.key-controls>span,.font-controls>span{margin-right:auto}.speed{width:100%}.speed input{flex:1}.sheet{max-height:65vh;padding:1rem}.sheet__content{overflow:visible}.song-reader--expanded .sheet{height:calc(100vh - 270px)}}
 @media(prefers-reduced-motion:reduce){.reader-button{transition:none}}

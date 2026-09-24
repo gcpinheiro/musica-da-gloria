@@ -10,7 +10,7 @@
 
     <nav class="nav">
       <p class="nav__eyebrow">Organização</p>
-      @for (item of navigation; track item.route) {
+      @for (item of visibleNavigation(); track item.route) {
         <a
           class="nav__item"
           [routerLink]="item.route"
@@ -34,7 +34,7 @@
         <span class="avatar">{{ authFacade.user()?.initials ?? 'MG' }}</span>
         <span class="sidebar__user">
           <strong>{{ authFacade.user()?.name ?? 'Usuário' }}</strong>
-          <small>Líder de ministério</small>
+          <small>{{ authFacade.isMember() ? 'Membro do ministério' : 'Líder de ministério' }}</small>
         </span>
       </div>
       <button type="button" class="logout" (click)="authFacade.logout()">

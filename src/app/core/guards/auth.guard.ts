@@ -8,3 +8,11 @@ export const authGuard: CanActivateFn = () => {
 
   return authFacade.isAuthenticated() ? true : router.createUrlTree(['/login']);
 };
+
+export const managementGuard: CanActivateFn = () => {
+  const authFacade = inject(AuthFacade);
+  const router = inject(Router);
+
+  if (!authFacade.isAuthenticated()) return router.createUrlTree(['/login']);
+  return authFacade.canManage() ? true : router.createUrlTree(['/dashboard']);
+};

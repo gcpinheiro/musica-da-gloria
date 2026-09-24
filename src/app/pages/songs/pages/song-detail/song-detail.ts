@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, OnDes
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { SongsFacade } from '../../data-access/songs.facade';
+import { AuthFacade } from '../../../../core/auth/auth.facade';
+import { isChordLine, transposeChordLine, transposeKey } from '../../utils/song-transposition';
 
 interface SheetLine { readonly text: string; readonly type: 'section' | 'chord' | 'lyric' | 'blank'; }
 type ReaderTab = 'lyrics' | 'chords';
@@ -13,15 +15,22 @@ export class SongDetail implements OnInit, OnDestroy {
   private scrollSubscription?: Subscription;
   private readonly scrollPositions: Record<ReaderTab, number> = { lyrics: 0, chords: 0 };
   protected readonly facade = inject(SongsFacade);
+  protected readonly authFacade = inject(AuthFacade);
   protected readonly expanded = signal(false);
   protected readonly activeTab = signal<ReaderTab>('chords');
   protected readonly autoScrolling = signal(false);
   protected readonly scrollSpeed = signal(4);
   protected readonly fontSize = signal(18);
+  protected readonly semitoneOffset = signal(0);
+  protected readonly currentKey = computed(() => transposeKey(this.facade.selected()?.defaultKey ?? '', this.semitoneOffset()));
   protected readonly sheetLines = computed<readonly SheetLine[]>(() => {
     const song = this.facade.selected();
-    const content = this.activeTab() === 'chords' ? song?.chords ?? '' : song?.lyrics ?? '';
-    return content.split('\n').map((text) => ({ text, type: this.activeTab() === 'chords' ? this.lineType(text) : this.lyricLineType(text) }));
+    const chordsActive = this.activeTab() === 'chords';
+    const content = chordsActive ? song?.chords ?? '' : song?.lyrics ?? '';
+    return content.split('\n').map((text) => {
+      const type = chordsActive ? this.lineType(text) : this.lyricLineType(text);
+      return { text: type === 'chord' ? transposeChordLine(text, this.semitoneOffset()) : text, type };
+    });
   });
 
   ngOnInit(): void { this.facade.loadOne(this.route.snapshot.paramMap.get('id') ?? ''); }
@@ -37,6 +46,8 @@ export class SongDetail implements OnInit, OnDestroy {
   protected changeSpeed(event: Event): void { this.scrollSpeed.set(Number((event.target as HTMLInputElement).value)); }
   protected adjustFontSize(change: number): void { this.fontSize.update((size) => Math.min(32, Math.max(14, size + change))); }
   protected resetFontSize(): void { this.fontSize.set(18); }
+  protected transpose(change: number): void { this.semitoneOffset.update((offset) => Math.min(11, Math.max(-11, offset + change))); }
+  protected resetKey(): void { this.semitoneOffset.set(0); }
   protected toggleAutoScroll(): void {
     if (this.autoScrolling()) { this.stopAutoScroll(); return; }
     this.autoScrolling.set(true);
@@ -53,8 +64,7 @@ export class SongDetail implements OnInit, OnDestroy {
     const value = line.trim();
     if (!value) return 'blank';
     if (value.startsWith('[') && value.endsWith(']')) return 'section';
-    const chordPattern = /^(?:[A-G](?:#|b)?(?:m|maj|min|sus|dim|aug)?\d*(?:\([^)]+\))?(?:\/[A-G](?:#|b)?)?\s*)+$/;
-    return chordPattern.test(value) ? 'chord' : 'lyric';
+    return isChordLine(value) ? 'chord' : 'lyric';
   }
   private lyricLineType(line: string): SheetLine['type'] {
     const value = line.trim();

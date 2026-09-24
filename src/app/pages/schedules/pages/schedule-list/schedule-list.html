@@ -1,6 +1,8 @@
 <header class="page-header">
-  <div><p class="eyebrow">Planejamento</p><h1 class="display-title">Escalas</h1><p>Organize as próximas celebrações, formações e repertórios.</p></div>
-  <a class="button button--primary" routerLink="nova"><span aria-hidden="true">＋</span> Nova escala</a>
+  <div><p class="eyebrow">{{ authFacade.isMember() ? 'Minha participação' : 'Planejamento' }}</p><h1 class="display-title">{{ authFacade.isMember() ? 'Minhas escalas' : 'Escalas' }}</h1><p>{{ authFacade.isMember() ? 'Consulte as celebrações, sua formação e os repertórios escolhidos.' : 'Organize as próximas celebrações, formações e repertórios.' }}</p></div>
+  @if (authFacade.canManage()) {
+    <a class="button button--primary" routerLink="nova"><span aria-hidden="true">＋</span> Nova escala</a>
+  }
 </header>
 
 <section class="filter-bar card">
@@ -24,7 +26,7 @@
         <a class="open" [routerLink]="[schedule.id]" [attr.aria-label]="'Abrir ' + schedule.title">→</a>
       </article>
     } @empty {
-      <div class="state"><h2>Nenhuma escala neste filtro</h2><p>Selecione outro status ou crie uma nova escala.</p></div>
+      <div class="state"><h2>Nenhuma escala neste filtro</h2><p>{{ authFacade.canManage() ? 'Selecione outro status ou crie uma nova escala.' : 'Selecione outro status para consultar suas escalas.' }}</p></div>
     }
   </section>
 }

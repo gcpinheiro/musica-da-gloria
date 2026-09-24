@@ -12,7 +12,7 @@ export class DashboardService {
   listNews(): Observable<readonly NewsItem[]> { return of(this.news.map((item) => ({ ...item }))).pipe(delay(220)); }
   saveNews(input: NewsInput, id?: string): Observable<NewsItem> {
     const current = id ? this.news.find((item) => item.id === id) : undefined;
-    const item: NewsItem = current ? { ...current, ...input } : { ...input, id: `news-${Date.now()}`, publishedAt: new Date().toISOString(), author: 'Gabriel' };
+    const item: NewsItem = current ? { ...current, ...input } : { ...input, id: `news-${Date.now()}`, publishedAt: new Date().toISOString(), author: 'Eury' };
     this.news = current ? this.news.map((news) => news.id === id ? item : news) : [item, ...this.news];
     return of({ ...item }).pipe(delay(250));
   }

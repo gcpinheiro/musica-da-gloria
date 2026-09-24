@@ -16,6 +16,8 @@ export class AuthFacade {
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly isAuthenticated = computed(() => this.userState() !== null);
+  readonly canManage = computed(() => ['ADMIN', 'LEADER'].includes(this.userState()?.role ?? ''));
+  readonly isMember = computed(() => this.userState()?.role === 'MEMBER');
 
   login(credentials: LoginCredentials): void {
     this.loadingState.set(true);

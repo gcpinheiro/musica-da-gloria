@@ -3,11 +3,13 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SchedulesFacade } from '../../data-access/schedules.facade';
 import { ScheduleMemberOption, ScheduleSongOption } from '../../models/schedule.model';
+import { AuthFacade } from '../../../../core/auth/auth.facade';
 
 @Component({ selector: 'app-schedule-detail', imports: [DatePipe, RouterLink], templateUrl: './schedule-detail.html', styleUrl: './schedule-detail.scss', changeDetection: ChangeDetectionStrategy.OnPush })
 export class ScheduleDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   protected readonly facade = inject(SchedulesFacade);
+  protected readonly authFacade = inject(AuthFacade);
   protected readonly memberPickerOpen = signal(false);
   protected readonly songPickerOpen = signal(false);
   ngOnInit(): void { this.facade.loadOne(this.route.snapshot.paramMap.get('id') ?? ''); }

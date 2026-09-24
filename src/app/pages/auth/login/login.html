@@ -47,7 +47,11 @@
 
       <div class="demo-note">
         <strong>Acesso de demonstração</strong>
-        <span>Os dados já estão preenchidos. Basta entrar.</span>
+        <span>Escolha o perfil que deseja conhecer:</span>
+        <div class="demo-note__actions">
+          <button type="button" (click)="selectDemo('MEMBER')">Membro · Rafael</button>
+          <button type="button" (click)="selectDemo('LEADER')">Líder · Eury</button>
+        </div>
       </div>
     </form>
   </section>

@@ -4,7 +4,9 @@
     <h1 class="display-title">Paz e bem, {{ authFacade.user()?.name?.split(' ')?.[0] ?? 'amigo' }}!</h1>
     <p>Acompanhe as escalas e pendências dos ministérios ao longo do mês.</p>
   </div>
-  <a class="button button--primary" routerLink="/escalas/nova"><span aria-hidden="true">＋</span> Nova escala</a>
+  @if (authFacade.canManage()) {
+    <a class="button button--primary" routerLink="/escalas/nova"><span aria-hidden="true">＋</span> Nova escala</a>
+  }
 </header>
 
 @if (facade.loading()) {
@@ -119,17 +121,19 @@
       <section class="card empty-state">
         <span aria-hidden="true">♪</span>
         <h2>Nenhuma escala nesta data</h2>
-        <p>Selecione outro dia ou crie uma nova escala.</p>
+        <p>{{ authFacade.canManage() ? 'Selecione outro dia ou crie uma nova escala.' : 'Selecione outro dia para consultar as próximas escalas.' }}</p>
       </section>
     }
   </section>
 
   <div class="section-heading news-heading">
     <div><h2>Notícias da pastoral</h2><p>Comunicados para todos os ministérios</p></div>
-    <button class="button button--secondary" type="button" (click)="createNews()">＋ Nova notícia</button>
+    @if (authFacade.canManage()) {
+      <button class="button button--secondary" type="button" (click)="createNews()">＋ Nova notícia</button>
+    }
   </div>
 
-  @if (newsEditorOpen()) {
+  @if (authFacade.canManage() && newsEditorOpen()) {
     <section class="card news-editor" aria-label="Editor de notícia">
       <div><h3>{{ editingNewsId() ? 'Editar notícia' : 'Nova notícia' }}</h3><button type="button" aria-label="Fechar editor" (click)="newsEditorOpen.set(false)">×</button></div>
       <label><span>Título</span><input [value]="newsTitle()" (input)="updateTitle($event)" /></label>
@@ -140,7 +144,7 @@
 
   <section class="news-grid" aria-label="Feed de notícias">
     @for (item of facade.news(); track item.id) {
-      <article class="card news-card"><div class="news-card__meta"><span>{{ item.publishedAt | date: 'dd MMM, HH:mm' : 'UTC' : 'pt-BR' }}</span><span>por {{ item.author }}</span></div><h3>{{ item.title }}</h3><p>{{ item.body }}</p><footer><button type="button" (click)="editNews(item.id, item.title, item.body)">Editar</button><button class="news-delete" type="button" (click)="facade.deleteNews(item.id)">Excluir</button></footer></article>
-    } @empty { <section class="card empty-state"><h2>Nenhuma notícia publicada</h2><p>Use “Nova notícia” para criar o primeiro comunicado.</p></section> }
+      <article class="card news-card"><div class="news-card__meta"><span>{{ item.publishedAt | date: 'dd MMM, HH:mm' : 'UTC' : 'pt-BR' }}</span><span>por {{ item.author }}</span></div><h3>{{ item.title }}</h3><p>{{ item.body }}</p>@if (authFacade.canManage()) {<footer><button type="button" (click)="editNews(item.id, item.title, item.body)">Editar</button><button class="news-delete" type="button" (click)="facade.deleteNews(item.id)">Excluir</button></footer>}</article>
+    } @empty { <section class="card empty-state"><h2>Nenhuma notícia publicada</h2><p>{{ authFacade.canManage() ? 'Use “Nova notícia” para criar o primeiro comunicado.' : 'Os novos comunicados da pastoral aparecerão aqui.' }}</p></section> }
   </section>
 }

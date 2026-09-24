@@ -1,6 +1,8 @@
 <header class="page-header">
   <div><p class="eyebrow">Biblioteca litúrgica</p><h1 class="display-title">Repertório</h1><p>Letras, cifras, tons e momentos litúrgicos em um só lugar.</p></div>
-  <a class="button button--primary" routerLink="/repertorio/nova">＋ Nova música</a>
+  @if (authFacade.canManage()) {
+    <a class="button button--primary" routerLink="/repertorio/nova">＋ Nova música</a>
+  }
 </header>
 <section class="toolbar card" aria-label="Filtros do repertório">
   <label class="search"><span class="sr-only">Buscar músicas</span><span aria-hidden="true">⌕</span><input type="search" placeholder="Buscar por título, autor ou momento litúrgico" [value]="facade.query()" (input)="search($event)" /></label>

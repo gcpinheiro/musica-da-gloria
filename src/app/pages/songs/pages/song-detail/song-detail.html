@@ -2,16 +2,25 @@
 @if (facade.loading()) { <section class="card state">Carregando música…</section> }
 @else if (facade.error()) { <section class="card state" role="alert">{{ facade.error() }}</section> }
 @else if (facade.selected(); as song) {
-  <header class="song-header card"><div class="key">{{ song.defaultKey }}</div><div><p>{{ song.liturgicalMoments.join(' · ') }}</p><h1 class="display-title">{{ song.title }}</h1><small>{{ song.author }}</small></div><a class="button button--secondary" [routerLink]="['/repertorio',song.id,'editar']">Editar música</a></header>
+  <header class="song-header card"><div class="key">{{ currentKey() }}</div><div><p>{{ song.liturgicalMoments.join(' · ') }}</p><h1 class="display-title">{{ song.title }}</h1><small>{{ song.author }} · Tom original {{ song.defaultKey }}</small></div>@if (authFacade.canManage()) {<a class="button button--secondary" [routerLink]="['/repertorio',song.id,'editar']">Editar música</a>}</header>
 
   <section class="song-reader card" [class.song-reader--expanded]="expanded()" [attr.role]="expanded() ? 'dialog' : null" [attr.aria-modal]="expanded() ? 'true' : null" aria-label="Cifra e letra da música">
     <header class="reader-toolbar">
-      <div><h2>{{ activeTab() === 'chords' ? 'Letra com cifra' : 'Letra' }}</h2><span>{{ activeTab() === 'chords' ? 'Tom ' + song.defaultKey : 'Modo de leitura' }}</span></div>
+      <div><h2>{{ activeTab() === 'chords' ? 'Letra com cifra' : 'Letra' }}</h2><span>{{ activeTab() === 'chords' ? 'Tom ' + currentKey() : 'Modo de leitura' }}</span></div>
       <div class="reader-tabs" role="tablist" aria-label="Formato da música">
         <button type="button" role="tab" [attr.aria-selected]="activeTab() === 'lyrics'" [class.reader-tab--active]="activeTab() === 'lyrics'" (click)="selectTab('lyrics')">Letra</button>
         <button type="button" role="tab" [attr.aria-selected]="activeTab() === 'chords'" [class.reader-tab--active]="activeTab() === 'chords'" (click)="selectTab('chords')">Letra com cifra</button>
       </div>
       <div class="reader-actions">
+        @if (activeTab() === 'chords') {
+          <div class="key-controls" role="group" aria-label="Alterar tom da cifra">
+            <span>Tom</span>
+            <button type="button" (click)="transpose(-1)" [disabled]="semitoneOffset() === -11" aria-label="Descer meio tom">−</button>
+            <strong aria-live="polite">{{ currentKey() }}</strong>
+            <button type="button" (click)="transpose(1)" [disabled]="semitoneOffset() === 11" aria-label="Subir meio tom">＋</button>
+            <button type="button" class="key-controls__reset" (click)="resetKey()" [disabled]="semitoneOffset() === 0">Original</button>
+          </div>
+        }
         <div class="font-controls" role="group" aria-label="Tamanho da letra">
           <span>Tamanho</span>
           <button type="button" (click)="adjustFontSize(-2)" [disabled]="fontSize() === 14" aria-label="Diminuir tamanho da letra">A−</button>
@@ -31,6 +40,6 @@
         }
       </div>
     </div>
-    <p class="scroll-status sr-only" aria-live="polite">Tamanho da letra: {{ fontSize() }} pixels. {{ autoScrolling() ? 'Rolagem automática ativada' : 'Rolagem automática pausada' }}</p>
+    <p class="scroll-status sr-only" aria-live="polite">Tom atual: {{ currentKey() }}. Tamanho da letra: {{ fontSize() }} pixels. {{ autoScrolling() ? 'Rolagem automática ativada' : 'Rolagem automática pausada' }}</p>
   </section>
 }
