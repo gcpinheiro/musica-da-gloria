@@ -7,7 +7,12 @@
 
 <section class="filter-bar card">
   <div><strong>Próximas celebrações</strong><small>{{ facade.filtered().length }} escalas encontradas</small></div>
-  <label><span class="sr-only">Filtrar por situação</span><select [value]="facade.status()" (change)="filter($event)"><option value="ALL">Todos os status</option><option value="PUBLISHED">Publicadas</option><option value="DRAFT">Rascunhos</option><option value="ATTENTION">Com atenção</option></select></label>
+  <div class="filter-controls">
+    @if (authFacade.isMember()) {
+      <label><span>Participação</span><select [value]="facade.assignmentFilter()" (change)="filterAssignment($event)"><option value="MINE">Somente minhas escalas</option><option value="ALL">Todas as escalas</option></select></label>
+    }
+    <label><span>Situação</span><select [value]="facade.status()" (change)="filter($event)"><option value="ALL">Todos os status</option><option value="PUBLISHED">Publicadas</option><option value="DRAFT">Rascunhos</option><option value="ATTENTION">Com atenção</option></select></label>
+  </div>
 </section>
 
 @if (facade.loading()) {
@@ -26,7 +31,7 @@
         <a class="open" [routerLink]="[schedule.id]" [attr.aria-label]="'Abrir ' + schedule.title">→</a>
       </article>
     } @empty {
-      <div class="state"><h2>Nenhuma escala neste filtro</h2><p>{{ authFacade.canManage() ? 'Selecione outro status ou crie uma nova escala.' : 'Selecione outro status para consultar suas escalas.' }}</p></div>
+      <div class="state"><h2>Nenhuma escala neste filtro</h2><p>{{ authFacade.canManage() ? 'Selecione outro status ou crie uma nova escala.' : facade.assignmentFilter() === 'MINE' ? 'Você ainda não está alocado em uma escala com estes filtros.' : 'Selecione outros filtros para consultar as escalas.' }}</p></div>
     }
   </section>
 }

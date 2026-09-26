@@ -21,5 +21,6 @@ describe('AuthService', () => {
 
     expect(user.name).toBe('Rafael Lima');
     expect(user.role).toBe('MEMBER');
+    expect(user.memberId).toBe('mem-002');
   });
 });

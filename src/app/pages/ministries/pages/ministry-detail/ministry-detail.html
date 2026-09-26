@@ -1,0 +1,21 @@
+<a class="back-link" routerLink="/ministerios">← Voltar para ministérios</a>
+@if (facade.loading()) { <section class="card state">Carregando ministério…</section> }
+@else if (facade.error() && !facade.selected()) { <section class="card state" role="alert">{{ facade.error() }}</section> }
+@else if (facade.selected(); as ministry) {
+  <header class="ministry-header card"><span class="ministry-icon" aria-hidden="true">♫</span><div><p>Formação habitual</p><h1 class="display-title">{{ ministry.name }}</h1><small>{{ facade.weekdayLabel(ministry.weekday) }} às {{ ministry.time }} · {{ ministry.location }}</small></div><span class="status">{{ ministry.active ? 'Ativo' : 'Arquivado' }}</span></header>
+  @if (facade.generationMessage()) { <p class="success-message" role="status">✓ {{ facade.generationMessage() }}</p> }
+  @if (facade.error()) { <p class="error-message" role="alert">{{ facade.error() }}</p> }
+  <div class="detail-grid">
+    <section class="card panel"><div class="panel__header"><div><h2>Participantes habituais</h2><p>{{ ministry.participants.length }} pessoas nesta formação</p></div><a [routerLink]="['editar']">Editar formação</a></div><div class="people-list">
+      @for (person of ministry.participants; track person.id) { <article><span class="avatar">{{ person.initials }}</span><div><strong>{{ person.name }}</strong><small>{{ person.role }}</small></div></article> }
+    </div></section>
+    <aside class="card generation"><span class="generation__icon" aria-hidden="true">▦</span><h2>Gerar pré-set de escalas</h2><p>Crie automaticamente uma escala em cada {{ facade.weekdayLabel(ministry.weekday).toLowerCase() }}, às {{ ministry.time }}, copiando esta formação.</p>
+      @if (ministry.generatedThrough) { <small>Gerado anteriormente até {{ ministry.generatedThrough | date: 'dd/MM/yyyy' : 'UTC' }}</small> }
+      @if (generationOpen()) { <label><span>Gerar até</span><input type="date" [min]="minDate" [value]="endDate()" (input)="updateEndDate($event)" /></label><div class="generation__actions"><button class="button button--secondary" type="button" (click)="generationOpen.set(false)">Cancelar</button><button class="button button--primary" type="button" [disabled]="!endDate() || endDate() < minDate || facade.saving()" (click)="facade.generateUntil(endDate())">{{ facade.saving() ? 'Gerando…' : 'Gerar escalas' }}</button></div> }
+      @else { <button class="button button--primary" type="button" [disabled]="!ministry.active" (click)="generationOpen.set(true)">Gerar escalas até uma data</button> }
+    </aside>
+  </div>
+  <section class="card management"><div><h2>Gerenciamento</h2><p>Editar o ministério não modifica escalas já geradas.</p></div><div><a class="button button--secondary" [routerLink]="['editar']">Editar ministério</a>@if (ministry.active && !archiveConfirmationOpen()) { <button class="button danger-button" type="button" (click)="archiveConfirmationOpen.set(true)">Arquivar</button> }</div>
+    @if (archiveConfirmationOpen()) { <div class="archive-confirmation"><p>Arquivar este ministério? O histórico das escalas será preservado.</p><button type="button" (click)="archiveConfirmationOpen.set(false)">Cancelar</button><button type="button" (click)="facade.archive(ministry.id)">Confirmar arquivamento</button></div> }
+  </section>
+}

@@ -1,24 +1,27 @@
-.back-link { display:inline-flex; margin-bottom:1rem; color:var(--color-sky); font-size:.75rem; font-weight:700; }
 .song-header { display:flex; align-items:center; gap:1rem; padding:1.2rem; }
 .song-header>div:nth-child(2) { flex:1; }
 .song-header p,.song-header small { margin:0; color:var(--color-muted); font-size:.7rem; }
 .song-header h1 { margin:.2rem 0; }
-.key { display:grid; width:64px; height:64px; place-items:center; border-radius:14px; background:var(--color-gold-soft); color:#715a29; font-size:1.2rem; font-weight:600; }
+.key { display:flex; width:68px; height:68px; flex:0 0 auto; align-items:center; flex-direction:column; justify-content:center; border:1px solid #d9bd78; border-radius:15px; background:linear-gradient(145deg,var(--color-navy-900),#28598a); color:white; box-shadow:0 7px 18px rgb(23 60 103 / 20%); font-size:1.25rem; font-weight:600; }
+.key::before { margin-bottom:.1rem;color:#ead7a4;content:'Tom';font-size:.52rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase; }
 .song-reader { overflow:hidden; margin-top:1rem; }
 .reader-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; border-bottom:1px solid var(--color-line); padding:.8rem 1rem; }
 .reader-toolbar h2 { margin:0; font-size:1rem; font-weight:600; }
-.reader-toolbar>div:first-child span { color:var(--color-muted); font-size:.65rem; }
+.reader-heading { min-width:140px; border-left:3px solid var(--color-gold); padding:.3rem 0 .3rem .7rem; }
+.reader-heading>span { display:flex; align-items:center; gap:.3rem; margin-top:.15rem; color:var(--color-muted); font-size:.68rem; }
+.key-trigger { min-width:34px;border:1px solid rgb(75 131 182 / 35%);border-radius:6px; background:white; padding:.25rem .5rem; color:var(--color-navy-900); cursor:pointer; font-size:.82rem; font-weight:600; }
+.key-trigger:hover { box-shadow:0 0 0 2px rgb(75 131 182 / 25%); }
 .reader-tabs { display:flex; align-items:center; border:1px solid var(--color-line); border-radius:9px; background:var(--color-surface-warm); padding:3px; }
 .reader-tabs button { min-height:30px; border-radius:6px; background:transparent; padding:0 .7rem; color:var(--color-muted); cursor:pointer; font-size:.67rem; font-weight:600; }
 .reader-tabs .reader-tab--active { background:white; color:var(--color-navy-900); box-shadow:var(--shadow-sm); }
 .reader-actions { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:.5rem; }
 .key-controls { display:flex; align-items:center; overflow:hidden; border:1px solid #3b5368; border-radius:8px; background:#101820; }
 .key-controls>span { padding:0 .5rem; color:#aeb8c2; font-size:.62rem; }
-.key-controls strong { display:grid; min-width:38px; min-height:34px; place-items:center; border-left:1px solid #3b5368; color:#79c5ff; font-size:.78rem; font-weight:600; }
 .key-controls button { min-width:34px; min-height:34px; border-left:1px solid #3b5368; background:#101820; color:#f7f9fb; cursor:pointer; font-size:.8rem; font-weight:600; }
 .key-controls button:hover:not(:disabled) { background:#1c3040; }
 .key-controls button:disabled { cursor:not-allowed; opacity:.4; }
 .key-controls .key-controls__reset { padding:0 .55rem; color:#b8c2ca; font-size:.64rem; }
+.key-controls .key-controls__current { min-width:42px; color:#79c5ff; }
 .font-controls { display:flex; align-items:center; overflow:hidden; border:1px solid var(--color-line); border-radius:8px; background:white; }
 .font-controls>span { padding:0 .5rem; color:var(--color-muted); font-size:.62rem; }
 .font-controls button { min-width:34px; min-height:34px; border-left:1px solid var(--color-line); background:white; color:var(--color-navy-900); cursor:pointer; font-size:.68rem; font-weight:700; }
@@ -39,6 +42,21 @@
 .song-reader--expanded .reader-toolbar { min-height:68px; }
 .song-reader--expanded .sheet { height:calc(100vh - 68px); max-height:none; }
 .state { padding:3rem; text-align:center; }
+.key-modal-backdrop { position:fixed; z-index:1200; inset:0; display:grid; place-items:center; background:rgb(9 20 31 / 72%); padding:1rem; }
+.key-modal { width:min(100%,440px); border-radius:16px; background:white; box-shadow:0 24px 70px rgb(0 0 0 / 35%); padding:1.25rem; }
+.key-modal header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
+.key-modal header p { margin:0 0 .2rem;color:var(--color-sky);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase; }
+.key-modal h2 { margin:0;font-size:1.25rem;font-weight:600; }
+.key-modal header>button { display:grid;width:36px;height:36px;place-items:center;border-radius:8px;background:var(--color-surface-warm);color:var(--color-ink);cursor:pointer;font-size:1.15rem; }
+.key-modal__help { margin:1rem 0;color:var(--color-muted);font-size:.75rem; }
+.key-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem; }
+.key-grid button { display:grid;min-height:58px;place-items:center;border:1px solid var(--color-line);border-radius:10px;background:white;color:var(--color-navy-900);cursor:pointer; }
+.key-grid button:hover { border-color:var(--color-sky);background:var(--color-sky-soft); }
+.key-grid button span { font-size:.95rem;font-weight:600; }
+.key-grid button small { color:var(--color-muted);font-size:.58rem; }
+.key-grid .key-option--selected { border-color:var(--color-sky);background:var(--color-navy-900);color:white;box-shadow:0 0 0 3px rgb(75 131 182 / 18%); }
+.key-grid .key-option--selected small { color:rgb(255 255 255 / 68%); }
 @media(max-width:900px){.reader-toolbar{align-items:flex-start;flex-wrap:wrap}.reader-actions{width:100%;justify-content:flex-start}}
 @media(max-width:760px){.song-header{align-items:flex-start;flex-wrap:wrap}.song-header .button{width:100%}.reader-toolbar{flex-direction:column}.reader-tabs{width:100%}.reader-tabs button{flex:1}.key-controls,.font-controls{width:100%}.key-controls>span,.font-controls>span{margin-right:auto}.speed{width:100%}.speed input{flex:1}.sheet{max-height:65vh;padding:1rem}.sheet__content{overflow:visible}.song-reader--expanded .sheet{height:calc(100vh - 270px)}}
+@media(max-width:460px){.key-grid{grid-template-columns:repeat(3,1fr)}}
 @media(prefers-reduced-motion:reduce){.reader-button{transition:none}}

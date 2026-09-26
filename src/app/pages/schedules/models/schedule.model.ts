@@ -44,3 +44,8 @@ export interface ScheduleInput {
   readonly people: readonly ScheduledPerson[];
   readonly songs: readonly ScheduledSong[];
 }
+
+export interface GeneratedScheduleInput extends ScheduleInput {
+  readonly id: string;
+  readonly sourceMinistryId: string;
+}

@@ -1,9 +1,12 @@
 .eyebrow { margin-bottom: .35rem !important; color: var(--color-sky) !important; font-size: .72rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
 .filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; padding: .85rem 1rem; }
-.filter-bar div { display: grid; }
+.filter-bar>div:first-child { display: grid; }
 .filter-bar strong { font-size: .85rem; }
 .filter-bar small { color: var(--color-muted); font-size: .7rem; }
 .filter-bar select { min-height: 40px; border: 1px solid var(--color-line); border-radius: 8px; background: white; padding: 0 .7rem; }
+.filter-controls { display:flex;align-items:flex-end;gap:.65rem; }
+.filter-controls label { display:grid;gap:.25rem; }
+.filter-controls label>span { color:var(--color-muted);font-size:.62rem;font-weight:600; }
 .schedule-table { overflow: hidden; }
 .schedule-row { display: grid; grid-template-columns: 60px minmax(180px, 1.4fr) minmax(150px, 1fr) minmax(130px, .8fr) auto 38px; align-items: center; gap: 1rem; min-height: 88px; padding: .8rem 1rem; border-bottom: 1px solid var(--color-line); }
 .schedule-row:last-child { border-bottom: 0; }
@@ -23,4 +26,4 @@
 .open:hover { background: var(--color-sky-soft); }
 .state { display: grid; justify-items: center; gap: .6rem; padding: 3rem; color: var(--color-muted); text-align: center; }
 @media (max-width: 850px) { .schedule-row { grid-template-columns: 50px 1fr auto; } .time, .counts { display: none; } .status { justify-self: end; } .open { grid-column: 3; } }
-@media (max-width: 560px) { .filter-bar { align-items: stretch; flex-direction: column; } .filter-bar select { width: 100%; } .schedule-row { grid-template-columns: 45px 1fr 32px; gap: .6rem; } .status { grid-column: 2; justify-self: start; } .open { grid-column: 3; grid-row: 1 / 3; } }
+@media (max-width: 560px) { .filter-bar { align-items: stretch; flex-direction: column; } .filter-controls{align-items:stretch;flex-direction:column}.filter-bar select { width: 100%; } .schedule-row { grid-template-columns: 45px 1fr 32px; gap: .6rem; } .status { grid-column: 2; justify-self: start; } .open { grid-column: 3; grid-row: 1 / 3; } }

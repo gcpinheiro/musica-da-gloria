@@ -14,6 +14,7 @@ const DEMO_USERS: readonly AuthUser[] = [{
   email: 'membro@musicadagloria.org.br',
   role: 'MEMBER',
   initials: 'RL',
+  memberId: 'mem-002',
 }];
 
 @Injectable({ providedIn: 'root' })

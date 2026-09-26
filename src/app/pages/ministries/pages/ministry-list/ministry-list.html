@@ -1,0 +1,24 @@
+<header class="page-header">
+  <div><p class="eyebrow">Formações habituais</p><h1 class="display-title">Ministérios</h1><p>Organize participantes e horários recorrentes de cada ministério.</p></div>
+  <a class="button button--primary" routerLink="novo">＋ Novo ministério</a>
+</header>
+
+@if (facade.loading()) { <section class="card state">Carregando ministérios…</section> }
+@else if (facade.error()) { <section class="card state" role="alert">{{ facade.error() }} <button class="button button--secondary" type="button" (click)="facade.load()">Tentar novamente</button></section> }
+@else {
+  <section class="ministry-summary card"><span><strong>{{ facade.activeCount() }}</strong> ministérios ativos</span><small>A formação habitual é copiada ao gerar cada escala.</small></section>
+  <section class="ministry-grid" aria-label="Lista de ministérios">
+    @for (ministry of facade.ministries(); track ministry.id) {
+      <article class="card ministry-card" [class.ministry-card--inactive]="!ministry.active">
+        <div class="ministry-card__top"><span class="ministry-icon" aria-hidden="true">♫</span><span class="status">{{ ministry.active ? 'Ativo' : 'Arquivado' }}</span></div>
+        <h2>{{ ministry.name }}</h2><p>{{ ministry.celebrationTitle }} · {{ ministry.location }}</p>
+        <div class="recurrence"><small>Disponibilidade recorrente</small><strong>{{ facade.weekdayLabel(ministry.weekday) }} às {{ ministry.time }}</strong></div>
+        <div class="participants"><span>{{ ministry.participants.length }} participantes</span><div>
+          @for (person of ministry.participants.slice(0, 4); track person.id) { <span class="avatar" [title]="person.name">{{ person.initials }}</span> }
+          @if (ministry.participants.length > 4) { <span class="avatar">+{{ ministry.participants.length - 4 }}</span> }
+        </div></div>
+        <a class="open-link" [routerLink]="[ministry.id]">Ver formação e gerar escalas →</a>
+      </article>
+    } @empty { <section class="card state"><h2>Nenhum ministério cadastrado</h2><p>Crie a primeira formação habitual para começar.</p><a class="button button--primary" routerLink="novo">Criar ministério</a></section> }
+  </section>
+}

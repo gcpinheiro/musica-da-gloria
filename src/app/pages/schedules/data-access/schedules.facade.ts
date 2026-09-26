@@ -3,29 +3,39 @@ import { Router } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 import { Schedule, ScheduleInput, ScheduledPerson, ScheduleSongOption, ScheduleStatus, ScheduleMemberOption } from '../models/schedule.model';
 import { SchedulesService } from './schedules.service';
+import { MinistriesService } from '../../ministries/data-access/ministries.service';
+import { Ministry } from '../../ministries/models/ministry.model';
+import { filterSchedules, ScheduleAssignmentFilter } from '../utils/schedule-filters';
+export type { ScheduleAssignmentFilter } from '../utils/schedule-filters';
 
 @Injectable({ providedIn: 'root' })
 export class SchedulesFacade {
   private readonly service = inject(SchedulesService);
+  private readonly ministriesService = inject(MinistriesService);
   private readonly router = inject(Router);
   private readonly schedulesState = signal<readonly Schedule[]>([]);
   private readonly selectedState = signal<Schedule | null>(null);
   private readonly memberOptionsState = signal<readonly ScheduleMemberOption[]>([]);
   private readonly songOptionsState = signal<readonly ScheduleSongOption[]>([]);
+  private readonly ministryOptionsState = signal<readonly Ministry[]>([]);
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly errorState = signal<string | null>(null);
   private readonly statusState = signal<ScheduleStatus | 'ALL'>('ALL');
+  private readonly assignmentFilterState = signal<ScheduleAssignmentFilter>('ALL');
+  private readonly currentMemberIdState = signal<string | null>(null);
 
   readonly schedules = this.schedulesState.asReadonly();
   readonly selected = this.selectedState.asReadonly();
   readonly memberOptions = this.memberOptionsState.asReadonly();
   readonly songOptions = this.songOptionsState.asReadonly();
+  readonly ministryOptions = this.ministryOptionsState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly saving = this.savingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly status = this.statusState.asReadonly();
-  readonly filtered = computed(() => this.schedulesState().filter((item) => this.statusState() === 'ALL' || item.status === this.statusState()));
+  readonly assignmentFilter = this.assignmentFilterState.asReadonly();
+  readonly filtered = computed(() => filterSchedules(this.schedulesState(), this.statusState(), this.assignmentFilterState(), this.currentMemberIdState()));
 
   load(): void {
     this.loadingState.set(true);
@@ -42,8 +52,11 @@ export class SchedulesFacade {
   loadOptions(): void {
     this.service.listMemberOptions().subscribe((items) => this.memberOptionsState.set(items));
     this.service.listSongOptions().subscribe((items) => this.songOptionsState.set(items));
+    this.ministriesService.list().subscribe((items) => this.ministryOptionsState.set(items.filter((item) => item.active)));
   }
   setStatus(status: ScheduleStatus | 'ALL'): void { this.statusState.set(status); }
+  configureMemberFilter(memberId: string): void { this.currentMemberIdState.set(memberId); this.assignmentFilterState.set('MINE'); }
+  setAssignmentFilter(filter: ScheduleAssignmentFilter): void { this.assignmentFilterState.set(filter); }
   create(input: ScheduleInput): void {
     this.savingState.set(true);
     this.errorState.set(null);

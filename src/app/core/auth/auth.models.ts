@@ -6,6 +6,7 @@ export interface AuthUser {
   readonly email: string;
   readonly role: UserRole;
   readonly initials: string;
+  readonly memberId?: string;
 }
 
 export interface LoginCredentials {

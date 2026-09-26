@@ -1,0 +1,18 @@
+<header class="page-header"><div><a class="back-link" routerLink="/ministerios">← Voltar para ministérios</a><h1 class="display-title">{{ id ? 'Editar ministério' : 'Novo ministério' }}</h1><p>Defina a formação habitual e o horário recorrente.</p></div></header>
+@if (facade.loading()) { <section class="card state">Carregando ministério…</section> }
+@else {
+<form class="ministry-form" [formGroup]="form" (ngSubmit)="submit()">
+  <section class="card form-section"><div class="section-title"><span>1</span><div><h2>Identificação e recorrência</h2><p>Estes dados formarão o pré-set das escalas.</p></div></div><div class="form-grid">
+    <div class="field field--wide"><label for="name">Nome do ministério</label><input id="name" formControlName="name" placeholder="Ex.: Ministério São José" /></div>
+    <div class="field"><label for="weekday">Dia da semana</label><select id="weekday" formControlName="weekday">@for (day of weekdays; track day.value) { <option [value]="day.value">{{ day.label }}</option> }</select></div>
+    <div class="field"><label for="time">Horário</label><input id="time" type="time" formControlName="time" /></div>
+    <div class="field"><label for="celebrationTitle">Celebração habitual</label><input id="celebrationTitle" formControlName="celebrationTitle" /></div>
+    <div class="field"><label for="location">Local</label><select id="location" formControlName="location"><option>Igreja Matriz</option><option>Capela do Santíssimo</option><option>Centro Pastoral</option></select></div>
+  </div></section>
+  <section class="card form-section"><div class="section-title"><span>2</span><div><h2>Participantes habituais</h2><p>A formação será copiada para cada escala gerada.</p></div></div><div class="member-grid">
+    @for (member of facade.memberOptions(); track member.id) { <label class="member-option"><input type="checkbox" [checked]="selectedMembers().includes(member.id)" (change)="toggleMember(member.id)" /><span class="avatar">{{ member.initials }}</span><span><strong>{{ member.name }}</strong><small>{{ member.role }}</small></span></label> }
+    @if (!selectedMembers().length && form.touched) { <p class="selection-error">Selecione ao menos um participante.</p> }
+  </div></section>
+  @if (facade.error()) { <p class="form-error" role="alert">{{ facade.error() }}</p> }
+  <footer><a class="button button--secondary" routerLink="/ministerios">Cancelar</a><button class="button button--primary" type="submit" [disabled]="facade.saving()">{{ facade.saving() ? 'Salvando…' : 'Salvar ministério' }}</button></footer>
+</form>}

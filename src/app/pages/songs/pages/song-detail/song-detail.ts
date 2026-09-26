@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { interval, Subscription } from 'rxjs';
+import { distinctUntilChanged, interval, map, Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SongsFacade } from '../../data-access/songs.facade';
 import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { isChordLine, transposeChordLine, transposeKey } from '../../utils/song-transposition';
@@ -8,10 +9,13 @@ import { isChordLine, transposeChordLine, transposeKey } from '../../utils/song-
 interface SheetLine { readonly text: string; readonly type: 'section' | 'chord' | 'lyric' | 'blank'; }
 type ReaderTab = 'lyrics' | 'chords';
 
-@Component({ selector: 'app-song-detail', imports: [RouterLink], templateUrl: './song-detail.html', styleUrl: './song-detail.scss', changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-song-detail', imports: [RouterLink], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './song-navigation.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class SongDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly scrollContainer = viewChild<ElementRef<HTMLElement>>('scrollContainer');
+  private readonly keyTrigger = viewChild<ElementRef<HTMLButtonElement>>('keyTrigger');
+  private readonly keyModalClose = viewChild<ElementRef<HTMLButtonElement>>('keyModalClose');
   private scrollSubscription?: Subscription;
   private readonly scrollPositions: Record<ReaderTab, number> = { lyrics: 0, chords: 0 };
   protected readonly facade = inject(SongsFacade);
@@ -22,7 +26,9 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly scrollSpeed = signal(4);
   protected readonly fontSize = signal(18);
   protected readonly semitoneOffset = signal(0);
+  protected readonly keyModalOpen = signal(false);
   protected readonly currentKey = computed(() => transposeKey(this.facade.selected()?.defaultKey ?? '', this.semitoneOffset()));
+  protected readonly availableKeys = computed(() => Array.from({ length: 12 }, (_, offset) => ({ offset, label: transposeKey(this.facade.selected()?.defaultKey ?? '', offset) })));
   protected readonly sheetLines = computed<readonly SheetLine[]>(() => {
     const song = this.facade.selected();
     const chordsActive = this.activeTab() === 'chords';
@@ -33,8 +39,22 @@ export class SongDetail implements OnInit, OnDestroy {
     });
   });
 
-  ngOnInit(): void { this.facade.loadOne(this.route.snapshot.paramMap.get('id') ?? ''); }
+  ngOnInit(): void {
+    this.route.paramMap.pipe(
+      map((params) => ({ songId: params.get('id') ?? '', scheduleId: params.get('scheduleId') ?? undefined })),
+      distinctUntilChanged((previous, current) => previous.songId === current.songId && previous.scheduleId === current.scheduleId),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(({ songId, scheduleId }) => {
+      this.stopAutoScroll();
+      this.semitoneOffset.set(0);
+      this.restartScroll();
+      this.facade.loadOne(songId, scheduleId);
+    });
+  }
   ngOnDestroy(): void { this.stopAutoScroll(); }
+
+  @HostListener('document:keydown.escape')
+  protected closeKeyModalWithKeyboard(): void { if (this.keyModalOpen()) this.closeKeyModal(); }
 
   protected toggleExpanded(): void { this.expanded.update((value) => !value); }
   protected selectTab(tab: ReaderTab): void {
@@ -48,6 +68,13 @@ export class SongDetail implements OnInit, OnDestroy {
   protected resetFontSize(): void { this.fontSize.set(18); }
   protected transpose(change: number): void { this.semitoneOffset.update((offset) => Math.min(11, Math.max(-11, offset + change))); }
   protected resetKey(): void { this.semitoneOffset.set(0); }
+  protected openKeyModal(): void { this.keyModalOpen.set(true); queueMicrotask(() => this.keyModalClose()?.nativeElement.focus()); }
+  protected closeKeyModal(): void { this.keyModalOpen.set(false); queueMicrotask(() => this.keyTrigger()?.nativeElement.focus()); }
+  protected selectKey(offset: number): void { this.semitoneOffset.set(offset); this.closeKeyModal(); }
+  protected songRoute(songId: string): readonly string[] {
+    const scheduleId = this.facade.contextSchedule()?.id;
+    return scheduleId ? ['/escalas', scheduleId, 'repertorio', songId] : ['/repertorio', 'musicas', songId];
+  }
   protected toggleAutoScroll(): void {
     if (this.autoScrolling()) { this.stopAutoScroll(); return; }
     this.autoScrolling.set(true);

@@ -30,14 +30,14 @@
       </div>
     </section>
     <section class="card panel">
-      <div class="panel__header"><div><h2>Repertório</h2><p>{{ schedule.songs.length }} músicas definidas.</p></div>@if (authFacade.canManage()) {<button type="button" (click)="songPickerOpen.set(!songPickerOpen())">＋ Música</button>}</div>
+      <div class="panel__header"><div><h2>Repertório</h2><p>{{ schedule.songs.length }} músicas definidas.</p></div><div class="panel__actions">@if (schedule.songs.length) {<a [routerLink]="['/escalas', schedule.id, 'repertorio', schedule.songs[0].songId]">Abrir repertório</a>}@if (authFacade.canManage()) {<button type="button" (click)="songPickerOpen.set(!songPickerOpen())">＋ Música</button>}</div></div>
       @if (authFacade.canManage() && songPickerOpen()) {
         <div class="picker" aria-label="Adicionar música"><strong>Biblioteca de repertório</strong>
           @for (song of facade.songOptions(); track song.songId) { <button type="button" [disabled]="hasSong(song.songId)" (click)="addSong(song)"><span class="song-key">{{ song.key }}</span><span><b>{{ song.title }}</b><small>{{ song.liturgicalMoment }}</small></span><span>Adicionar</span></button> }
         </div>
       }
       <ol class="song-list">
-        @for (song of schedule.songs; track song.id; let order = $index) { <li><span>{{ order + 1 }}</span><div><strong>{{ song.title }}</strong><small>{{ song.liturgicalMoment }} · Tom {{ song.key }}</small></div><a [routerLink]="['/repertorio', song.songId]">Ver cifra</a>@if (authFacade.canManage()) {<button class="remove-action" type="button" (click)="facade.removeSong(song.id)" aria-label="Remover {{ song.title }}">Remover</button>}</li> }
+        @for (song of schedule.songs; track song.id; let order = $index) { <li><span>{{ order + 1 }}</span><div><strong>{{ song.title }}</strong><small>{{ song.liturgicalMoment }} · Tom {{ song.key }}</small></div><a [routerLink]="['/escalas', schedule.id, 'repertorio', song.songId]">Ver cifra</a>@if (authFacade.canManage()) {<button class="remove-action" type="button" (click)="facade.removeSong(song.id)" aria-label="Remover {{ song.title }}">Remover</button>}</li> }
         @empty { <li class="empty">Nenhuma música definida.</li> }
       </ol>
     </section>

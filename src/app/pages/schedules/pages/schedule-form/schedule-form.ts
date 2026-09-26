@@ -14,6 +14,13 @@ export class ScheduleForm implements OnInit {
   ngOnInit(): void { this.facade.loadOptions(); }
   protected toggleMember(id: string): void { this.selectedMembers.update((ids) => ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]); }
   protected toggleSong(id: string): void { this.selectedSongs.update((ids) => ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]); }
+  protected applyMinistryPreset(event: Event): void {
+    const name = (event.target as HTMLSelectElement).value;
+    const ministry = this.facade.ministryOptions().find((item) => item.name === name);
+    if (!ministry) return;
+    this.form.patchValue({ time: ministry.time, location: ministry.location, title: ministry.celebrationTitle });
+    this.selectedMembers.set(ministry.participants.map((person) => person.id));
+  }
   protected submit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const people = this.facade.memberOptions().filter((item) => this.selectedMembers().includes(item.id));

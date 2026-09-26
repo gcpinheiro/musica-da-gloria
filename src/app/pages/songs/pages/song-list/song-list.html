@@ -13,7 +13,7 @@
 @else {
   <section class="song-grid">
     @for (song of facade.filtered(); track song.id) {
-      <article class="song-card card"><div class="song-card__key">{{ song.defaultKey }}</div><div><p>{{ song.liturgicalMoments.join(' · ') }}</p><h2>{{ song.title }}</h2><small>{{ song.author }}</small></div><a [routerLink]="['/repertorio', song.id]">Abrir letra e cifra →</a></article>
+      <article class="song-card card"><div class="song-card__key">{{ song.defaultKey }}</div><div><p>{{ song.liturgicalMoments.join(' · ') }}</p><h2>{{ song.title }}</h2><small>{{ song.author }}</small></div><a [routerLink]="['/repertorio/musicas', song.id]">Abrir letra e cifra →</a></article>
     } @empty { <section class="card state">Nenhuma música encontrada.</section> }
   </section>
 }
