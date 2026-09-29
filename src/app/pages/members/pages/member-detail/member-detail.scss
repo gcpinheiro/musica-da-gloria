@@ -15,4 +15,7 @@
 .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .chips span { border-radius: 100px; background: var(--color-gold-soft); color: #715a29; padding: 0.35rem 0.7rem; font-size: 0.75rem; font-weight: 700; }
 .detail-state { padding: 3rem; text-align: center; }
+.invitation-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .75rem; align-items: end; margin-top: 1rem; padding: 1.25rem; }
+.invitation-card > div, .invitation-card .copy-message { grid-column: 1 / -1; } .invitation-card h2, .invitation-card p { margin: 0; } .invitation-card input { min-width: 0; min-height: 2.75rem; padding: .65rem .8rem; }
 @media (max-width: 680px) { .profile-header { align-items: flex-start; flex-wrap: wrap; } .profile-header .button { width: 100%; } .detail-grid { grid-template-columns: 1fr; } }
+@media (max-width: 680px) { .invitation-card { grid-template-columns: 1fr; } }

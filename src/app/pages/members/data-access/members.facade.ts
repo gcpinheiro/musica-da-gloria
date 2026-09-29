@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { finalize } from 'rxjs';
-import { Member, MemberInput, MemberStatus } from '../models/member.model';
+import { finalize, forkJoin } from 'rxjs';
+import { Member, MemberInput, MemberInvitation, MemberStatus } from '../models/member.model';
 import { MembersService } from './members.service';
 
 @Injectable({ providedIn: 'root' })
@@ -10,6 +10,8 @@ export class MembersFacade {
   private readonly router = inject(Router);
   private readonly membersState = signal<readonly Member[]>([]);
   private readonly selectedState = signal<Member | null>(null);
+  private readonly invitationState = signal<MemberInvitation | null>(null);
+  private readonly invitationLinkState = signal<string | null>(null);
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly errorState = signal<string | null>(null);
@@ -19,6 +21,8 @@ export class MembersFacade {
 
   readonly members = this.membersState.asReadonly();
   readonly selectedMember = this.selectedState.asReadonly();
+  readonly invitation = this.invitationState.asReadonly();
+  readonly invitationLink = this.invitationLinkState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly saving = this.savingState.asReadonly();
   readonly error = this.errorState.asReadonly();
@@ -47,10 +51,12 @@ export class MembersFacade {
 
   loadOne(id: string): void {
     this.selectedState.set(null);
+    this.invitationState.set(null);
+    this.invitationLinkState.set(null);
     this.loadingState.set(true);
     this.errorState.set(null);
-    this.service.getById(id).pipe(finalize(() => this.loadingState.set(false))).subscribe({
-      next: (member) => this.selectedState.set(member),
+    forkJoin({ member: this.service.getById(id), invitations: this.service.listInvitations() }).pipe(finalize(() => this.loadingState.set(false))).subscribe({
+      next: ({ member, invitations }) => { this.selectedState.set(member); this.invitationState.set(invitations.find((invitation) => invitation.memberId === id) ?? null); },
       error: () => this.errorState.set('Membro não encontrado.'),
     });
   }
@@ -82,8 +88,16 @@ export class MembersFacade {
     const member = this.selectedState(); if (!member) return;
     this.savingState.set(true); this.errorState.set(null); this.messageState.set(null);
     this.service.invite(member).pipe(finalize(() => this.savingState.set(false))).subscribe({
-      next: () => this.messageState.set('Convite de acesso enviado para a fila de e-mails.'),
+      next: (invitation) => { this.invitationState.set(invitation); this.invitationLinkState.set(invitation.acceptanceUrl); this.messageState.set('Convite criado. Copie o link e envie ao membro por um canal privado.'); },
       error: () => this.errorState.set('Não foi possível convidar este membro. Ele pode já possuir uma conta ou convite pendente.'),
+    });
+  }
+  obtainInvitationLink(): void {
+    const invitation = this.invitation(); if (!invitation) return;
+    this.savingState.set(true); this.errorState.set(null); this.messageState.set(null); this.invitationLinkState.set(null);
+    this.service.obtainInvitationLink(invitation.id).pipe(finalize(() => this.savingState.set(false))).subscribe({
+      next: (updated) => { this.invitationState.set(updated); this.invitationLinkState.set(updated.acceptanceUrl); this.messageState.set('Novo link gerado. O link anterior foi invalidado.'); },
+      error: () => this.errorState.set('Não foi possível obter o link. O convite pode ter expirado ou já ter sido utilizado.'),
     });
   }
 }

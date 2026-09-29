@@ -30,7 +30,7 @@ export class MemberForm implements OnInit {
   protected readonly form = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
-    phone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    phone: new FormControl('', { nonNullable: true }),
     photoUrl: new FormControl('', { nonNullable: true }),
     talents: new FormControl<string[]>([], { nonNullable: true, validators: [Validators.required] }),
     ministries: new FormControl<string[]>([], { nonNullable: true }),

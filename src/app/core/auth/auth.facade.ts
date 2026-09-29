@@ -59,7 +59,7 @@ export class AuthFacade {
         if (error instanceof HttpErrorResponse && error.error && typeof error.error === 'object') {
           const problem = error.error as Record<string, unknown>;
           if (problem['code'] === 'WHATSAPP_REQUIRED') {
-            this.errorState.set('Informe o WhatsApp do novo líder para ativar a conta.');
+            this.errorState.set('Informe o WhatsApp para ativar a conta.');
             return;
           }
           if (error.status === 409) {

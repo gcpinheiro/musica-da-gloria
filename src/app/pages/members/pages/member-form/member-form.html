@@ -27,9 +27,9 @@
           @if (form.controls.email.touched && form.controls.email.invalid) { <small class="field-error">Informe um e-mail válido.</small> }
         </div>
         <div class="field">
-          <label for="phone">WhatsApp</label>
+          <label for="phone">WhatsApp <span class="field-optional">(opcional no cadastro)</span></label>
           <input id="phone" type="tel" autocomplete="tel" placeholder="(85) 99999-9999" formControlName="phone" />
-          @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="field-error">Informe um número de WhatsApp.</small> }
+          <small class="field-help">Se ficar vazio, o próprio membro deverá informá-lo ao aceitar o convite.</small>
         </div>
         <div class="field field--wide">
           <label for="photoUrl">Foto <span class="field-optional">(opcional)</span></label>

@@ -131,8 +131,8 @@ Usar sessão opaca ou refresh token em cookie `HttpOnly`, `Secure` e
 5. Depois de autenticada, Eury pode cadastrar membros sem conta de acesso.
 6. Quando um membro precisar entrar, Eury seleciona obrigatoriamente o
    `MemberProfile` existente e envia um convite `MEMBER` vinculado a ele.
-7. O membro aceita o convite, define a senha e passa a enxergar apenas os recursos
-   permitidos da sua paróquia.
+7. O membro aceita o convite, informa ou confirma seu WhatsApp, define a senha e
+   passa a enxergar apenas os recursos permitidos da sua paróquia.
 
 O líder nunca cria, recebe ou visualiza a senha final de outra pessoa. Convites
 expirados ou utilizados não podem ser reaproveitados; um novo convite deve ser
@@ -140,7 +140,8 @@ emitido.
 
 ### Dados de contato do membro
 
-O cadastro exige nome completo, e-mail e número de WhatsApp. A foto é opcional.
+O cadastro inicial feito pelo líder exige nome completo e e-mail; o WhatsApp pode
+ser preenchido pelo líder ou permanecer pendente até o aceite do convite. A foto é opcional.
 O telefone deve ser normalizado no servidor para o formato E.164, por exemplo
 `+5585999999999`, ainda que o front permita digitação formatada.
 

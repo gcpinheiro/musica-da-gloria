@@ -2,11 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Optional } from '@angular/core';
 import { delay, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { AvailabilityRule, Member, MemberInput } from '../models/member.model';
+import { AvailabilityRule, Member, MemberInput, MemberInvitation, MemberInvitationWithLink } from '../models/member.model';
 import { MEMBERS_MOCK } from './members.mock';
 
 interface ApiMember {
-  readonly id: string; readonly name: string; readonly email: string; readonly phone: string;
+  readonly id: string; readonly name: string; readonly email: string; readonly phone: string | null;
   readonly photoUrl?: string | null; readonly initials: string; readonly talentIds?: readonly string[];
   readonly availability?: readonly AvailabilityRule[]; readonly notes?: string | null;
   readonly status: 'ACTIVE' | 'INACTIVE';
@@ -46,16 +46,24 @@ export class MembersService {
     this.members = this.members.map((member) => member.id === id ? { ...member, status: 'INACTIVE' } : member);
     return of(undefined).pipe(delay(300));
   }
-  invite(member: Member): Observable<void> {
-    if (!this.usesApi()) return of(undefined).pipe(delay(200));
-    return this.http!.post<void>(`${environment.apiBaseUrl}/users/invitations`, { role: 'MEMBER', memberId: member.id, email: member.email }, this.options());
+  listInvitations(): Observable<readonly MemberInvitation[]> {
+    if (!this.usesApi()) return of([]).pipe(delay(100));
+    return this.http!.get<readonly MemberInvitation[]>(`${environment.apiBaseUrl}/users/invitations`, this.options());
+  }
+  invite(member: Member): Observable<MemberInvitationWithLink> {
+    if (!this.usesApi()) return throwError(() => new Error('API_REQUIRED'));
+    return this.http!.post<MemberInvitationWithLink>(`${environment.apiBaseUrl}/users/invitations`, { role: 'MEMBER', memberId: member.id, email: member.email }, this.options());
+  }
+  obtainInvitationLink(invitationId: string): Observable<MemberInvitationWithLink> {
+    if (!this.usesApi()) return throwError(() => new Error('API_REQUIRED'));
+    return this.http!.post<MemberInvitationWithLink>(`${environment.apiBaseUrl}/users/invitations/${encodeURIComponent(invitationId)}/link`, {}, this.options());
   }
 
   private usesApi(): boolean { return Boolean(this.http) && !environment.useMocks; }
   private options() { return { withCredentials: true } as const; }
-  private toApi(input: MemberInput) { return { name: input.name, email: input.email, phone: input.phone, talentIds: input.talents, availability: [input.availability], notes: input.notes }; }
+  private toApi(input: MemberInput) { return { name: input.name, email: input.email, phone: this.normalizePhone(input.phone), talentIds: input.talents, availability: [input.availability], notes: input.notes }; }
   private fromApi(item: ApiMember): Member {
-    return { id: item.id, name: item.name, email: item.email, phone: item.phone, photoUrl: item.photoUrl ?? undefined, initials: item.initials, talents: item.talentIds ?? [], ministries: [], availability: item.availability?.[0] ?? { weekday: 'SUNDAY', startTime: '00:00', endTime: '23:59' }, status: item.status, notes: item.notes ?? '' };
+    return { id: item.id, name: item.name, email: item.email, phone: item.phone ?? '', photoUrl: item.photoUrl ?? undefined, initials: item.initials, talents: item.talentIds ?? [], ministries: [], availability: item.availability?.[0] ?? { weekday: 'SUNDAY', startTime: '00:00', endTime: '23:59' }, status: item.status, notes: item.notes ?? '' };
   }
   private uploadPhoto(member: ApiMember, value?: string): Observable<ApiMember> {
     if (!value?.startsWith('data:image/')) return of(member);
@@ -67,4 +75,5 @@ export class MembersService {
     return this.http!.put<{ photoUrl: string }>(`${environment.apiBaseUrl}/members/${member.id}/photo`, form, this.options()).pipe(map(({ photoUrl }) => ({ ...member, photoUrl })));
   }
   private initials(name: string): string { return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join(''); }
+  private normalizePhone(value: string): string | undefined { let digits = value.replace(/\D/g, ''); if (!digits) return undefined; if (digits.length === 10 || digits.length === 11) digits = `55${digits}`; return `+${digits}`; }
 }

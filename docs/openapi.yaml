@@ -850,14 +850,14 @@ components:
               description: Exibido somente na criação ou rotação do token; não é persistido em texto puro.
     AcceptUserInvitationRequest:
       type: object
-      required: [password, passwordConfirmation]
+      required: [password, passwordConfirmation, whatsapp]
       properties:
         password: { type: string, minLength: 8, writeOnly: true }
         passwordConfirmation: { type: string, minLength: 8, writeOnly: true }
         whatsapp:
           type: string
           pattern: '^\+[1-9]\d{7,14}$'
-          description: Obrigatório ao aceitar convite de LEADER; cria seu MemberProfile.
+          description: Obrigatório no aceite. Cria o MemberProfile do LEADER ou atualiza o WhatsApp do MEMBER vinculado.
     CreateLeadershipRequest:
       type: object
       required: [type, reason]
@@ -904,7 +904,7 @@ components:
         endTime: { type: string, format: time }
     MemberInput:
       type: object
-      required: [name, email, phone, talentIds, availability]
+      required: [name, email, talentIds, availability]
       properties:
         name:
           type: string
@@ -914,7 +914,7 @@ components:
         phone:
           type: string
           pattern: '^\+[1-9]\d{7,14}$'
-          description: Número de WhatsApp normalizado no formato E.164.
+          description: Número de WhatsApp normalizado no formato E.164. Pode ficar ausente até o aceite do convite.
           example: '+5585999999999'
         talentIds: { type: array, items: { type: string, format: uuid } }
         availability: { type: array, items: { $ref: '#/components/schemas/AvailabilityRule' } }

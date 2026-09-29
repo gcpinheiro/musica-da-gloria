@@ -21,7 +21,7 @@ export class InvitationAccept {
   protected readonly form = new FormGroup({
     password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(8)] }),
     passwordConfirmation: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(8)] }),
-    whatsapp: new FormControl('', { nonNullable: true, validators: [whatsappValidator] }),
+    whatsapp: new FormControl('', { nonNullable: true, validators: [Validators.required, whatsappValidator] }),
   });
   protected submit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }

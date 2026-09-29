@@ -31,3 +31,18 @@ export interface MemberInput {
   readonly availability: AvailabilityRule;
   readonly notes: string;
 }
+
+export interface MemberInvitation {
+  readonly id: string;
+  readonly parishId: string;
+  readonly memberId: string;
+  readonly name: string;
+  readonly email: string;
+  readonly role: 'MEMBER';
+  readonly status: 'PENDING';
+  readonly expiresAt: string;
+}
+
+export interface MemberInvitationWithLink extends MemberInvitation {
+  readonly acceptanceUrl: string;
+}
