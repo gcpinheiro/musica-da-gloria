@@ -1,8 +1,25 @@
 <header><p class="eyebrow">Administração global</p><h1>Paróquias e lideranças</h1><p>O administrador global cria a paróquia e convida a liderança. A senha é definida somente pela pessoa convidada.</p></header>
 @if (facade.message()) { <p class="success" role="status">{{ facade.message() }}</p> }
 @if (facade.error()) { <p class="error" role="alert">{{ facade.error() }}</p> }
+@if (facade.invitationLink(); as invitationLink) {
+  <section class="card invitation-link" aria-labelledby="invitation-link-title">
+    <div><h2 id="invitation-link-title">Link do convite</h2><p>Este link é temporário e deve ser enviado por um canal privado.</p></div>
+    <input aria-label="Link do convite" readonly [value]="invitationLink" />
+    <button class="button button--primary" type="button" (click)="copyInvitationLink()">Copiar link</button>
+  </section>
+}
 <div class="admin-grid">
   <form class="card" [formGroup]="parishForm" (ngSubmit)="createParish()"><h2>Nova paróquia</h2><label>Nome<input formControlName="name" /></label><label>Identificador<input formControlName="slug" placeholder="gloria-fortaleza" /></label><div class="row"><label>Cidade<input formControlName="city" /></label><label>UF<input formControlName="state" maxlength="2" /></label></div><label>Fuso horário<input formControlName="timezone" /></label><button class="button button--primary" [disabled]="facade.loading()">Criar paróquia</button></form>
   <form class="card" [formGroup]="leaderForm" (ngSubmit)="inviteLeader()"><h2>Convidar líder</h2><label>Nome<input formControlName="name" /></label><label>E-mail<input type="email" formControlName="email" /></label><label>Paróquia<select formControlName="parishId"><option value="" disabled>Selecione</option>@for (parish of facade.parishes(); track parish.id) { <option [value]="parish.id">{{ parish.name }}</option> }</select></label><button class="button button--primary" [disabled]="facade.loading()">Enviar convite</button></form>
 </div>
 <section class="card parish-list"><h2>Paróquias cadastradas</h2>@for (parish of facade.parishes(); track parish.id) { <article><strong>{{ parish.name }}</strong><span>{{ parish.city }}/{{ parish.state }} · {{ parish.status }}</span></article> } @empty { <p>Nenhuma paróquia cadastrada.</p> }</section>
+<section class="card invitation-list">
+  <h2>Convites de líderes pendentes</h2>
+  <p>Ao obter novamente um link, o link anterior do convite deixa de funcionar.</p>
+  @for (invitation of facade.invitations(); track invitation.id) {
+    <article>
+      <div><strong>{{ invitation.name }}</strong><span>{{ invitation.email }} · válido até {{ invitation.expiresAt | date:'dd/MM/yyyy HH:mm' }}</span></div>
+      <button class="button button--secondary" type="button" [disabled]="facade.loading()" (click)="facade.obtainInvitationLink(invitation.id)">Obter novo link</button>
+    </article>
+  } @empty { <p>Nenhum convite pendente e válido.</p> }
+</section>

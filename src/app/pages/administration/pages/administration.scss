@@ -2,3 +2,8 @@
 .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 1rem; }
 form { display: grid; gap: 1rem; padding: 1.25rem; } label { display: grid; gap: .35rem; } input, select { min-height: 2.7rem; padding: .6rem .7rem; } .row { display: grid; grid-template-columns: 1fr 5rem; gap: .75rem; }
 .success { color: #17633a; } .error { color: #9f2323; } .parish-list { padding: 1.25rem; } .parish-list article { display: flex; justify-content: space-between; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid #ddd; }
+.invitation-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .75rem; align-items: end; padding: 1.25rem; }
+.invitation-link div { grid-column: 1 / -1; } .invitation-link h2, .invitation-link p { margin: 0; } .invitation-link input { min-width: 0; }
+.invitation-list { padding: 1.25rem; } .invitation-list article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid #ddd; }
+.invitation-list article div { display: grid; gap: .25rem; } .invitation-list span { color: var(--color-text-muted, #52606d); }
+@media (max-width: 40rem) { .invitation-link { grid-template-columns: 1fr; } .invitation-list article { align-items: stretch; flex-direction: column; } }

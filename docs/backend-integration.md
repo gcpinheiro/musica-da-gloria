@@ -234,6 +234,8 @@ sequenceDiagram
 | `PATCH` | `/parishes/{id}` | SUPER_ADMIN | Atualizar ou desativar paróquia |
 | `GET` | `/users` | SUPER_ADMIN, LEADER | Listar usuários no escopo permitido |
 | `POST` | `/users/invitations` | SUPER_ADMIN, LEADER | Convidar usuário sem expor senha |
+| `GET` | `/users/invitations` | SUPER_ADMIN, LEADER | Listar convites pendentes e válidos no escopo permitido |
+| `POST` | `/users/invitations/{id}/link` | SUPER_ADMIN, LEADER | Gerar novo link e invalidar o anterior |
 | `POST` | `/users/invitations/{token}/accept` | Público | Aceitar convite |
 | `POST` | `/users/invitations/{id}/resend` | SUPER_ADMIN, LEADER | Invalidar token anterior e reenviar |
 | `DELETE` | `/users/invitations/{id}` | SUPER_ADMIN, LEADER | Revogar convite pendente |
@@ -245,6 +247,9 @@ sequenceDiagram
 Regras do convite:
 
 - `SUPER_ADMIN` pode convidar `LEADER` e deve indicar a paróquia;
+- enquanto o envio de e-mail não estiver ativo, a criação devolve o link para
+  compartilhamento privado; uma consulta posterior gera um novo token, invalida o
+  anterior e nunca exige persistir o token em texto puro;
 - `LEADER` pode convidar apenas `MEMBER` para a própria paróquia;
 - uma paróquia pode ter mais de um `LEADER` ativo;
 - somente o `SUPER_ADMIN` concede, suspende ou remove acesso de `LEADER`;

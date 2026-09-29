@@ -137,6 +137,19 @@ paths:
                         items: { $ref: '#/components/schemas/User' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /users/invitations:
+    get:
+      tags: [Users]
+      operationId: listPendingUserInvitations
+      description: Lista somente convites pendentes e não expirados no escopo permitido ao usuário autenticado.
+      responses:
+        '200':
+          description: Convites pendentes e válidos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/UserInvitation' }
+        '403': { $ref: '#/components/responses/Forbidden' }
     post:
       tags: [Users]
       operationId: createUserInvitation
@@ -151,13 +164,31 @@ paths:
             schema: { $ref: '#/components/schemas/CreateUserInvitationRequest' }
       responses:
         '201':
-          description: Convite criado e preparado para envio
+          description: Convite criado com link temporário para compartilhamento privado
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/UserInvitation' }
+              schema: { $ref: '#/components/schemas/UserInvitationWithLink' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/ValidationError' }
+  /users/invitations/{id}/link:
+    post:
+      tags: [Users]
+      operationId: rotateUserInvitationLink
+      description: Gera um novo link para um convite pendente e válido, invalidando imediatamente o link anterior.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Novo link temporário gerado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserInvitationWithLink' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /users/invitations/{token}/accept:
     post:
       tags: [Users]
@@ -807,6 +838,16 @@ components:
         role: { type: string, enum: [LEADER, MEMBER] }
         status: { $ref: '#/components/schemas/InvitationStatus' }
         expiresAt: { type: string, format: date-time }
+    UserInvitationWithLink:
+      allOf:
+        - { $ref: '#/components/schemas/UserInvitation' }
+        - type: object
+          required: [acceptanceUrl]
+          properties:
+            acceptanceUrl:
+              type: string
+              format: uri
+              description: Exibido somente na criação ou rotação do token; não é persistido em texto puro.
     AcceptUserInvitationRequest:
       type: object
       required: [password, passwordConfirmation]
