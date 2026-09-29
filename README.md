@@ -13,8 +13,8 @@ Pré-requisito: Docker Desktop ou Docker Engine com Docker Compose.
 docker compose up --build
 ```
 
-A aplicação estará disponível em `http://localhost:4200`. O servidor Angular SSR
-é executado internamente na porta `4000` e pode ser verificado em `/health`.
+A aplicação estará disponível em `http://localhost:4201`. O servidor Angular SSR
+também é executado internamente na porta `4201` e pode ser verificado em `/health`.
 
 Para executar em segundo plano ou encerrar:
 
@@ -25,6 +25,14 @@ docker compose down
 
 Também estão disponíveis os atalhos `npm run docker:build`, `npm run docker:up` e
 `npm run docker:down`.
+
+Para executar o front com hot reload:
+
+```bash
+docker compose -f compose.dev.yaml up --build
+```
+
+O front encaminha `/api/v1` para a API executada separadamente na porta `3000`.
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.7.
 

@@ -1,0 +1,25 @@
+name: musica-da-gloria-web-dev
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    image: musica-da-gloria-web:dev
+    init: true
+    command: npm start -- --host 0.0.0.0 --port 4201 --poll 1000
+    environment:
+      NODE_ENV: development
+      API_ORIGIN: ${API_ORIGIN:-http://host.docker.internal:3000}
+    ports:
+      - "${WEB_PORT:-4201}:4201"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/app
+      - web-node-modules:/app/node_modules
+    restart: unless-stopped
+
+volumes:
+  web-node-modules:

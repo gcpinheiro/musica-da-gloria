@@ -1,4 +1,6 @@
 .angular
+.env
+.env.*
 .git
 .github
 .idea
