@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } fr
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MembersFacade } from '../../data-access/members.facade';
-import { MINISTRY_OPTIONS, TALENT_OPTIONS, WEEKDAY_OPTIONS } from '../../data-access/members.mock';
+import { TALENT_OPTIONS, WEEKDAY_OPTIONS } from '../../data-access/members.mock';
 import { Weekday } from '../../models/member.model';
 
 function timeRangeValidator(control: AbstractControl): ValidationErrors | null {
@@ -22,7 +22,6 @@ export class MemberForm implements OnInit {
   private readonly route = inject(ActivatedRoute);
   protected readonly facade = inject(MembersFacade);
   protected readonly talents = TALENT_OPTIONS;
-  protected readonly ministries = MINISTRY_OPTIONS;
   protected readonly weekdays = WEEKDAY_OPTIONS;
   protected readonly memberId = this.route.snapshot.paramMap.get('id');
   protected readonly isEditing = this.memberId !== null;
@@ -50,13 +49,14 @@ export class MemberForm implements OnInit {
       phone: member.phone,
       photoUrl: member.photoUrl ?? '',
       talents: [...member.talents],
-      ministries: [...member.ministries],
+      ministries: [...(member.ministryIds ?? [])],
       availability: member.availability,
       notes: member.notes,
     });
   });
 
   ngOnInit(): void {
+    this.facade.loadMinistryOptions();
     if (!this.memberId) return;
     this.facade.loadOne(this.memberId);
   }

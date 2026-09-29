@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
-import { Member, MemberInput, MemberInvitation, MemberStatus } from '../models/member.model';
+import { Member, MemberInput, MemberInvitation, MemberMinistryOption, MemberStatus } from '../models/member.model';
 import { MembersService } from './members.service';
 
 @Injectable({ providedIn: 'root' })
@@ -12,6 +12,7 @@ export class MembersFacade {
   private readonly selectedState = signal<Member | null>(null);
   private readonly invitationState = signal<MemberInvitation | null>(null);
   private readonly invitationLinkState = signal<string | null>(null);
+  private readonly ministryOptionsState = signal<readonly MemberMinistryOption[]>([]);
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly errorState = signal<string | null>(null);
@@ -23,6 +24,7 @@ export class MembersFacade {
   readonly selectedMember = this.selectedState.asReadonly();
   readonly invitation = this.invitationState.asReadonly();
   readonly invitationLink = this.invitationLinkState.asReadonly();
+  readonly ministryOptions = this.ministryOptionsState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly saving = this.savingState.asReadonly();
   readonly error = this.errorState.asReadonly();
@@ -63,6 +65,12 @@ export class MembersFacade {
 
   setQuery(query: string): void { this.queryState.set(query); }
   setStatus(status: MemberStatus | 'ALL'): void { this.statusState.set(status); }
+  loadMinistryOptions(): void {
+    this.service.listMinistryOptions().subscribe({
+      next: (items) => this.ministryOptionsState.set(items),
+      error: () => this.errorState.set('Não foi possível carregar os ministérios da paróquia.'),
+    });
+  }
 
   save(input: MemberInput, id?: string): void {
     this.savingState.set(true);

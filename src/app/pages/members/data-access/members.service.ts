@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Optional } from '@angular/core';
 import { delay, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { AvailabilityRule, Member, MemberInput, MemberInvitation, MemberInvitationWithLink } from '../models/member.model';
+import { AvailabilityRule, Member, MemberInput, MemberInvitation, MemberInvitationWithLink, MemberMinistryOption } from '../models/member.model';
 import { MEMBERS_MOCK } from './members.mock';
 
 interface ApiMember {
@@ -10,8 +10,10 @@ interface ApiMember {
   readonly photoUrl?: string | null; readonly initials: string; readonly talentIds?: readonly string[];
   readonly availability?: readonly AvailabilityRule[]; readonly notes?: string | null;
   readonly status: 'ACTIVE' | 'INACTIVE';
+  readonly ministries?: readonly MemberMinistryOption[];
 }
 interface ApiPage<T> { readonly items: readonly T[]; }
+interface ApiMinistryOption { readonly id: string; readonly name: string; readonly status: string; }
 
 @Injectable({ providedIn: 'root' })
 export class MembersService {
@@ -26,6 +28,12 @@ export class MembersService {
     if (this.usesApi()) return this.http!.get<ApiMember>(`${environment.apiBaseUrl}/members/${id}`, this.options()).pipe(map((item) => this.fromApi(item)));
     const member = this.members.find((item) => item.id === id);
     return member ? of({ ...member }).pipe(delay(220)) : throwError(() => new Error('MEMBER_NOT_FOUND'));
+  }
+  listMinistryOptions(): Observable<readonly MemberMinistryOption[]> {
+    if (!this.usesApi()) return of([]).pipe(delay(100));
+    return this.http!.get<readonly ApiMinistryOption[]>(`${environment.apiBaseUrl}/ministries`, this.options()).pipe(
+      map((items) => items.filter((item) => item.status === 'ACTIVE').map(({ id, name }) => ({ id, name }))),
+    );
   }
   create(input: MemberInput): Observable<Member> {
     if (this.usesApi()) return this.http!.post<ApiMember>(`${environment.apiBaseUrl}/members`, this.toApi(input), this.options()).pipe(switchMap((member) => this.uploadPhoto(member, input.photoUrl)), map((member) => this.fromApi(member)));
@@ -61,9 +69,9 @@ export class MembersService {
 
   private usesApi(): boolean { return Boolean(this.http) && !environment.useMocks; }
   private options() { return { withCredentials: true } as const; }
-  private toApi(input: MemberInput) { return { name: input.name, email: input.email, phone: this.normalizePhone(input.phone), talentIds: input.talents, availability: [input.availability], notes: input.notes }; }
+  private toApi(input: MemberInput) { return { name: input.name, email: input.email, phone: this.normalizePhone(input.phone), talentIds: input.talents, ministryIds: input.ministries, availability: [input.availability], notes: input.notes }; }
   private fromApi(item: ApiMember): Member {
-    return { id: item.id, name: item.name, email: item.email, phone: item.phone ?? '', photoUrl: item.photoUrl ?? undefined, initials: item.initials, talents: item.talentIds ?? [], ministries: [], availability: item.availability?.[0] ?? { weekday: 'SUNDAY', startTime: '00:00', endTime: '23:59' }, status: item.status, notes: item.notes ?? '' };
+    return { id: item.id, name: item.name, email: item.email, phone: item.phone ?? '', photoUrl: item.photoUrl ?? undefined, initials: item.initials, talents: item.talentIds ?? [], ministries: item.ministries?.map((ministry) => ministry.name) ?? [], ministryIds: item.ministries?.map((ministry) => ministry.id) ?? [], availability: item.availability?.[0] ?? { weekday: 'SUNDAY', startTime: '00:00', endTime: '23:59' }, status: item.status, notes: item.notes ?? '' };
   }
   private uploadPhoto(member: ApiMember, value?: string): Observable<ApiMember> {
     if (!value?.startsWith('data:image/')) return of(member);

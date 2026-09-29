@@ -904,7 +904,7 @@ components:
         endTime: { type: string, format: time }
     MemberInput:
       type: object
-      required: [name, email, talentIds, availability]
+      required: [name, email, talentIds, ministryIds, availability]
       properties:
         name:
           type: string
@@ -917,6 +917,10 @@ components:
           description: Número de WhatsApp normalizado no formato E.164. Pode ficar ausente até o aceite do convite.
           example: '+5585999999999'
         talentIds: { type: array, items: { type: string, format: uuid } }
+        ministryIds:
+          type: array
+          items: { type: string, format: uuid }
+          description: Ministérios ativos da mesma paróquia aos quais o membro será vinculado.
         availability: { type: array, items: { $ref: '#/components/schemas/AvailabilityRule' } }
         notes: { type: string }
     Member:
@@ -928,6 +932,14 @@ components:
             id: { type: string, format: uuid }
             initials: { type: string }
             photoUrl: { type: [string, 'null'], format: uri }
+            ministries:
+              type: array
+              items:
+                type: object
+                required: [id, name]
+                properties:
+                  id: { type: string, format: uuid }
+                  name: { type: string }
             status: { $ref: '#/components/schemas/MemberStatus' }
     CelebrationSeriesInput:
       type: object

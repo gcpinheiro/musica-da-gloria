@@ -57,9 +57,10 @@
         <div class="field">
           <label for="ministries">Ministérios atuais</label>
           <select id="ministries" multiple size="6" formControlName="ministries">
-            @for (ministry of ministries; track ministry) { <option [value]="ministry">{{ ministry }}</option> }
+            @for (ministry of facade.ministryOptions(); track ministry.id) { <option [value]="ministry.id">{{ ministry.name }}</option> }
           </select>
-          <!-- <small class="field-help">Pode permanecer sem ministério para compor o banco de talentos.</small> -->
+          @if (facade.ministryOptions().length) { <small class="field-help">Aparecem somente os ministérios ativos da sua paróquia. Pode permanecer vazio.</small> }
+          @else { <small class="field-help">Nenhum ministério ativo foi criado nesta paróquia.</small> }
         </div>
       </div>
     </section>

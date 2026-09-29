@@ -37,7 +37,6 @@ export const MEMBERS_MOCK: readonly Member[] = [
 ];
 
 export const TALENT_OPTIONS = ['Voz principal', 'Voz de apoio', 'Violão', 'Guitarra', 'Teclado', 'Baixo', 'Bateria', 'Percussão', 'Técnica de som'] as const;
-export const MINISTRY_OPTIONS = ['Santa Cecília', 'São Gregório Magno', 'Nossa Senhora da Glória'] as const;
 export const WEEKDAY_OPTIONS = [
   { value: 'MONDAY', label: 'Segunda-feira' },
   { value: 'TUESDAY', label: 'Terça-feira' },

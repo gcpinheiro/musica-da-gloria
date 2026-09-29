@@ -142,6 +142,9 @@ emitido.
 
 O cadastro inicial feito pelo líder exige nome completo e e-mail; o WhatsApp pode
 ser preenchido pelo líder ou permanecer pendente até o aceite do convite. A foto é opcional.
+Os ministérios selecionáveis vêm exclusivamente dos ministérios ativos da paróquia
+da sessão, e o vínculo é persistido em `MinistryMember`; não há catálogo mockado
+nessa etapa quando a integração HTTP está ativa.
 O telefone deve ser normalizado no servidor para o formato E.164, por exemplo
 `+5585999999999`, ainda que o front permita digitação formatada.
 

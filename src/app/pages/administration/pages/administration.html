@@ -1,4 +1,4 @@
-<header><p class="eyebrow">Administração global</p><h1>Paróquias e lideranças</h1><p>O administrador global cria a paróquia e convida a liderança. A senha é definida somente pela pessoa convidada.</p></header>
+<header class="page-heading"><p class="eyebrow">Administração global</p><h1 class="display-title">Paróquias e lideranças</h1><p>Configure a estrutura pastoral e envie um acesso seguro para quem será responsável pela comunidade.</p></header>
 @if (facade.message()) { <p class="success" role="status">{{ facade.message() }}</p> }
 @if (facade.error()) { <p class="error" role="alert">{{ facade.error() }}</p> }
 @if (facade.invitationLink(); as invitationLink) {
@@ -9,8 +9,26 @@
   </section>
 }
 <div class="admin-grid">
-  <form class="card" [formGroup]="parishForm" (ngSubmit)="createParish()"><h2>Nova paróquia</h2><label>Nome<input formControlName="name" /></label><label>Identificador<input formControlName="slug" placeholder="gloria-fortaleza" /></label><div class="row"><label>Cidade<input formControlName="city" /></label><label>UF<input formControlName="state" maxlength="2" /></label></div><label>Fuso horário<input formControlName="timezone" /></label><button class="button button--primary" [disabled]="facade.loading()">Criar paróquia</button></form>
-  <form class="card" [formGroup]="leaderForm" (ngSubmit)="inviteLeader()"><h2>Convidar líder</h2><label>Nome<input formControlName="name" /></label><label>E-mail<input type="email" formControlName="email" /></label><label>Paróquia<select formControlName="parishId"><option value="" disabled>Selecione</option>@for (parish of facade.parishes(); track parish.id) { <option [value]="parish.id">{{ parish.name }}</option> }</select></label><button class="button button--primary" [disabled]="facade.loading()">Enviar convite</button></form>
+  <form class="card admin-form" [formGroup]="parishForm" (ngSubmit)="createParish()">
+    <div class="form-heading"><span aria-hidden="true">01</span><div><h2>Nova paróquia</h2><p>Cadastre a comunidade e sua localização.</p></div></div>
+    <label><span>Nome da paróquia</span><input autocomplete="organization" formControlName="name" placeholder="Paróquia Nossa Senhora da Glória" /></label>
+    @if (parishForm.controls.name.touched && parishForm.controls.name.invalid) { <small class="field-error">Informe um nome com pelo menos 3 caracteres.</small> }
+    <label><span>Identificador</span><input formControlName="slug" placeholder="nossa-senhora-da-gloria" /><small>Use letras minúsculas, números e hífens.</small></label>
+    @if (parishForm.controls.slug.touched && parishForm.controls.slug.invalid) { <small class="field-error">Use um identificador como gloria-fortaleza.</small> }
+    <div class="row"><label><span>Cidade</span><input autocomplete="address-level2" formControlName="city" /></label><label><span>UF</span><input autocomplete="address-level1" formControlName="state" maxlength="2" /></label></div>
+    <label><span>Fuso horário</span><input formControlName="timezone" /></label>
+    <button class="button button--primary form-submit" type="submit" [disabled]="facade.loading()">Criar paróquia</button>
+  </form>
+  <form class="card admin-form" [formGroup]="leaderForm" (ngSubmit)="inviteLeader()">
+    <div class="form-heading"><span aria-hidden="true">02</span><div><h2>Convidar líder</h2><p>A pessoa convidada criará a própria senha.</p></div></div>
+    <label><span>Nome completo</span><input autocomplete="name" formControlName="name" placeholder="Eury" /></label>
+    @if (leaderForm.controls.name.touched && leaderForm.controls.name.invalid) { <small class="field-error">Informe o nome da liderança.</small> }
+    <label><span>E-mail de acesso</span><input type="email" autocomplete="email" formControlName="email" placeholder="eury@exemplo.com" /></label>
+    @if (leaderForm.controls.email.touched && leaderForm.controls.email.invalid) { <small class="field-error">Informe um e-mail válido.</small> }
+    <label><span>Paróquia</span><select formControlName="parishId"><option value="" disabled>Selecione uma paróquia</option>@for (parish of facade.parishes(); track parish.id) { <option [value]="parish.id">{{ parish.name }}</option> }</select></label>
+    @if (leaderForm.controls.parishId.touched && leaderForm.controls.parishId.invalid) { <small class="field-error">Selecione a paróquia que será administrada.</small> }
+    <button class="button button--primary form-submit" type="submit" [disabled]="facade.loading()">Criar convite seguro</button>
+  </form>
 </div>
 <section class="card parish-list"><h2>Paróquias cadastradas</h2>@for (parish of facade.parishes(); track parish.id) { <article><strong>{{ parish.name }}</strong><span>{{ parish.city }}/{{ parish.state }} · {{ parish.status }}</span></article> } @empty { <p>Nenhuma paróquia cadastrada.</p> }</section>
 <section class="card invitation-list">

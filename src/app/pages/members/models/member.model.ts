@@ -16,10 +16,13 @@ export interface Member {
   readonly initials: string;
   readonly talents: readonly string[];
   readonly ministries: readonly string[];
+  readonly ministryIds?: readonly string[];
   readonly availability: AvailabilityRule;
   readonly status: MemberStatus;
   readonly notes: string;
 }
+
+export interface MemberMinistryOption { readonly id: string; readonly name: string; }
 
 export interface MemberInput {
   readonly name: string;
