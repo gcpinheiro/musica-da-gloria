@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize } from 'rxjs';
 import { DashboardData, NewsInput, NewsItem } from '../models/dashboard.model';
 import { DashboardService } from './dashboard.service';
 
@@ -62,10 +62,10 @@ export class DashboardFacade {
   load(): void {
     this.loadingState.set(true);
     this.errorState.set(null);
-    forkJoin({ data: this.service.getCalendar(this.monthKey(this.monthCursorState())), news: this.service.listNews() })
+    this.service.getCalendar(this.monthKey(this.monthCursorState()))
       .pipe(finalize(() => this.loadingState.set(false)))
       .subscribe({
-        next: ({ data, news }) => { this.dataState.set(data); this.newsState.set(news); },
+        next: (data) => { this.dataState.set(data); this.newsState.set(data.news); },
         error: () => this.errorState.set('Não foi possível carregar a visão geral.'),
       });
   }
@@ -87,7 +87,7 @@ export class DashboardFacade {
     this.selectedDateState.set(this.dateKey(target));
     this.loadMonth();
   }
-  private loadMonth(): void { this.loadingState.set(true); this.errorState.set(null); this.service.getCalendar(this.monthKey(this.monthCursorState())).pipe(finalize(() => this.loadingState.set(false))).subscribe({ next: (data) => { this.dataState.set(data); const first = data.schedules[0]; if (first) this.selectedDateState.set(first.date.slice(0, 10)); }, error: () => this.errorState.set('Não foi possível carregar o calendário deste mês.') }); }
+  private loadMonth(): void { this.loadingState.set(true); this.errorState.set(null); this.service.getCalendar(this.monthKey(this.monthCursorState())).pipe(finalize(() => this.loadingState.set(false))).subscribe({ next: (data) => { this.dataState.set(data); this.newsState.set(data.news); const first = data.schedules[0]; if (first) this.selectedDateState.set(first.date.slice(0, 10)); }, error: () => this.errorState.set('Não foi possível carregar o calendário deste mês.') }); }
   private firstDayOfMonth(date: Date): Date { return new Date(date.getFullYear(), date.getMonth(), 1, 12); }
   private monthKey(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
   private dateKey(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }

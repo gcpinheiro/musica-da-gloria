@@ -1,8 +1,8 @@
-import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { PLATFORM_ID, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree } from '@angular/router';
 import { AuthFacade } from '../auth/auth.facade';
-import { managementGuard } from './auth.guard';
+import { authGuard, managementGuard } from './auth.guard';
 
 describe('managementGuard', () => {
   const router = jasmine.createSpyObj<Router>('Router', ['createUrlTree']);
@@ -33,5 +33,20 @@ describe('managementGuard', () => {
   it('redirects members away from management routes', () => {
     expect(runGuard(true, false)).toEqual({} as UrlTree);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/dashboard']);
+  });
+
+  it('does not redirect authenticated routes during server rendering', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: PLATFORM_ID, useValue: 'server' },
+      ],
+    });
+
+    expect(
+      TestBed.runInInjectionContext(() =>
+        authGuard({} as never, {} as never),
+      ),
+    ).toBeTrue();
   });
 });

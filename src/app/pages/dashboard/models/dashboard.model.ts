@@ -33,6 +33,7 @@ export interface WeekSchedule {
 export interface DashboardData {
   readonly summary: DashboardSummary;
   readonly schedules: readonly WeekSchedule[];
+  readonly news: readonly NewsItem[];
 }
 
 export interface NewsItem {

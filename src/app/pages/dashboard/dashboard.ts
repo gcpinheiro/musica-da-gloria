@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DashboardFacade } from './data-access/dashboard.facade';
 import { AuthFacade } from '../../core/auth/auth.facade';
@@ -15,6 +16,7 @@ import { AuthFacade } from '../../core/auth/auth.facade';
 export class Dashboard implements OnInit {
   protected readonly facade = inject(DashboardFacade);
   protected readonly authFacade = inject(AuthFacade);
+  private readonly platformId = inject(PLATFORM_ID);
   protected readonly newsEditorOpen = signal(false);
   protected readonly calendarExpanded = signal(true);
   protected readonly editingNewsId = signal<string | null>(null);
@@ -22,7 +24,7 @@ export class Dashboard implements OnInit {
   protected readonly newsBody = signal('');
 
   ngOnInit(): void {
-    this.facade.load();
+    if (isPlatformBrowser(this.platformId)) this.facade.load();
   }
   protected editNews(id: string, title: string, body: string): void { this.editingNewsId.set(id); this.newsTitle.set(title); this.newsBody.set(body); this.newsEditorOpen.set(true); }
   protected createNews(): void { this.editingNewsId.set(null); this.newsTitle.set(''); this.newsBody.set(''); this.newsEditorOpen.set(true); }
