@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiBaseUrl: '/api/v1',
+  apiBaseUrl: 'https://pastoral-musica-api.onrender.com',
   useMocks: false,
 } as const;
