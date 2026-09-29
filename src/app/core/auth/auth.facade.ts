@@ -1,4 +1,5 @@
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, finalize, map, Observable, of } from 'rxjs';
@@ -10,6 +11,7 @@ export class AuthFacade {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly document = inject(DOCUMENT);
   private readonly userState = signal<AuthUser | null>(null);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
@@ -24,6 +26,7 @@ export class AuthFacade {
 
   restoreSession(): Observable<void> {
     if (!isPlatformBrowser(this.platformId)) return of(undefined);
+    if (/^\/(?:login|convites(?:\/|$))/.test(this.document.location.pathname)) return of(undefined);
     return this.authService.me().pipe(
       map((user) => { this.userState.set(user); }),
       catchError(() => { this.userState.set(null); return of(undefined); }),
@@ -52,8 +55,25 @@ export class AuthFacade {
     this.loadingState.set(true); this.errorState.set(null);
     this.authService.acceptInvitation(token, input).pipe(finalize(() => this.loadingState.set(false))).subscribe({
       next: (user) => { this.userState.set(user); void this.router.navigateByUrl('/dashboard'); },
-      error: () => this.errorState.set('Não foi possível aceitar o convite. Verifique o link e os dados informados.'),
+      error: (error: unknown) => {
+        if (error instanceof HttpErrorResponse && error.error && typeof error.error === 'object') {
+          const problem = error.error as Record<string, unknown>;
+          if (problem['code'] === 'WHATSAPP_REQUIRED') {
+            this.errorState.set('Informe o WhatsApp do novo líder para ativar a conta.');
+            return;
+          }
+          if (error.status === 409) {
+            this.errorState.set('Este convite expirou ou já foi utilizado. Solicite um novo link.');
+            return;
+          }
+        }
+        this.errorState.set('Não foi possível aceitar o convite. Verifique o link e os dados informados.');
+      },
     });
+  }
+
+  invalidInvitation(): void {
+    this.errorState.set('O link do convite está incompleto ou inválido.');
   }
 
   logout(): void {

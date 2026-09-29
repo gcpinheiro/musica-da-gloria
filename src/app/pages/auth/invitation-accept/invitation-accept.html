@@ -4,10 +4,14 @@
     <h1>Crie sua senha</h1>
     <p>O WhatsApp é obrigatório para novos líderes e opcional para membros já cadastrados.</p>
     <label><span>Senha</span><input type="password" autocomplete="new-password" formControlName="password" /></label>
+    @if (form.controls.password.touched && form.controls.password.invalid) { <p class="field-error">A senha deve ter pelo menos 8 caracteres.</p> }
     <label><span>Confirme a senha</span><input type="password" autocomplete="new-password" formControlName="passwordConfirmation" /></label>
-    <label><span>WhatsApp em formato internacional</span><input type="tel" placeholder="+5585999999999" formControlName="whatsapp" /></label>
-    @if (form.controls.passwordConfirmation.hasError('mismatch')) { <p class="error" role="alert">As senhas não conferem.</p> }
+    @if (form.controls.passwordConfirmation.touched && (form.controls.passwordConfirmation.hasError('required') || form.controls.passwordConfirmation.hasError('minlength'))) { <p class="field-error">A confirmação deve ter pelo menos 8 caracteres.</p> }
+    @if (form.controls.passwordConfirmation.touched && form.controls.passwordConfirmation.hasError('mismatch')) { <p class="field-error">As senhas não conferem.</p> }
+    <label><span>WhatsApp</span><input type="tel" autocomplete="tel" placeholder="(85) 99999-9999" formControlName="whatsapp" /></label>
+    <small>Você pode informar com ou sem +55. O WhatsApp é obrigatório para novos líderes.</small>
+    @if (form.controls.whatsapp.touched && form.controls.whatsapp.hasError('whatsappFormat')) { <p class="field-error">Informe um número válido, incluindo DDD.</p> }
     @if (authFacade.error()) { <p class="error" role="alert">{{ authFacade.error() }}</p> }
-    <button class="button button--primary" [disabled]="authFacade.loading()">{{ authFacade.loading() ? 'Ativando…' : 'Ativar minha conta' }}</button>
+    <button class="button button--primary" type="submit" [disabled]="authFacade.loading()">{{ authFacade.loading() ? 'Ativando…' : 'Ativar minha conta' }}</button>
   </form>
 </main>

@@ -1,4 +1,4 @@
 .invite-page { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem; background: var(--color-surface, #f7f5f0); }
 .invite-card { width: min(100%, 30rem); display: grid; gap: 1rem; padding: 2rem; }
 label { display: grid; gap: .4rem; } input { min-height: 2.75rem; padding: .65rem .8rem; }
-.eyebrow { color: var(--color-primary, #173c67); font-weight: 600; } .error { color: #9f2323; }
+.eyebrow { color: var(--color-primary, #173c67); font-weight: 600; } .error, .field-error { color: #9f2323; } .field-error, small { margin: -.65rem 0 0; }
