@@ -5,15 +5,34 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+const apiOrigin = (process.env['API_ORIGIN'] || 'http://localhost:3000').replace(/\/$/, '');
 
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });
+});
+
+app.use('/api/v1', (req, res, next) => {
+  const target = new URL(req.originalUrl, apiOrigin);
+  const proxy = (target.protocol === 'https:' ? httpsRequest : httpRequest)(target, {
+    method: req.method,
+    headers: { ...req.headers, host: target.host },
+  }, (upstream) => {
+    res.status(upstream.statusCode ?? 502);
+    for (const [name, value] of Object.entries(upstream.headers)) {
+      if (value !== undefined) res.setHeader(name, value);
+    }
+    upstream.pipe(res);
+  });
+  proxy.on('error', next);
+  req.pipe(proxy);
 });
 
 /**

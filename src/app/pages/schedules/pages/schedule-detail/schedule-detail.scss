@@ -32,6 +32,11 @@
 .person strong { font-size: .77rem; }
 .person small { color: var(--color-muted); font-size: .65rem; }
 .person button, .song-list button { background: transparent; color: var(--color-muted); cursor: pointer; }
+.whatsapp-action { display: inline-flex; align-items: center; gap: .35rem; min-height: 34px; border: 1px solid #168844; border-radius: 100px; background: #e9f8ee; color: #126b35; padding: .3rem .7rem; font-size: .66rem; font-weight: 700; white-space: nowrap; }
+.whatsapp-action__icon { width: 18px; height: 18px; overflow: visible; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+.whatsapp-action__icon path:last-child { fill: currentColor; stroke: none; }
+.whatsapp-action:hover { border-color: #0d6f34; background: #dff4e6; color: #0d6f34; }
+.whatsapp-action:focus-visible { outline: 3px solid color-mix(in srgb, #176b36 28%, transparent); outline-offset: 2px; }
 .picker { display: grid; gap: .35rem; border-bottom: 1px solid var(--color-line); background: var(--color-surface-warm); padding: .8rem; }
 .picker > strong { font-size: .72rem; font-weight: 600; }
 .picker button { display: flex; align-items: center; gap: .55rem; border: 1px solid var(--color-line); border-radius: 10px; background: white; padding: .55rem; text-align: left; cursor: pointer; }
@@ -60,4 +65,4 @@
 .notes p, .empty { margin: 0; color: var(--color-muted); font-size: .78rem; }
 .state { padding: 3rem; text-align: center; }
 @media (max-width: 850px) { .facts { grid-template-columns: 1fr 1fr; } .facts div:nth-child(2) { border: 0; } .detail-columns { grid-template-columns: 1fr; } }
-@media (max-width: 580px) { .schedule-header { align-items: flex-start; flex-wrap: wrap; } .schedule-header .button { width: 100%; } .facts { grid-template-columns: 1fr; } .facts div { border-right: 0; border-bottom: 1px solid var(--color-line); } .facts div:nth-child(2) { border-bottom: 1px solid var(--color-line); } .confirmation { display: none; } }
+@media (max-width: 580px) { .schedule-header { align-items: flex-start; flex-wrap: wrap; } .schedule-header .button { width: 100%; } .facts { grid-template-columns: 1fr; } .facts div { border-right: 0; border-bottom: 1px solid var(--color-line); } .facts div:nth-child(2) { border-bottom: 1px solid var(--color-line); } .confirmation { display: none; } .whatsapp-action { padding-inline: .5rem; } }

@@ -1,0 +1,13 @@
+<main class="invite-page">
+  <form class="card invite-card" [formGroup]="form" (ngSubmit)="submit()">
+    <p class="eyebrow">Convite de acesso</p>
+    <h1>Crie sua senha</h1>
+    <p>O WhatsApp é obrigatório para novos líderes e opcional para membros já cadastrados.</p>
+    <label><span>Senha</span><input type="password" autocomplete="new-password" formControlName="password" /></label>
+    <label><span>Confirme a senha</span><input type="password" autocomplete="new-password" formControlName="passwordConfirmation" /></label>
+    <label><span>WhatsApp em formato internacional</span><input type="tel" placeholder="+5585999999999" formControlName="whatsapp" /></label>
+    @if (form.controls.passwordConfirmation.hasError('mismatch')) { <p class="error" role="alert">As senhas não conferem.</p> }
+    @if (authFacade.error()) { <p class="error" role="alert">{{ authFacade.error() }}</p> }
+    <button class="button button--primary" [disabled]="authFacade.loading()">{{ authFacade.loading() ? 'Ativando…' : 'Ativar minha conta' }}</button>
+  </form>
+</main>

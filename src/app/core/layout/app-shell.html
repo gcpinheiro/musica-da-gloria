@@ -1,6 +1,6 @@
 <div class="shell" [class.shell--menu-open]="menuOpen()">
   <aside class="sidebar" aria-label="Navegação principal">
-    <a class="brand" routerLink="/dashboard" (click)="closeMenu()">
+    <a class="brand" [routerLink]="authFacade.isSuperAdmin() ? '/administracao' : '/dashboard'" (click)="closeMenu()">
       <img class="brand__mark" src="musicadagloria-profile.jpg" alt="" width="44" height="44" />
       <span>
         <strong>Pastoral da Música</strong>
@@ -34,7 +34,7 @@
         <span class="avatar">{{ authFacade.user()?.initials ?? 'MG' }}</span>
         <span class="sidebar__user">
           <strong>{{ authFacade.user()?.name ?? 'Usuário' }}</strong>
-          <small>{{ authFacade.isMember() ? 'Membro do ministério' : 'Líder de ministério' }}</small>
+          <small>{{ authFacade.isSuperAdmin() ? 'Administrador global' : authFacade.isMember() ? 'Membro do ministério' : 'Líder de ministério' }}</small>
         </span>
       </div>
       <button type="button" class="logout" (click)="authFacade.logout()">
@@ -56,7 +56,7 @@
       <button class="menu-button" type="button" aria-label="Abrir menu" (click)="toggleMenu()">☰</button>
       <div class="topbar__parish">
         <span aria-hidden="true">✦</span>
-        <span>Paróquia Nossa Senhora da Glória</span>
+        <span>{{ authFacade.isSuperAdmin() ? 'Administração global' : 'Paróquia Nossa Senhora da Glória' }}</span>
       </div>
       <button class="notification" type="button" aria-label="Notificações">
         <span aria-hidden="true">♢</span>

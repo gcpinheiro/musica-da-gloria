@@ -72,7 +72,8 @@
               "buildTarget": "musica-da-gloria:build:production"
             },
             "development": {
-              "buildTarget": "musica-da-gloria:build:development"
+              "buildTarget": "musica-da-gloria:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

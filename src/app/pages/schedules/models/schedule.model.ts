@@ -4,6 +4,7 @@ export interface ScheduledPerson {
   readonly id: string;
   readonly name: string;
   readonly initials: string;
+  readonly whatsapp: string;
   readonly role: string;
   readonly confirmation: 'CONFIRMED' | 'PENDING' | 'DECLINED';
 }

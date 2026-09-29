@@ -42,14 +42,7 @@ export class DashboardFacade {
     });
   });
   readonly monthSummary = computed(() => {
-    const schedules = this.monthSchedules();
-    const members = schedules.flatMap((schedule) => schedule.members);
-    return {
-      celebrations: schedules.length,
-      confirmedMembers: members.filter((member) => member.confirmed).length,
-      pendingConfirmations: members.filter((member) => !member.confirmed).length,
-      openPositions: schedules.filter((schedule) => schedule.status === 'ATTENTION').length,
-    };
+    return this.dataState()?.summary ?? { celebrations: 0, confirmedMembers: 0, pendingConfirmations: 0, openPositions: 0 };
   });
   readonly calendarDays = computed<readonly CalendarDay[]>(() => {
     const cursor = this.monthCursorState();
@@ -69,7 +62,7 @@ export class DashboardFacade {
   load(): void {
     this.loadingState.set(true);
     this.errorState.set(null);
-    forkJoin({ data: this.service.getCalendar(), news: this.service.listNews() })
+    forkJoin({ data: this.service.getCalendar(this.monthKey(this.monthCursorState())), news: this.service.listNews() })
       .pipe(finalize(() => this.loadingState.set(false)))
       .subscribe({
         next: ({ data, news }) => { this.dataState.set(data); this.newsState.set(news); },
@@ -83,7 +76,7 @@ export class DashboardFacade {
   }
   previousMonth(): void { this.changeMonth(-1); }
   nextMonth(): void { this.changeMonth(1); }
-  currentMonth(): void { const today = new Date(); this.monthCursorState.set(this.firstDayOfMonth(today)); this.selectedDateState.set(this.dateKey(today)); }
+  currentMonth(): void { const today = new Date(); this.monthCursorState.set(this.firstDayOfMonth(today)); this.selectedDateState.set(this.dateKey(today)); this.loadMonth(); }
   saveNews(input: NewsInput, id?: string): void { this.newsSavingState.set(true); this.service.saveNews(input, id).pipe(finalize(() => this.newsSavingState.set(false))).subscribe({ next: () => this.refreshNews(), error: () => this.errorState.set('Não foi possível salvar a notícia.') }); }
   deleteNews(id: string): void { this.service.deleteNews(id).subscribe({ next: () => this.refreshNews(), error: () => this.errorState.set('Não foi possível excluir a notícia.') }); }
 
@@ -91,10 +84,12 @@ export class DashboardFacade {
     const cursor = this.monthCursorState();
     const target = new Date(cursor.getFullYear(), cursor.getMonth() + offset, 1, 12);
     this.monthCursorState.set(target);
-    const firstSchedule = this.schedules().find((item) => { const date = new Date(item.date); return date.getFullYear() === target.getFullYear() && date.getMonth() === target.getMonth(); });
-    this.selectedDateState.set(firstSchedule?.date.slice(0, 10) ?? this.dateKey(target));
+    this.selectedDateState.set(this.dateKey(target));
+    this.loadMonth();
   }
+  private loadMonth(): void { this.loadingState.set(true); this.errorState.set(null); this.service.getCalendar(this.monthKey(this.monthCursorState())).pipe(finalize(() => this.loadingState.set(false))).subscribe({ next: (data) => { this.dataState.set(data); const first = data.schedules[0]; if (first) this.selectedDateState.set(first.date.slice(0, 10)); }, error: () => this.errorState.set('Não foi possível carregar o calendário deste mês.') }); }
   private firstDayOfMonth(date: Date): Date { return new Date(date.getFullYear(), date.getMonth(), 1, 12); }
+  private monthKey(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
   private dateKey(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
   private refreshNews(): void { this.service.listNews().subscribe((items) => this.newsState.set(items)); }
 }

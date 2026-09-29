@@ -1,44 +1,46 @@
-import { Injectable } from '@angular/core';
-import { delay, Observable, of, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, Optional } from '@angular/core';
+import { delay, map, Observable, of, switchMap, throwError } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { GeneratedScheduleInput, Schedule, ScheduleInput, ScheduledPerson, ScheduledSong, ScheduleMemberOption, ScheduleSongOption } from '../models/schedule.model';
 import { SCHEDULE_MEMBER_OPTIONS, SCHEDULE_SONG_OPTIONS, SCHEDULES_MOCK } from './schedules.mock';
+
+interface ApiOccurrenceMember { readonly memberId: string; readonly name: string; readonly initials: string; readonly whatsapp?: string; readonly role: string; readonly confirmation: ScheduledPerson['confirmation']; }
+interface ApiSetlistItem { readonly id: string; readonly songId: string; readonly title: string; readonly key: string; readonly liturgicalMoment: string; }
+interface ApiOccurrence { readonly id: string; readonly title: string; readonly startsAt: string; readonly location: string; readonly ministryId: string; readonly ministry?: string; readonly status: Schedule['status']; readonly liturgicalTime?: string | null; readonly notes?: string | null; readonly members?: readonly ApiOccurrenceMember[]; readonly setlist?: { readonly items: readonly ApiSetlistItem[] }; }
+interface ApiMemberPage { readonly items: readonly { readonly id: string; readonly name: string; readonly initials: string; readonly phone: string; readonly talentIds?: readonly string[]; readonly status: string }[]; }
+interface ApiSong { readonly id: string; readonly title: string; readonly defaultKey: string; readonly liturgicalMoments: readonly string[]; }
 
 @Injectable({ providedIn: 'root' })
 export class SchedulesService {
   private schedules: Schedule[] = SCHEDULES_MOCK.map((schedule) => ({ ...schedule }));
-  list(): Observable<readonly Schedule[]> { return of(this.schedules.map((item) => ({ ...item }))).pipe(delay(280)); }
-  getById(id: string): Observable<Schedule> {
-    const schedule = this.schedules.find((item) => item.id === id);
-    return schedule ? of({ ...schedule }).pipe(delay(220)) : throwError(() => new Error('SCHEDULE_NOT_FOUND'));
+  constructor(@Optional() private readonly http: HttpClient | null = null) {}
+  list(): Observable<readonly Schedule[]> { if (this.usesApi()) return this.http!.get<readonly ApiOccurrence[]>(`${environment.apiBaseUrl}/occurrences`, this.options()).pipe(map((items) => items.map((item) => this.fromApi(item)))); return of(this.schedules.map((item) => ({ ...item }))).pipe(delay(280)); }
+  getById(id: string): Observable<Schedule> { if (this.usesApi()) return this.http!.get<ApiOccurrence>(`${environment.apiBaseUrl}/occurrences/${id}`, this.options()).pipe(map((item) => this.fromApi(item))); const schedule = this.schedules.find((item) => item.id === id); return schedule ? of({ ...schedule }).pipe(delay(220)) : throwError(() => new Error('SCHEDULE_NOT_FOUND')); }
+  create(input: ScheduleInput, ministryId?: string): Observable<Schedule> {
+    if (this.usesApi()) {
+      if (!ministryId) return throwError(() => new Error('MINISTRY_REQUIRED'));
+      const body = { title: input.title, startsAt: `${input.date.slice(0, 10)}T${input.time}:00-03:00`, timezone: 'America/Fortaleza', location: input.location, ministryId, liturgicalTime: input.liturgicalTime, notes: input.notes };
+      return this.http!.post<ApiOccurrence>(`${environment.apiBaseUrl}/occurrences`, body, this.options()).pipe(
+        switchMap((created) => this.replaceMembers(created.id, input.people).pipe(
+          switchMap(() => this.replaceSongs(created.id, input.songs)),
+        )),
+      );
+    }
+    const schedule: Schedule = { ...input, id: `occ-${Date.now()}`, status: 'DRAFT' }; this.schedules = [schedule, ...this.schedules]; return of(schedule).pipe(delay(400));
   }
-  create(input: ScheduleInput): Observable<Schedule> {
-    const schedule: Schedule = { ...input, id: `occ-${Date.now()}`, status: 'DRAFT' };
-    this.schedules = [schedule, ...this.schedules];
-    return of(schedule).pipe(delay(400));
-  }
-  generate(inputs: readonly GeneratedScheduleInput[]): Observable<readonly Schedule[]> {
-    const existingIds = new Set(this.schedules.map((schedule) => schedule.id));
-    const existingSlots = new Set(this.schedules.map((schedule) => this.scheduleSlot(schedule.date, schedule.time, schedule.ministry)));
-    const generated = inputs
-      .filter((input) => !existingIds.has(input.id) && !existingSlots.has(this.scheduleSlot(input.date, input.time, input.ministry)))
-      .map(({ sourceMinistryId: _sourceMinistryId, ...input }) => ({ ...input, status: 'DRAFT' as const }));
-    this.schedules = [...generated, ...this.schedules];
-    return of(generated.map((item) => ({ ...item }))).pipe(delay(400));
-  }
-  listMemberOptions(): Observable<readonly ScheduleMemberOption[]> { return of(SCHEDULE_MEMBER_OPTIONS.map((item) => ({ ...item }))).pipe(delay(180)); }
-  listSongOptions(): Observable<readonly ScheduleSongOption[]> { return of(SCHEDULE_SONG_OPTIONS.map((item) => ({ ...item }))).pipe(delay(180)); }
-  addMember(id: string, member: ScheduledPerson): Observable<Schedule> { return this.update(id, (schedule) => ({ ...schedule, people: schedule.people.some((item) => item.id === member.id) ? schedule.people : [...schedule.people, member] })); }
-  removeMember(id: string, memberId: string): Observable<Schedule> { return this.update(id, (schedule) => ({ ...schedule, people: schedule.people.filter((item) => item.id !== memberId) })); }
-  addSong(id: string, song: ScheduledSong): Observable<Schedule> { return this.update(id, (schedule) => ({ ...schedule, songs: schedule.songs.some((item) => item.songId === song.songId) ? schedule.songs : [...schedule.songs, song] })); }
-  removeSong(id: string, itemId: string): Observable<Schedule> { return this.update(id, (schedule) => ({ ...schedule, songs: schedule.songs.filter((item) => item.id !== itemId) })); }
-  private update(id: string, mutation: (schedule: Schedule) => Schedule): Observable<Schedule> {
-    const current = this.schedules.find((schedule) => schedule.id === id);
-    if (!current) return throwError(() => new Error('SCHEDULE_NOT_FOUND'));
-    const updated = mutation(current);
-    this.schedules = this.schedules.map((schedule) => schedule.id === id ? updated : schedule);
-    return of({ ...updated }).pipe(delay(220));
-  }
-  private scheduleSlot(date: string, time: string, ministry: string): string {
-    return `${date.slice(0, 10)}|${time}|${ministry.toLocaleLowerCase('pt-BR').replace(/^ministério\s+/, '')}`;
-  }
+  generate(inputs: readonly GeneratedScheduleInput[]): Observable<readonly Schedule[]> { const existingIds = new Set(this.schedules.map((schedule) => schedule.id)); const existingSlots = new Set(this.schedules.map((schedule) => this.scheduleSlot(schedule.date, schedule.time, schedule.ministry))); const generated = inputs.filter((input) => !existingIds.has(input.id) && !existingSlots.has(this.scheduleSlot(input.date, input.time, input.ministry))).map(({ sourceMinistryId: _sourceMinistryId, ...input }) => ({ ...input, status: 'DRAFT' as const })); this.schedules = [...generated, ...this.schedules]; return of(generated.map((item) => ({ ...item }))).pipe(delay(400)); }
+  listMemberOptions(): Observable<readonly ScheduleMemberOption[]> { if (this.usesApi()) return this.http!.get<ApiMemberPage>(`${environment.apiBaseUrl}/members?pageSize=100`, this.options()).pipe(map(({ items }) => items.map((item) => ({ id: item.id, name: item.name, initials: item.initials, whatsapp: item.phone, role: item.talentIds?.[0] ?? 'Integrante', confirmation: 'PENDING' as const, available: item.status === 'ACTIVE' })))); return of(SCHEDULE_MEMBER_OPTIONS.map((item) => ({ ...item }))).pipe(delay(180)); }
+  listSongOptions(): Observable<readonly ScheduleSongOption[]> { if (this.usesApi()) return this.http!.get<readonly ApiSong[]>(`${environment.apiBaseUrl}/songs`, this.options()).pipe(map((items) => items.map((item) => ({ songId: item.id, title: item.title, key: item.defaultKey, liturgicalMoment: item.liturgicalMoments[0] ?? '' })))); return of(SCHEDULE_SONG_OPTIONS.map((item) => ({ ...item }))).pipe(delay(180)); }
+  addMember(id: string, member: ScheduledPerson): Observable<Schedule> { if (this.usesApi()) return this.getById(id).pipe(switchMap((schedule) => this.replaceMembers(id, schedule.people.some((item) => item.id === member.id) ? schedule.people : [...schedule.people, member]))); return this.update(id, (schedule) => ({ ...schedule, people: schedule.people.some((item) => item.id === member.id) ? schedule.people : [...schedule.people, member] })); }
+  removeMember(id: string, memberId: string): Observable<Schedule> { if (this.usesApi()) return this.getById(id).pipe(switchMap((schedule) => this.replaceMembers(id, schedule.people.filter((item) => item.id !== memberId)))); return this.update(id, (schedule) => ({ ...schedule, people: schedule.people.filter((item) => item.id !== memberId) })); }
+  addSong(id: string, song: ScheduledSong): Observable<Schedule> { if (this.usesApi()) return this.getById(id).pipe(switchMap((schedule) => this.replaceSongs(id, schedule.songs.some((item) => item.songId === song.songId) ? schedule.songs : [...schedule.songs, song]))); return this.update(id, (schedule) => ({ ...schedule, songs: schedule.songs.some((item) => item.songId === song.songId) ? schedule.songs : [...schedule.songs, song] })); }
+  removeSong(id: string, itemId: string): Observable<Schedule> { if (this.usesApi()) return this.getById(id).pipe(switchMap((schedule) => this.replaceSongs(id, schedule.songs.filter((item) => item.id !== itemId)))); return this.update(id, (schedule) => ({ ...schedule, songs: schedule.songs.filter((item) => item.id !== itemId) })); }
+  private replaceMembers(id: string, people: readonly ScheduledPerson[]): Observable<Schedule> { return this.http!.put<ApiOccurrence>(`${environment.apiBaseUrl}/occurrences/${id}/members`, { members: people.map((person) => ({ memberId: person.id, role: person.role })) }, this.options()).pipe(map((item) => this.fromApi(item))); }
+  private replaceSongs(id: string, songs: readonly ScheduledSong[]): Observable<Schedule> { return this.http!.put<ApiOccurrence>(`${environment.apiBaseUrl}/occurrences/${id}/setlist`, { items: songs.map((song, index) => ({ songId: song.songId, position: index + 1, key: song.key, liturgicalMoment: song.liturgicalMoment })) }, this.options()).pipe(map((item) => this.fromApi(item))); }
+  private update(id: string, mutation: (schedule: Schedule) => Schedule): Observable<Schedule> { const current = this.schedules.find((schedule) => schedule.id === id); if (!current) return throwError(() => new Error('SCHEDULE_NOT_FOUND')); const updated = mutation(current); this.schedules = this.schedules.map((schedule) => schedule.id === id ? updated : schedule); return of({ ...updated }).pipe(delay(220)); }
+  private fromApi(item: ApiOccurrence): Schedule { const startsAt = new Date(item.startsAt); return { id: item.id, title: item.title, date: item.startsAt, time: new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Fortaleza' }).format(startsAt), location: item.location, ministry: item.ministry ?? item.ministryId, status: item.status, liturgicalTime: item.liturgicalTime ?? '', notes: item.notes ?? '', people: (item.members ?? []).map((member) => ({ id: member.memberId, name: member.name, initials: member.initials, whatsapp: member.whatsapp ?? '', role: member.role, confirmation: member.confirmation })), songs: (item.setlist?.items ?? []).map((song) => ({ id: song.id, songId: song.songId, title: song.title, key: song.key, liturgicalMoment: song.liturgicalMoment })) }; }
+  private usesApi(): boolean { return Boolean(this.http) && !environment.useMocks; }
+  private options() { return { withCredentials: true } as const; }
+  private scheduleSlot(date: string, time: string, ministry: string): string { return `${date.slice(0, 10)}|${time}|${ministry.toLocaleLowerCase('pt-BR').replace(/^ministério\s+/, '')}`; }
 }

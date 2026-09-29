@@ -1,0 +1,1072 @@
+openapi: 3.1.0
+info:
+  title: Música da Glória API
+  version: 0.1.0
+  description: Contrato inicial derivado dos fluxos implementados no front-end Angular.
+servers:
+  - url: /api/v1
+security:
+  - sessionCookie: []
+tags:
+  - name: Auth
+  - name: Parishes
+  - name: Users
+  - name: Dashboard
+  - name: Members
+  - name: Ministries
+  - name: Series
+  - name: Occurrences
+  - name: Songs
+  - name: News
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Sessão criada
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/me:
+    get:
+      tags: [Auth]
+      operationId: getCurrentSession
+      responses:
+        '200':
+          description: Sessão atual
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      responses:
+        '204': { description: Sessão revogada }
+  /parishes:
+    get:
+      tags: [Parishes]
+      operationId: listParishes
+      description: Disponível somente para o administrador global.
+      responses:
+        '200':
+          description: Paróquias cadastradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Parish' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Parishes]
+      operationId: createParish
+      description: Cria uma paróquia; o convite do primeiro líder é uma operação separada.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ParishInput' }
+      responses:
+        '201':
+          description: Paróquia criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Parish' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /parishes/{parishId}:
+    parameters:
+      - { $ref: '#/components/parameters/ParishId' }
+    patch:
+      tags: [Parishes]
+      operationId: updateParish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ParishInput' }
+      responses:
+        '200':
+          description: Paróquia atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Parish' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /users:
+    get:
+      tags: [Users]
+      operationId: listUsers
+      description: Líderes recebem apenas usuários da própria paróquia.
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/UserStatus' }
+        - name: parishId
+          in: query
+          description: Filtro disponível apenas para o administrador global.
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Usuários no escopo permitido
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMetadata' }
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/User' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /users/invitations:
+    post:
+      tags: [Users]
+      operationId: createUserInvitation
+      description: >-
+        SUPER_ADMIN convida LEADER indicando a paróquia; LEADER convida apenas
+        MEMBER para a paróquia obtida de sua sessão e deve vinculá-lo a um
+        MemberProfile existente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserInvitationRequest' }
+      responses:
+        '201':
+          description: Convite criado e preparado para envio
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserInvitation' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /users/invitations/{token}/accept:
+    post:
+      tags: [Users]
+      security: []
+      operationId: acceptUserInvitation
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string, minLength: 32 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AcceptUserInvitationRequest' }
+      responses:
+        '200':
+          description: Conta ativada e sessão criada
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthSession' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /leadership-requests:
+    get:
+      tags: [Users]
+      operationId: listLeadershipRequests
+      description: SUPER_ADMIN consulta todas; LEADER consulta somente as solicitações da própria paróquia.
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/LeadershipRequestStatus' }
+      responses:
+        '200':
+          description: Solicitações no escopo permitido
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMetadata' }
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/LeadershipRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Users]
+      operationId: createLeadershipRequest
+      description: Registra um pedido; não altera permissões antes da aprovação do SUPER_ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLeadershipRequest' }
+      responses:
+        '201':
+          description: Solicitação registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeadershipRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /leadership-requests/{requestId}/decision:
+    patch:
+      tags: [Users]
+      operationId: decideLeadershipRequest
+      description: Aprova ou rejeita o pedido e aplica atomicamente a mudança quando aprovada.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LeadershipRequestDecision' }
+      responses:
+        '200':
+          description: Solicitação decidida
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeadershipRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      operationId: getDashboard
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema: { type: string, pattern: '^\d{4}-\d{2}$' }
+      responses:
+        '200':
+          description: Resumo mensal, calendário e feed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DashboardResponse' }
+  /members:
+    get:
+      tags: [Members]
+      operationId: listMembers
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - name: query
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/MemberStatus' }
+      responses:
+        '200':
+          description: Página de membros
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMetadata' }
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/Member' }
+    post:
+      tags: [Members]
+      operationId: createMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MemberInput' }
+      responses:
+        '201':
+          description: Membro criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /members/{memberId}:
+    parameters:
+      - { $ref: '#/components/parameters/MemberId' }
+    get:
+      tags: [Members]
+      operationId: getMember
+      responses:
+        '200':
+          description: Detalhe do membro
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Members]
+      operationId: updateMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MemberInput' }
+      responses:
+        '200':
+          description: Membro atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+  /members/{memberId}/archive:
+    parameters:
+      - { $ref: '#/components/parameters/MemberId' }
+    post:
+      tags: [Members]
+      operationId: archiveMember
+      responses:
+        '204': { description: Membro arquivado }
+  /members/{memberId}/photo:
+    parameters:
+      - { $ref: '#/components/parameters/MemberId' }
+    put:
+      tags: [Members]
+      operationId: uploadMemberPhoto
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Imagem JPG, PNG ou WebP com no máximo 5 MB.
+      responses:
+        '200':
+          description: Foto armazenada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [photoUrl]
+                properties:
+                  photoUrl: { type: string, format: uri }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Members]
+      operationId: deleteMemberPhoto
+      responses:
+        '204': { description: Foto removida }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /ministries:
+    get:
+      tags: [Ministries]
+      operationId: listMinistries
+      responses:
+        '200':
+          description: Ministérios
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Ministry' }
+    post:
+      tags: [Ministries]
+      operationId: createMinistry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMinistryRequest' }
+      responses:
+        '201':
+          description: Ministério e série padrão criados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ministry' }
+  /ministries/{ministryId}:
+    parameters:
+      - { $ref: '#/components/parameters/MinistryId' }
+    get:
+      tags: [Ministries]
+      operationId: getMinistry
+      responses:
+        '200':
+          description: Ministério
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ministry' }
+    patch:
+      tags: [Ministries]
+      operationId: updateMinistry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMinistryRequest' }
+      responses:
+        '200':
+          description: Ministério atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ministry' }
+  /ministries/{ministryId}/archive:
+    parameters:
+      - { $ref: '#/components/parameters/MinistryId' }
+    post:
+      tags: [Ministries]
+      operationId: archiveMinistry
+      responses:
+        '204': { description: Ministério arquivado sem apagar o histórico }
+  /celebration-series/{seriesId}/occurrences:generate:
+    parameters:
+      - { $ref: '#/components/parameters/SeriesId' }
+    post:
+      tags: [Series]
+      operationId: generateOccurrences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [throughDate]
+              properties:
+                throughDate:
+                  type: string
+                  format: date
+                  description: Data limite, no máximo 12 meses após a solicitação.
+      responses:
+        '200':
+          description: Resultado idempotente da geração
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenerationResult' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /occurrences:
+    get:
+      tags: [Occurrences]
+      operationId: listOccurrences
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: memberId, in: query, schema: { type: string, format: uuid } }
+        - { name: ministryId, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/OccurrenceStatus' } }
+      responses:
+        '200':
+          description: Ocorrências filtradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/OccurrenceSummary' }
+    post:
+      tags: [Occurrences]
+      operationId: createOccurrence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OccurrenceInput' }
+      responses:
+        '201':
+          description: Ocorrência criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+  /occurrences/{occurrenceId}:
+    parameters:
+      - { $ref: '#/components/parameters/OccurrenceId' }
+    get:
+      tags: [Occurrences]
+      operationId: getOccurrence
+      responses:
+        '200':
+          description: Escala concreta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+    patch:
+      tags: [Occurrences]
+      operationId: updateOccurrence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OccurrenceInput' }
+      responses:
+        '200':
+          description: Ocorrência atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /occurrences/{occurrenceId}/members:
+    parameters:
+      - { $ref: '#/components/parameters/OccurrenceId' }
+    put:
+      tags: [Occurrences]
+      operationId: replaceOccurrenceMembers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [members]
+              properties:
+                members:
+                  type: array
+                  items: { $ref: '#/components/schemas/OccurrenceMemberInput' }
+      responses:
+        '200':
+          description: Formação da ocorrência atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+  /occurrences/{occurrenceId}/setlist:
+    parameters:
+      - { $ref: '#/components/parameters/OccurrenceId' }
+    put:
+      tags: [Occurrences]
+      operationId: replaceSetlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SetlistInput' }
+      responses:
+        '200':
+          description: Repertório ordenado atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+  /songs:
+    get:
+      tags: [Songs]
+      operationId: listSongs
+      parameters:
+        - { name: query, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200':
+          description: Biblioteca de músicas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Song' }
+    post:
+      tags: [Songs]
+      operationId: createSong
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SongInput' }
+      responses:
+        '201':
+          description: Música criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Song' }
+  /songs/{songId}:
+    parameters:
+      - { $ref: '#/components/parameters/SongId' }
+    get:
+      tags: [Songs]
+      operationId: getSong
+      responses:
+        '200':
+          description: Letra e cifra
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Song' }
+    patch:
+      tags: [Songs]
+      operationId: updateSong
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SongInput' }
+      responses:
+        '200':
+          description: Música atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Song' }
+  /news:
+    get:
+      tags: [News]
+      operationId: listNews
+      responses:
+        '200':
+          description: Feed de notícias
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/NewsItem' }
+    post:
+      tags: [News]
+      operationId: createNews
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewsInput' }
+      responses:
+        '201':
+          description: Notícia publicada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NewsItem' }
+  /news/{newsId}:
+    parameters:
+      - { name: newsId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      tags: [News]
+      operationId: updateNews
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewsInput' }
+      responses:
+        '200':
+          description: Notícia atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NewsItem' }
+    delete:
+      tags: [News]
+      operationId: archiveNews
+      responses:
+        '204': { description: Notícia arquivada }
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: mg_session
+  parameters:
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+    ParishId: { name: parishId, in: path, required: true, schema: { type: string, format: uuid } }
+    MemberId: { name: memberId, in: path, required: true, schema: { type: string, format: uuid } }
+    MinistryId: { name: ministryId, in: path, required: true, schema: { type: string, format: uuid } }
+    SeriesId: { name: seriesId, in: path, required: true, schema: { type: string, format: uuid } }
+    OccurrenceId: { name: occurrenceId, in: path, required: true, schema: { type: string, format: uuid } }
+    SongId: { name: songId, in: path, required: true, schema: { type: string, format: uuid } }
+  responses:
+    Unauthorized:
+      description: Sessão ausente, inválida ou expirada
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Usuário autenticado sem permissão para a operação
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    NotFound:
+      description: Recurso não encontrado
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Conflict:
+      description: Conflito de negócio ou versão
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    ValidationError:
+      description: Falha de validação
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+  schemas:
+    UserRole: { type: string, enum: [SUPER_ADMIN, LEADER, MEMBER] }
+    UserStatus: { type: string, enum: [INVITED, ACTIVE, SUSPENDED] }
+    ParishStatus: { type: string, enum: [ACTIVE, INACTIVE] }
+    InvitationStatus: { type: string, enum: [PENDING, ACCEPTED, EXPIRED, REVOKED] }
+    LeadershipRequestType: { type: string, enum: [ADD_LEADER, SUSPEND_LEADER, REMOVE_LEADER] }
+    LeadershipRequestStatus: { type: string, enum: [PENDING, APPROVED, REJECTED] }
+    MemberStatus: { type: string, enum: [ACTIVE, INACTIVE] }
+    OccurrenceStatus: { type: string, enum: [DRAFT, PUBLISHED, ATTENTION, CANCELLED] }
+    Weekday: { type: string, enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY] }
+    ConfirmationStatus: { type: string, enum: [CONFIRMED, PENDING, DECLINED] }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, writeOnly: true }
+    AuthUser:
+      type: object
+      required: [id, name, email, role, initials]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/UserRole' }
+        initials: { type: string }
+        parishId:
+          type: [string, 'null']
+          format: uuid
+          description: Nulo somente para SUPER_ADMIN.
+        memberId: { type: [string, 'null'], format: uuid }
+    AuthSession:
+      type: object
+      required: [user]
+      properties:
+        user: { $ref: '#/components/schemas/AuthUser' }
+    ParishInput:
+      type: object
+      required: [name, timezone]
+      properties:
+        name: { type: string, minLength: 3, example: Paróquia Nossa Senhora da Glória }
+        slug: { type: string, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$', example: gloria-fortaleza }
+        city: { type: string, example: Fortaleza }
+        state: { type: string, minLength: 2, maxLength: 2, example: CE }
+        timezone: { type: string, example: America/Fortaleza }
+    Parish:
+      allOf:
+        - { $ref: '#/components/schemas/ParishInput' }
+        - type: object
+          required: [id, status]
+          properties:
+            id: { type: string, format: uuid }
+            status: { $ref: '#/components/schemas/ParishStatus' }
+    User:
+      type: object
+      required: [id, name, email, role, status]
+      properties:
+        id: { type: string, format: uuid }
+        parishId: { type: [string, 'null'], format: uuid }
+        memberId: { type: [string, 'null'], format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/UserRole' }
+        status: { $ref: '#/components/schemas/UserStatus' }
+    CreateUserInvitationRequest:
+      oneOf:
+        - { $ref: '#/components/schemas/CreateLeaderInvitationRequest' }
+        - { $ref: '#/components/schemas/CreateMemberInvitationRequest' }
+      discriminator:
+        propertyName: role
+        mapping:
+          LEADER: '#/components/schemas/CreateLeaderInvitationRequest'
+          MEMBER: '#/components/schemas/CreateMemberInvitationRequest'
+    CreateLeaderInvitationRequest:
+      type: object
+      required: [name, email, role, parishId]
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        role: { type: string, const: LEADER }
+        parishId:
+          type: string
+          format: uuid
+          description: Paróquia que o novo líder poderá administrar.
+    CreateMemberInvitationRequest:
+      type: object
+      required: [email, role, memberId]
+      properties:
+        email: { type: string, format: email }
+        role: { type: string, const: MEMBER }
+        memberId:
+          type: string
+          format: uuid
+          description: Perfil ativo, sem conta, pertencente à paróquia do líder autenticado.
+    UserInvitation:
+      type: object
+      required: [id, parishId, name, email, role, status, expiresAt]
+      properties:
+        id: { type: string, format: uuid }
+        parishId: { type: string, format: uuid }
+        memberId: { type: [string, 'null'], format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [LEADER, MEMBER] }
+        status: { $ref: '#/components/schemas/InvitationStatus' }
+        expiresAt: { type: string, format: date-time }
+    AcceptUserInvitationRequest:
+      type: object
+      required: [password, passwordConfirmation]
+      properties:
+        password: { type: string, minLength: 8, writeOnly: true }
+        passwordConfirmation: { type: string, minLength: 8, writeOnly: true }
+        whatsapp:
+          type: string
+          pattern: '^\+[1-9]\d{7,14}$'
+          description: Obrigatório ao aceitar convite de LEADER; cria seu MemberProfile.
+    CreateLeadershipRequest:
+      type: object
+      required: [type, reason]
+      properties:
+        type: { $ref: '#/components/schemas/LeadershipRequestType' }
+        targetUserId:
+          type: string
+          format: uuid
+          description: Obrigatório para suspender ou remover um líder da mesma paróquia.
+        candidateName:
+          type: string
+          description: Obrigatório para solicitar um novo líder.
+        candidateEmail:
+          type: string
+          format: email
+          description: Obrigatório para solicitar um novo líder.
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+    LeadershipRequestDecision:
+      type: object
+      required: [decision, reason]
+      properties:
+        decision: { type: string, enum: [APPROVED, REJECTED] }
+        reason: { type: string, minLength: 3, maxLength: 1000 }
+    LeadershipRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CreateLeadershipRequest' }
+        - type: object
+          required: [id, parishId, requestedByUserId, status, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            parishId: { type: string, format: uuid }
+            requestedByUserId: { type: string, format: uuid }
+            status: { $ref: '#/components/schemas/LeadershipRequestStatus' }
+            decidedByUserId: { type: [string, 'null'], format: uuid }
+            decisionReason: { type: [string, 'null'] }
+            createdAt: { type: string, format: date-time }
+            decidedAt: { type: [string, 'null'], format: date-time }
+    AvailabilityRule:
+      type: object
+      required: [weekday, startTime, endTime]
+      properties:
+        weekday: { $ref: '#/components/schemas/Weekday' }
+        startTime: { type: string, format: time }
+        endTime: { type: string, format: time }
+    MemberInput:
+      type: object
+      required: [name, email, phone, talentIds, availability]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          description: Nome completo do membro.
+        email: { type: string, format: email }
+        phone:
+          type: string
+          pattern: '^\+[1-9]\d{7,14}$'
+          description: Número de WhatsApp normalizado no formato E.164.
+          example: '+5585999999999'
+        talentIds: { type: array, items: { type: string, format: uuid } }
+        availability: { type: array, items: { $ref: '#/components/schemas/AvailabilityRule' } }
+        notes: { type: string }
+    Member:
+      allOf:
+        - { $ref: '#/components/schemas/MemberInput' }
+        - type: object
+          required: [id, initials, status]
+          properties:
+            id: { type: string, format: uuid }
+            initials: { type: string }
+            photoUrl: { type: [string, 'null'], format: uri }
+            status: { $ref: '#/components/schemas/MemberStatus' }
+    CelebrationSeriesInput:
+      type: object
+      required: [title, location, weekday, localTime, timezone]
+      properties:
+        title: { type: string }
+        location: { type: string }
+        weekday: { $ref: '#/components/schemas/Weekday' }
+        localTime: { type: string, format: time }
+        timezone: { type: string, const: America/Fortaleza }
+    CreateMinistryRequest:
+      type: object
+      required: [name, memberIds, defaultSeries]
+      properties:
+        name: { type: string, minLength: 2 }
+        memberIds: { type: array, items: { type: string, format: uuid } }
+        defaultSeries: { $ref: '#/components/schemas/CelebrationSeriesInput' }
+    Ministry:
+      type: object
+      required: [id, name, status, members, series]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        status: { type: string, enum: [ACTIVE, ARCHIVED] }
+        members:
+          type: array
+          items: { $ref: '#/components/schemas/OccurrenceMember' }
+        series:
+          type: array
+          items:
+            allOf:
+              - { $ref: '#/components/schemas/CelebrationSeriesInput' }
+              - type: object
+                properties: { id: { type: string, format: uuid } }
+    GenerationResult:
+      type: object
+      required: [createdCount, skippedCount, generatedThrough, occurrenceIds]
+      properties:
+        createdCount: { type: integer, minimum: 0 }
+        skippedCount: { type: integer, minimum: 0 }
+        generatedThrough: { type: string, format: date }
+        occurrenceIds: { type: array, items: { type: string, format: uuid } }
+    OccurrenceMemberInput:
+      type: object
+      required: [memberId, role]
+      properties:
+        memberId: { type: string, format: uuid }
+        role: { type: string }
+        overrideConflicts: { type: boolean, default: false }
+        conflictJustification:
+          type: string
+          minLength: 10
+          description: Obrigatória quando overrideConflicts for verdadeiro.
+    OccurrenceMember:
+      allOf:
+        - { $ref: '#/components/schemas/OccurrenceMemberInput' }
+        - type: object
+          required: [name, initials, confirmation]
+          properties:
+            name: { type: string }
+            initials: { type: string }
+            whatsapp:
+              type: [string, 'null']
+              pattern: '^\+[1-9]\d{7,14}$'
+              description: >-
+                Disponível para LEADER da paróquia ou MEMBER também alocado na
+                mesma ocorrência, sem expiração baseada na data da celebração.
+            confirmation: { $ref: '#/components/schemas/ConfirmationStatus' }
+    OccurrenceInput:
+      type: object
+      required: [title, startsAt, timezone, location, ministryId]
+      properties:
+        title: { type: string }
+        startsAt: { type: string, format: date-time }
+        timezone: { type: string, const: America/Fortaleza }
+        location: { type: string }
+        ministryId: { type: string, format: uuid }
+        liturgicalTime: { type: string }
+        notes: { type: string }
+        version: { type: integer, minimum: 0 }
+    OccurrenceSummary:
+      allOf:
+        - { $ref: '#/components/schemas/OccurrenceInput' }
+        - type: object
+          required: [id, status, memberCount, repertoireCount]
+          properties:
+            id: { type: string, format: uuid }
+            status: { $ref: '#/components/schemas/OccurrenceStatus' }
+            memberCount: { type: integer }
+            repertoireCount: { type: integer }
+    SetlistItemInput:
+      type: object
+      required: [songId, position, key, liturgicalMoment]
+      properties:
+        songId: { type: string, format: uuid }
+        position: { type: integer, minimum: 1 }
+        key: { type: string }
+        liturgicalMoment: { type: string }
+        notes: { type: string }
+    SetlistInput:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/SetlistItemInput' } }
+    OccurrenceDetail:
+      allOf:
+        - { $ref: '#/components/schemas/OccurrenceSummary' }
+        - type: object
+          required: [members, setlist]
+          properties:
+            members: { type: array, items: { $ref: '#/components/schemas/OccurrenceMember' } }
+            setlist: { $ref: '#/components/schemas/SetlistInput' }
+    SongInput:
+      type: object
+      required: [title, author, defaultKey, liturgicalMoments, lyrics, chords]
+      properties:
+        title: { type: string }
+        author: { type: string }
+        defaultKey: { type: string }
+        liturgicalMoments: { type: array, items: { type: string } }
+        lyrics: { type: string }
+        chords: { type: string }
+    Song:
+      allOf:
+        - { $ref: '#/components/schemas/SongInput' }
+        - type: object
+          required: [id, status]
+          properties:
+            id: { type: string, format: uuid }
+            status: { type: string, enum: [ACTIVE, ARCHIVED] }
+    NewsInput:
+      type: object
+      required: [title, body]
+      properties:
+        title: { type: string }
+        body: { type: string }
+    NewsItem:
+      allOf:
+        - { $ref: '#/components/schemas/NewsInput' }
+        - type: object
+          required: [id, publishedAt, author]
+          properties:
+            id: { type: string, format: uuid }
+            publishedAt: { type: string, format: date-time }
+            author: { $ref: '#/components/schemas/AuthUser' }
+    DashboardResponse:
+      type: object
+      required: [summary, occurrences, news]
+      properties:
+        summary:
+          type: object
+          required: [celebrations, confirmedMembers, pendingConfirmations, openPositions]
+          properties:
+            celebrations: { type: integer }
+            confirmedMembers: { type: integer }
+            pendingConfirmations: { type: integer }
+            openPositions: { type: integer }
+        occurrences: { type: array, items: { $ref: '#/components/schemas/OccurrenceSummary' } }
+        news: { type: array, items: { $ref: '#/components/schemas/NewsItem' } }
+    PageMetadata:
+      type: object
+      required: [page, pageSize, total]
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field: { type: string }
+        message: { type: string }
+    Problem:
+      type: object
+      required: [title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        code: { type: string }
+        detail: { type: string }
+        traceId: { type: string }
+        fieldErrors: { type: array, items: { $ref: '#/components/schemas/FieldError' } }

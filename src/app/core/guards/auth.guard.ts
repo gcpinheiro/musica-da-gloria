@@ -16,3 +16,9 @@ export const managementGuard: CanActivateFn = () => {
   if (!authFacade.isAuthenticated()) return router.createUrlTree(['/login']);
   return authFacade.canManage() ? true : router.createUrlTree(['/dashboard']);
 };
+
+export const superAdminGuard: CanActivateFn = () => {
+  const authFacade = inject(AuthFacade); const router = inject(Router);
+  if (!authFacade.isAuthenticated()) return router.createUrlTree(['/login']);
+  return authFacade.isSuperAdmin() ? true : router.createUrlTree(['/dashboard']);
+};

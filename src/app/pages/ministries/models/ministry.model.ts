@@ -4,6 +4,7 @@ export interface MinistryParticipant {
   readonly id: string;
   readonly name: string;
   readonly initials: string;
+  readonly whatsapp: string;
   readonly role: string;
 }
 
@@ -16,6 +17,7 @@ export interface Ministry {
   readonly celebrationTitle: string;
   readonly location: string;
   readonly active: boolean;
+  readonly seriesId?: string;
   readonly generatedThrough?: string;
 }
 

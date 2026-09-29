@@ -12,22 +12,15 @@ import { AuthFacade } from '../../../core/auth/auth.facade';
 export class Login {
   protected readonly authFacade = inject(AuthFacade);
   protected readonly form = new FormGroup({
-    email: new FormControl('membro@musicadagloria.org.br', {
+    email: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-    password: new FormControl('gloria2026', {
+    password: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.minLength(6)],
+      validators: [Validators.required, Validators.minLength(8)],
     }),
   });
-
-  protected selectDemo(profile: 'LEADER' | 'MEMBER'): void {
-    this.form.setValue({
-      email: profile === 'LEADER' ? 'lider@musicadagloria.org.br' : 'membro@musicadagloria.org.br',
-      password: 'gloria2026',
-    });
-  }
 
   protected submit(): void {
     if (this.form.invalid) {

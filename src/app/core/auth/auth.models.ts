@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'LEADER' | 'MEMBER';
+export type UserRole = 'SUPER_ADMIN' | 'LEADER' | 'MEMBER';
 
 export interface AuthUser {
   readonly id: string;
@@ -6,10 +6,13 @@ export interface AuthUser {
   readonly email: string;
   readonly role: UserRole;
   readonly initials: string;
-  readonly memberId?: string;
+  readonly parishId: string | null;
+  readonly memberId: string | null;
 }
 
 export interface LoginCredentials {
   readonly email: string;
   readonly password: string;
 }
+
+export interface InvitationAcceptance { readonly password: string; readonly passwordConfirmation: string; readonly whatsapp?: string; }

@@ -17,6 +17,7 @@ describe('AppShell', () => {
           useValue: {
             user: signal({ name: 'Eury', initials: 'E' }),
             canManage: signal(true),
+            isSuperAdmin: signal(false),
             isMember: signal(false),
             logout,
           },
@@ -44,6 +45,7 @@ describe('AppShell', () => {
           useValue: {
             user: signal({ name: 'Rafael Lima', initials: 'RL' }),
             canManage: signal(false),
+            isSuperAdmin: signal(false),
             isMember: signal(true),
             logout: jasmine.createSpy('logout'),
           },

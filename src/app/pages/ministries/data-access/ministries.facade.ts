@@ -4,7 +4,6 @@ import { finalize, forkJoin } from 'rxjs';
 import { SchedulesService } from '../../schedules/data-access/schedules.service';
 import { ScheduleMemberOption } from '../../schedules/models/schedule.model';
 import { Ministry, MinistryInput, MINISTRY_WEEKDAYS } from '../models/ministry.model';
-import { buildMinistryOccurrences } from '../utils/ministry-occurrences';
 import { MinistriesService } from './ministries.service';
 
 @Injectable()
@@ -52,14 +51,14 @@ export class MinistriesFacade {
   generateUntil(endDate: string): void {
     const ministry = this.selectedState();
     if (!ministry || !endDate) return;
-    const inputs = buildMinistryOccurrences(ministry, endDate);
+    if (!ministry.seriesId) { this.errorState.set('Este ministério não possui uma série recorrente.'); return; }
     this.savingState.set(true);
     this.errorState.set(null);
-    this.schedulesService.generate(inputs).subscribe({
-      next: (generated) => this.service.markGenerated(ministry.id, endDate).pipe(finalize(() => this.savingState.set(false))).subscribe((updated) => {
-        this.selectedState.set(updated);
-        this.generationMessageState.set(`${generated.length} ${generated.length === 1 ? 'escala criada' : 'escalas criadas'} até ${this.formatDate(endDate)}.`);
-      }),
+    this.service.generate(ministry.seriesId, endDate).pipe(finalize(() => this.savingState.set(false))).subscribe({
+      next: (result) => {
+        this.selectedState.update((current) => current ? { ...current, generatedThrough: result.generatedThrough } : current);
+        this.generationMessageState.set(`${result.createdCount} ${result.createdCount === 1 ? 'escala criada' : 'escalas criadas'} até ${this.formatDate(endDate)}.`);
+      },
       error: () => { this.savingState.set(false); this.errorState.set('Não foi possível gerar as escalas recorrentes.'); },
     });
   }

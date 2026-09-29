@@ -8,6 +8,8 @@ interface NavigationItem {
   readonly icon: string;
   readonly exact?: boolean;
   readonly managementOnly?: boolean;
+  readonly pastoralOnly?: boolean;
+  readonly superAdminOnly?: boolean;
 }
 
 @Component({
@@ -21,14 +23,18 @@ export class AppShell {
   protected readonly authFacade = inject(AuthFacade);
   protected readonly menuOpen = signal(false);
   private readonly navigation: readonly NavigationItem[] = [
-    { label: 'Visão geral', route: '/dashboard', icon: '⌂', exact: true },
-    { label: 'Escalas', route: '/escalas', icon: '▦' },
-    { label: 'Membros', route: '/membros', icon: '♙', managementOnly: true },
-    { label: 'Ministérios', route: '/ministerios', icon: '♫', managementOnly: true },
-    { label: 'Repertório', route: '/repertorio', icon: '♫' },
+    { label: 'Administração', route: '/administracao', icon: '⚙', superAdminOnly: true },
+    { label: 'Visão geral', route: '/dashboard', icon: '⌂', exact: true, pastoralOnly: true },
+    { label: 'Escalas', route: '/escalas', icon: '▦', pastoralOnly: true },
+    { label: 'Membros', route: '/membros', icon: '♙', managementOnly: true, pastoralOnly: true },
+    { label: 'Ministérios', route: '/ministerios', icon: '♫', managementOnly: true, pastoralOnly: true },
+    { label: 'Repertório', route: '/repertorio', icon: '♫', pastoralOnly: true },
   ];
   protected readonly visibleNavigation = computed(() =>
-    this.navigation.filter((item) => !item.managementOnly || this.authFacade.canManage()),
+    this.navigation.filter((item) =>
+      (!item.managementOnly || this.authFacade.canManage()) &&
+      (!item.superAdminOnly || this.authFacade.isSuperAdmin()) &&
+      (!item.pastoralOnly || !this.authFacade.isSuperAdmin())),
   );
 
   protected toggleMenu(): void {

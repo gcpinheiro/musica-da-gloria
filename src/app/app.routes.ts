@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, managementGuard } from './core/guards/auth.guard';
+import { authGuard, managementGuard, superAdminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -7,6 +7,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/login/login').then((component) => component.Login),
     title: 'Entrar | Música da Glória',
   },
+  { path: 'convites/:token', loadComponent: () => import('./pages/auth/invitation-accept/invitation-accept').then((component) => component.InvitationAccept), title: 'Aceitar convite | Música da Glória' },
   {
     path: '',
     canActivate: [authGuard],
@@ -17,6 +18,7 @@ export const routes: Routes = [
       { path: 'membros', canActivate: [managementGuard], loadChildren: () => import('./pages/members/members.routes').then((routes) => routes.MEMBERS_ROUTES) },
       { path: 'ministerios', canActivate: [managementGuard], loadChildren: () => import('./pages/ministries/ministries.routes').then((routes) => routes.MINISTRIES_ROUTES) },
       { path: 'repertorio', loadChildren: () => import('./pages/songs/songs.routes').then((routes) => routes.SONGS_ROUTES) },
+      { path: 'administracao', canActivate: [superAdminGuard], loadComponent: () => import('./pages/administration/pages/administration').then((component) => component.Administration) },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },

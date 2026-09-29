@@ -27,9 +27,16 @@
           @if (form.controls.email.touched && form.controls.email.invalid) { <small class="field-error">Informe um e-mail válido.</small> }
         </div>
         <div class="field">
-          <label for="phone">Telefone</label>
+          <label for="phone">WhatsApp</label>
           <input id="phone" type="tel" autocomplete="tel" placeholder="(85) 99999-9999" formControlName="phone" />
-          @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="field-error">Informe um telefone.</small> }
+          @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="field-error">Informe um número de WhatsApp.</small> }
+        </div>
+        <div class="field field--wide">
+          <label for="photoUrl">Foto <span class="field-optional">(opcional)</span></label>
+          <input id="photoUrl" type="file" accept="image/jpeg,image/png,image/webp" (change)="onPhotoSelected($event)" />
+          <small class="field-help">JPG, PNG ou WebP, com no máximo 5 MB.</small>
+          @if (photoError()) { <small class="field-error" role="alert">{{ photoError() }}</small> }
+          @if (form.controls.photoUrl.value) { <img class="photo-preview" [src]="form.controls.photoUrl.value" alt="Prévia da foto do membro" /> }
         </div>
       </div>
     </section>

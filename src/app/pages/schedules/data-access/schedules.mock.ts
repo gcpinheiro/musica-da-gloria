@@ -8,12 +8,12 @@ function isoDate(offset: number): string {
 }
 
 export const SCHEDULE_MEMBER_OPTIONS: readonly ScheduleMemberOption[] = [
-  { id: 'mem-001', name: 'Ana Clara Mendes', initials: 'AC', role: 'Voz principal', confirmation: 'PENDING', available: true },
-  { id: 'mem-002', name: 'Rafael Lima', initials: 'RL', role: 'Violão', confirmation: 'PENDING', available: true },
-  { id: 'mem-003', name: 'Bruno Melo', initials: 'BM', role: 'Teclado', confirmation: 'PENDING', available: true },
-  { id: 'mem-004', name: 'Camila Sousa', initials: 'CS', role: 'Voz principal', confirmation: 'PENDING', available: true },
-  { id: 'mem-005', name: 'Daniel Rocha', initials: 'DR', role: 'Violão', confirmation: 'PENDING', available: false },
-  { id: 'mem-006', name: 'João Pedro Silva', initials: 'JP', role: 'Percussão', confirmation: 'PENDING', available: true },
+  { id: 'mem-001', name: 'Ana Clara Mendes', initials: 'AC', whatsapp: '+5585999112030', role: 'Voz principal', confirmation: 'PENDING', available: true },
+  { id: 'mem-002', name: 'Rafael Lima', initials: 'RL', whatsapp: '+5585998426125', role: 'Violão', confirmation: 'PENDING', available: true },
+  { id: 'mem-003', name: 'Bruno Melo', initials: 'BM', whatsapp: '+5585997631180', role: 'Teclado', confirmation: 'PENDING', available: true },
+  { id: 'mem-004', name: 'Camila Sousa', initials: 'CS', whatsapp: '+5585991207784', role: 'Voz principal', confirmation: 'PENDING', available: true },
+  { id: 'mem-005', name: 'Daniel Rocha', initials: 'DR', whatsapp: '+5585996173320', role: 'Violão', confirmation: 'PENDING', available: false },
+  { id: 'mem-006', name: 'João Pedro Silva', initials: 'JP', whatsapp: '+5585992014588', role: 'Percussão', confirmation: 'PENDING', available: true },
 ];
 
 export const SCHEDULE_SONG_OPTIONS: readonly ScheduleSongOption[] = [

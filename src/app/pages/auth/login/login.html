@@ -33,7 +33,7 @@
         </div>
         <input id="password" type="password" autocomplete="current-password" formControlName="password" />
         @if (form.controls.password.touched && form.controls.password.invalid) {
-          <small class="field-error">A senha deve possuir ao menos 6 caracteres.</small>
+          <small class="field-error">A senha deve possuir ao menos 8 caracteres.</small>
         }
       </div>
 
@@ -45,14 +45,6 @@
         {{ authFacade.loading() ? 'Entrando…' : 'Entrar' }}
       </button>
 
-      <div class="demo-note">
-        <strong>Acesso de demonstração</strong>
-        <span>Escolha o perfil que deseja conhecer:</span>
-        <div class="demo-note__actions">
-          <button type="button" (click)="selectDemo('MEMBER')">Membro · Rafael</button>
-          <button type="button" (click)="selectDemo('LEADER')">Líder · Eury</button>
-        </div>
-      </div>
     </form>
   </section>
 </main>

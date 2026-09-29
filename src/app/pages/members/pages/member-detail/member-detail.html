@@ -11,8 +11,9 @@
       <div class="profile-name"><h1 class="display-title">{{ member.name }}</h1><span>{{ member.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}</span></div>
       <p>{{ member.email }} · {{ member.phone }}</p>
     </div>
-    <a class="button button--secondary" [routerLink]="['/membros', member.id, 'editar']">Editar perfil</a>
+    <div><button class="button button--primary" type="button" [disabled]="facade.saving()" (click)="facade.inviteAccess()">Convidar para acessar</button> <a class="button button--secondary" [routerLink]="['/membros', member.id, 'editar']">Editar perfil</a></div>
   </header>
+  @if (facade.message()) { <p role="status">{{ facade.message() }}</p> }
 
   <div class="detail-grid">
     <section class="card detail-card">

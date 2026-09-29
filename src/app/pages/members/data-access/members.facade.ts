@@ -13,6 +13,7 @@ export class MembersFacade {
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly errorState = signal<string | null>(null);
+  private readonly messageState = signal<string | null>(null);
   private readonly queryState = signal('');
   private readonly statusState = signal<MemberStatus | 'ALL'>('ALL');
 
@@ -21,6 +22,7 @@ export class MembersFacade {
   readonly loading = this.loadingState.asReadonly();
   readonly saving = this.savingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  readonly message = this.messageState.asReadonly();
   readonly query = this.queryState.asReadonly();
   readonly status = this.statusState.asReadonly();
   readonly filteredMembers = computed(() => {
@@ -74,6 +76,14 @@ export class MembersFacade {
     this.service.deactivate(id).subscribe({
       next: () => this.load(),
       error: () => this.errorState.set('Não foi possível desativar o membro.'),
+    });
+  }
+  inviteAccess(): void {
+    const member = this.selectedState(); if (!member) return;
+    this.savingState.set(true); this.errorState.set(null); this.messageState.set(null);
+    this.service.invite(member).pipe(finalize(() => this.savingState.set(false))).subscribe({
+      next: () => this.messageState.set('Convite de acesso enviado para a fila de e-mails.'),
+      error: () => this.errorState.set('Não foi possível convidar este membro. Ele pode já possuir uma conta ou convite pendente.'),
     });
   }
 }

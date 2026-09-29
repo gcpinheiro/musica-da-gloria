@@ -12,6 +12,7 @@ export interface Member {
   readonly name: string;
   readonly email: string;
   readonly phone: string;
+  readonly photoUrl?: string;
   readonly initials: string;
   readonly talents: readonly string[];
   readonly ministries: readonly string[];
@@ -24,6 +25,7 @@ export interface MemberInput {
   readonly name: string;
   readonly email: string;
   readonly phone: string;
+  readonly photoUrl?: string;
   readonly talents: readonly string[];
   readonly ministries: readonly string[];
   readonly availability: AvailabilityRule;

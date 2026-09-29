@@ -6,6 +6,7 @@ import { SchedulesService } from './schedules.service';
 import { MinistriesService } from '../../ministries/data-access/ministries.service';
 import { Ministry } from '../../ministries/models/ministry.model';
 import { filterSchedules, ScheduleAssignmentFilter } from '../utils/schedule-filters';
+import { AuthFacade } from '../../../core/auth/auth.facade';
 export type { ScheduleAssignmentFilter } from '../utils/schedule-filters';
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +14,7 @@ export class SchedulesFacade {
   private readonly service = inject(SchedulesService);
   private readonly ministriesService = inject(MinistriesService);
   private readonly router = inject(Router);
+  private readonly authFacade = inject(AuthFacade);
   private readonly schedulesState = signal<readonly Schedule[]>([]);
   private readonly selectedState = signal<Schedule | null>(null);
   private readonly memberOptionsState = signal<readonly ScheduleMemberOption[]>([]);
@@ -50,9 +52,11 @@ export class SchedulesFacade {
     this.loadOptions();
   }
   loadOptions(): void {
-    this.service.listMemberOptions().subscribe((items) => this.memberOptionsState.set(items));
     this.service.listSongOptions().subscribe((items) => this.songOptionsState.set(items));
-    this.ministriesService.list().subscribe((items) => this.ministryOptionsState.set(items.filter((item) => item.active)));
+    if (this.authFacade.canManage()) {
+      this.service.listMemberOptions().subscribe((items) => this.memberOptionsState.set(items));
+      this.ministriesService.list().subscribe((items) => this.ministryOptionsState.set(items.filter((item) => item.active)));
+    }
   }
   setStatus(status: ScheduleStatus | 'ALL'): void { this.statusState.set(status); }
   configureMemberFilter(memberId: string): void { this.currentMemberIdState.set(memberId); this.assignmentFilterState.set('MINE'); }
@@ -60,7 +64,8 @@ export class SchedulesFacade {
   create(input: ScheduleInput): void {
     this.savingState.set(true);
     this.errorState.set(null);
-    this.service.create(input).pipe(finalize(() => this.savingState.set(false))).subscribe({ next: (item) => void this.router.navigate(['/escalas', item.id]), error: () => this.errorState.set('Não foi possível criar a escala.') });
+    const ministryId = this.ministryOptionsState().find((item) => item.name === input.ministry)?.id;
+    this.service.create(input, ministryId).pipe(finalize(() => this.savingState.set(false))).subscribe({ next: (item) => void this.router.navigate(['/escalas', item.id]), error: () => this.errorState.set('Não foi possível criar a escala.') });
   }
   addMember(member: ScheduledPerson): void { this.updateSelected(this.service.addMember(this.selectedState()?.id ?? '', member)); }
   removeMember(memberId: string): void { this.updateSelected(this.service.removeMember(this.selectedState()?.id ?? '', memberId)); }

@@ -1,14 +1,24 @@
-FROM node:22.14.0-alpine AS build
+FROM node:22.18.0-alpine AS dependencies
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci
 
+FROM dependencies AS development
+
+COPY . .
+
+EXPOSE 4200
+
+CMD ["npm", "start", "--", "--host", "0.0.0.0"]
+
+FROM dependencies AS build
+
 COPY . .
 RUN npm run build
 
-FROM node:22.14.0-alpine AS runtime
+FROM node:22.18.0-alpine AS runtime
 
 ENV NODE_ENV=production
 ENV PORT=4000

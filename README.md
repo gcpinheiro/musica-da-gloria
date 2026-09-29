@@ -1,5 +1,10 @@
 # Música da Glória
 
+## Arquitetura e integração
+
+- [Contrato de back-end, autenticação e modelo de dados](docs/backend-integration.md)
+- [Especificação OpenAPI inicial](docs/openapi.yaml)
+
 ## Executar com Docker
 
 Pré-requisito: Docker Desktop ou Docker Engine com Docker Compose.
