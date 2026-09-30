@@ -1066,10 +1066,14 @@ components:
       allOf:
         - { $ref: '#/components/schemas/SongInput' }
         - type: object
-          required: [id, status]
+          required: [id, status, rightsStatus, rightsType, sourceUrl, attribution]
           properties:
             id: { type: string, format: uuid }
             status: { type: string, enum: [ACTIVE, ARCHIVED] }
+            rightsStatus: { type: string, enum: [APPROVED, PENDING_REVIEW, REJECTED, UNREVIEWED] }
+            rightsType: { type: [string, 'null'] }
+            sourceUrl: { type: [string, 'null'], format: uri }
+            attribution: { type: [string, 'null'] }
     NewsInput:
       type: object
       required: [title, body]
