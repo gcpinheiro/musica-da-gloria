@@ -8,10 +8,7 @@
 <section class="filter-bar card">
   <div><strong>Próximas celebrações</strong><small>{{ facade.filtered().length }} escalas encontradas</small></div>
   <div class="filter-controls">
-    @if (authFacade.isMember()) {
-      <label><span>Participação</span><select [value]="facade.assignmentFilter()" (change)="filterAssignment($event)"><option value="MINE">Somente minhas escalas</option><option value="ALL">Todas as escalas</option></select></label>
-    }
-    <label><span>Situação</span><select [value]="facade.status()" (change)="filter($event)"><option value="ALL">Todos os status</option><option value="PUBLISHED">Publicadas</option><option value="DRAFT">Rascunhos</option><option value="ATTENTION">Com atenção</option></select></label>
+    <label><span>Situação</span><select [value]="facade.status()" (change)="filter($event)"><option value="ALL">Todos os status</option><option value="PUBLISHED">Publicadas</option><option value="DRAFT">Rascunhos</option><option value="ATTENTION">Com atenção</option><option value="CANCELLED">Canceladas</option></select></label>
   </div>
 </section>
 
@@ -24,10 +21,10 @@
     @for (schedule of facade.filtered(); track schedule.id) {
       <article class="schedule-row">
         <div class="date"><strong>{{ schedule.date | date: 'dd' : 'UTC' }}</strong><span>{{ schedule.date | date: 'MMM' : 'UTC' : 'pt-BR' }}</span></div>
-        <div class="info"><h2>{{ schedule.title }}</h2><p>{{ schedule.ministry }} · {{ schedule.location }}</p></div>
+        <div class="info"><h2>{{ schedule.title }}</h2><p>{{ schedule.ministry }} · {{ schedule.location }}</p>@if (authFacade.isMember() && schedule.myConfirmation; as confirmation) { <small class="my-confirmation my-confirmation--{{ confirmation.toLowerCase() }}">{{ confirmation === 'CONFIRMED' ? 'Presença confirmada' : confirmation === 'DECLINED' ? 'Você não poderá participar' : 'Sua resposta está pendente' }}</small> }</div>
         <div class="time"><strong>{{ schedule.time }}</strong><span>{{ schedule.liturgicalTime }}</span></div>
-        <div class="counts"><span>{{ schedule.people.length }} membros</span><span>{{ schedule.songs.length }} músicas</span></div>
-        <span class="status status--{{ schedule.status.toLowerCase() }}">{{ schedule.status === 'PUBLISHED' ? 'Publicada' : schedule.status === 'DRAFT' ? 'Rascunho' : 'Atenção' }}</span>
+        <div class="counts"><span>{{ schedule.memberCount ?? schedule.people.length }} membros</span><span>{{ schedule.repertoireCount ?? schedule.songs.length }} músicas</span></div>
+        <span class="status status--{{ schedule.status.toLowerCase() }}">{{ schedule.status === 'PUBLISHED' ? 'Publicada' : schedule.status === 'DRAFT' ? 'Rascunho' : schedule.status === 'CANCELLED' ? 'Cancelada' : 'Atenção' }}</span>
         <a class="open" [routerLink]="[schedule.id]" [attr.aria-label]="'Abrir ' + schedule.title">→</a>
       </article>
     } @empty {

@@ -351,18 +351,18 @@ sequenceDiagram
 | Método | Endpoint | Papel | Uso no front |
 |---|---|---|---|
 | `GET` | `/occurrences?from=&to=&status=&memberId=&ministryId=` | Autenticado | Listar e filtrar escalas |
-| `POST` | `/occurrences` | ADMIN, LEADER | Criar escala avulsa |
+| `POST` | `/occurrences` | LEADER | Criar escala avulsa |
 | `GET` | `/occurrences/{id}` | Autenticado | Detalhe, formação e repertório |
-| `PATCH` | `/occurrences/{id}` | ADMIN, LEADER | Data, local, título e orientações |
-| `POST` | `/occurrences/{id}/publish` | ADMIN, LEADER | Publicar escala |
-| `PUT` | `/occurrences/{id}/members` | ADMIN, LEADER | Substituir formação somente da data |
-| `POST` | `/occurrences/{id}/members` | ADMIN, LEADER | Adicionar integrante |
-| `DELETE` | `/occurrences/{id}/members/{memberId}` | ADMIN, LEADER | Remover integrante da ocorrência |
-| `PATCH` | `/occurrences/{id}/members/{memberId}/confirmation` | Próprio MEMBER, ADMIN, LEADER | Confirmar ou recusar participação |
-| `PUT` | `/occurrences/{id}/setlist` | ADMIN, LEADER | Salvar ordem completa do repertório |
-| `POST` | `/occurrences/{id}/setlist/items` | ADMIN, LEADER | Adicionar música |
-| `PATCH` | `/occurrences/{id}/setlist/items/{itemId}` | ADMIN, LEADER | Alterar tom/momento/observação |
-| `DELETE` | `/occurrences/{id}/setlist/items/{itemId}` | ADMIN, LEADER | Remover música |
+| `PATCH` | `/occurrences/{id}` | LEADER | Data, local, título e orientações |
+| `POST` | `/occurrences/{id}/publish` | LEADER | Publicar escala e liberá-la aos membros escalados |
+| `PUT` | `/occurrences/{id}/members` | LEADER | Substituir formação somente da data, preservando respostas de quem permanece |
+| `POST` | `/occurrences/{id}/members` | LEADER | Adicionar integrante |
+| `DELETE` | `/occurrences/{id}/members/{memberId}` | LEADER | Remover integrante da ocorrência |
+| `PATCH` | `/occurrences/{id}/members/{memberId}/confirmation` | Próprio MEMBER, LEADER | Confirmar ou recusar participação em escala publicada |
+| `PUT` | `/occurrences/{id}/setlist` | LEADER | Salvar ordem completa do repertório |
+| `POST` | `/occurrences/{id}/setlist/items` | LEADER | Adicionar música |
+| `PATCH` | `/occurrences/{id}/setlist/items/{itemId}` | LEADER | Alterar tom/momento/observação |
+| `DELETE` | `/occurrences/{id}/setlist/items/{itemId}` | LEADER | Remover música |
 
 O filtro do membro deve usar o `memberId` obtido em `/auth/me`. Para `MEMBER`, a
 API deve ignorar ou rejeitar um `memberId` de terceiro e sempre aplicar o próprio

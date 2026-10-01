@@ -15,6 +15,10 @@
 .date span { color: var(--color-muted); font-size: .65rem; font-weight: 800; text-transform: uppercase; }
 .info h2 { margin: 0 0 .15rem; font-size: .92rem; }
 .info p, .time span { margin: 0; color: var(--color-muted); font-size: .7rem; }
+.my-confirmation { display: inline-block; margin-top: .35rem; border-radius: 100px; padding: .18rem .45rem; font-size: .6rem; font-weight: 800; }
+.my-confirmation--confirmed { background: var(--color-success-soft); color: var(--color-success); }
+.my-confirmation--pending { background: var(--color-warning-soft); color: var(--color-warning); }
+.my-confirmation--declined { background: var(--color-danger-soft); color: var(--color-danger); }
 .time, .counts { display: grid; }
 .time strong { font-size: .83rem; }
 .counts { gap: .1rem; color: var(--color-muted); font-size: .7rem; }
@@ -22,6 +26,7 @@
 .status--published { background: var(--color-success-soft); color: var(--color-success); }
 .status--draft { background: #edf0f2; color: var(--color-muted); }
 .status--attention { background: var(--color-danger-soft); color: var(--color-danger); }
+.status--cancelled { background: var(--color-danger-soft); color: var(--color-danger); }
 .open { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 8px; color: var(--color-sky); font-weight: 800; }
 .open:hover { background: var(--color-sky-soft); }
 .state { display: grid; justify-items: center; gap: .6rem; padding: 3rem; color: var(--color-muted); text-align: center; }

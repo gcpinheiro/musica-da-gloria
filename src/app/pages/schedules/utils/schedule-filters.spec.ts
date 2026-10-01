@@ -16,4 +16,9 @@ describe('filterSchedules', () => {
     const schedules = [schedule('one', 'mem-002', 'PUBLISHED'), schedule('two', 'mem-002', 'DRAFT')];
     expect(filterSchedules(schedules, 'DRAFT', 'MINE', 'mem-002').map((item) => item.id)).toEqual(['two']);
   });
+
+  it('keeps API summaries returned in the authenticated member scope', () => {
+    const summary = { ...schedule('one', 'mem-002', 'PUBLISHED'), people: [], myConfirmation: 'PENDING' as const };
+    expect(filterSchedules([summary], 'ALL', 'MINE', 'mem-002')).toEqual([summary]);
+  });
 });

@@ -580,6 +580,41 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+  /occurrences/{occurrenceId}/publish:
+    parameters:
+      - { $ref: '#/components/parameters/OccurrenceId' }
+    post:
+      tags: [Occurrences]
+      operationId: publishOccurrence
+      responses:
+        '200':
+          description: Escala publicada e disponibilizada aos membros escalados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /occurrences/{occurrenceId}/members/{memberId}/confirmation:
+    parameters:
+      - { $ref: '#/components/parameters/OccurrenceId' }
+      - { $ref: '#/components/parameters/MemberId' }
+    patch:
+      tags: [Occurrences]
+      operationId: updateOccurrenceMemberConfirmation
+      description: MEMBER altera somente a própria participação; LEADER pode corrigir uma resposta no escopo da paróquia.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmationInput' }
+      responses:
+        '200':
+          description: Confirmação atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /occurrences/{occurrenceId}/setlist:
     parameters:
       - { $ref: '#/components/parameters/OccurrenceId' }
@@ -743,6 +778,11 @@ components:
     OccurrenceStatus: { type: string, enum: [DRAFT, PUBLISHED, ATTENTION, CANCELLED] }
     Weekday: { type: string, enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY] }
     ConfirmationStatus: { type: string, enum: [CONFIRMED, PENDING, DECLINED] }
+    ConfirmationInput:
+      type: object
+      required: [confirmation]
+      properties:
+        confirmation: { type: string, enum: [CONFIRMED, DECLINED] }
     LoginRequest:
       type: object
       required: [email, password]
@@ -1030,6 +1070,10 @@ components:
             status: { $ref: '#/components/schemas/OccurrenceStatus' }
             memberCount: { type: integer }
             repertoireCount: { type: integer }
+            myConfirmation:
+              allOf:
+                - { $ref: '#/components/schemas/ConfirmationStatus' }
+              description: Presente quando a resposta corresponde ao membro autenticado ou ao filtro memberId.
     SetlistItemInput:
       type: object
       required: [songId, position, key, liturgicalMoment]

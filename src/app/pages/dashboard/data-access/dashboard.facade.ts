@@ -30,6 +30,7 @@ export class DashboardFacade {
   readonly newsSaving = this.newsSavingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly schedules = computed(() => this.dataState()?.schedules ?? []);
+  readonly pendingSchedules = computed(() => this.schedules().filter((item) => item.myConfirmation === 'PENDING'));
   readonly monthLabel = computed(() => {
     const label = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(this.monthCursorState());
     return label.charAt(0).toUpperCase() + label.slice(1);

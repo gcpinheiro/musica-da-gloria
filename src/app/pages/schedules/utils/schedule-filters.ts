@@ -10,7 +10,7 @@ export function filterSchedules(
 ): readonly Schedule[] {
   return schedules.filter((schedule) => {
     const matchesStatus = status === 'ALL' || schedule.status === status;
-    const matchesAssignment = assignment === 'ALL' || schedule.people.some((person) => person.id === memberId);
+    const matchesAssignment = assignment === 'ALL' || schedule.myConfirmation !== undefined || schedule.people.some((person) => person.id === memberId);
     return matchesStatus && matchesAssignment;
   });
 }

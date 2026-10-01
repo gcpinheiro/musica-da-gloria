@@ -4,15 +4,32 @@
 @else if (facade.selected(); as schedule) {
   <header class="schedule-header card">
     <div class="date-block"><strong>{{ schedule.date | date: 'dd' : 'UTC' }}</strong><span>{{ schedule.date | date: 'MMMM' : 'UTC' : 'pt-BR' }}</span></div>
-    <div class="schedule-header__title"><span class="status status--{{ schedule.status.toLowerCase() }}">{{ schedule.status === 'PUBLISHED' ? 'Publicada' : schedule.status === 'DRAFT' ? 'Rascunho' : 'Atenção' }}</span><h1 class="display-title">{{ schedule.title }}</h1><p>{{ schedule.ministry }} · {{ schedule.liturgicalTime }}</p></div>
+    <div class="schedule-header__title"><span class="status status--{{ schedule.status.toLowerCase() }}">{{ schedule.status === 'PUBLISHED' ? 'Publicada' : schedule.status === 'DRAFT' ? 'Rascunho' : schedule.status === 'CANCELLED' ? 'Cancelada' : 'Atenção' }}</span><h1 class="display-title">{{ schedule.title }}</h1><p>{{ schedule.ministry }} · {{ schedule.liturgicalTime }}</p></div>
     @if (authFacade.canManage()) {
+      @if (schedule.status === 'DRAFT') { <button class="button button--primary" type="button" (click)="facade.publish()" [disabled]="facade.saving()">{{ facade.saving() ? 'Publicando…' : 'Publicar escala' }}</button> }
       <a class="button button--secondary" routerLink="/escalas/nova">Duplicar como nova</a>
     }
   </header>
   <section class="facts card" aria-label="Informações da celebração">
     <div><span aria-hidden="true">◷</span><small>Horário</small><strong>{{ schedule.time }}</strong></div><div><span aria-hidden="true">⌖</span><small>Local</small><strong>{{ schedule.location }}</strong></div><div><span aria-hidden="true">♪</span><small>Ministério</small><strong>{{ schedule.ministry }}</strong></div><div><span aria-hidden="true">✦</span><small>Tempo litúrgico</small><strong>{{ schedule.liturgicalTime }}</strong></div>
   </section>
+  @if (facade.message()) { <p class="inline-success" role="status">{{ facade.message() }}</p> }
   @if (facade.error()) { <p class="inline-error" role="alert">{{ facade.error() }}</p> }
+  @if (facade.myParticipation(); as participation) {
+    <section class="participation-card card" aria-labelledby="participation-title">
+      <div>
+        <p class="eyebrow">Minha participação</p>
+        <h2 id="participation-title">{{ participation.confirmation === 'PENDING' ? 'Você pode participar desta escala?' : participation.confirmation === 'CONFIRMED' ? 'Presença confirmada' : 'Você informou que não poderá participar' }}</h2>
+        <p>{{ schedule.title }} · {{ schedule.date | date: 'dd/MM/yyyy' : 'UTC' }} às {{ schedule.time }} · {{ participation.role }}</p>
+      </div>
+      @if (schedule.status !== 'CANCELLED') {
+        <div class="participation-actions" aria-label="Responder à escala">
+          <button class="button participation-confirm" type="button" (click)="facade.respond('CONFIRMED')" [disabled]="facade.saving() || participation.confirmation === 'CONFIRMED'">Confirmar presença</button>
+          <button class="button participation-decline" type="button" (click)="facade.respond('DECLINED')" [disabled]="facade.saving() || participation.confirmation === 'DECLINED'">Não poderei participar</button>
+        </div>
+      } @else { <strong class="participation-cancelled">Esta escala foi cancelada.</strong> }
+    </section>
+  }
   <div class="detail-columns">
     <section class="card panel">
       <div class="panel__header"><div><h2>Formação desta escala</h2><p>{{ authFacade.canManage() ? 'Alterações valem somente para esta ocorrência.' : 'Confira quem servirá nesta celebração.' }}</p></div>@if (authFacade.canManage()) {<button type="button" (click)="memberPickerOpen.set(!memberPickerOpen())">＋ Adicionar</button>}</div>

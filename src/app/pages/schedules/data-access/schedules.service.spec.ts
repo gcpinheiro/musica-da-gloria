@@ -44,4 +44,25 @@ describe('SchedulesService', () => {
     const cleaned = await firstValueFrom(service.removeMember('occ-001', member.id));
     expect(cleaned.people.some((item) => item.id === member.id)).toBeFalse();
   });
+
+  it('publishes a draft and records the member response', async () => {
+    const draft = await firstValueFrom(service.create({
+      title: 'Celebração para confirmação',
+      date: '2026-10-11',
+      time: '18:00',
+      location: 'Igreja Matriz',
+      ministry: 'Santa Cecília',
+      liturgicalTime: 'Tempo Comum',
+      notes: '',
+      people: [{ id: 'member-test', name: 'Membro Teste', initials: 'MT', whatsapp: '+5585999999999', role: 'Voz', confirmation: 'PENDING' }],
+      songs: [],
+    }));
+
+    const published = await firstValueFrom(service.publish(draft.id));
+    expect(published.status).toBe('PUBLISHED');
+
+    const confirmed = await firstValueFrom(service.updateConfirmation(draft.id, 'member-test', 'CONFIRMED'));
+    expect(confirmed.myConfirmation).toBe('CONFIRMED');
+    expect(confirmed.people[0].confirmation).toBe('CONFIRMED');
+  });
 });

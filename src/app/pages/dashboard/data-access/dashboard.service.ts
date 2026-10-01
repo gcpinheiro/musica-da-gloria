@@ -32,6 +32,7 @@ interface ApiDashboardOccurrence {
   readonly memberCount: number;
   readonly repertoireCount: number;
   readonly notes?: string;
+  readonly myConfirmation?: 'CONFIRMED' | 'PENDING' | 'DECLINED';
 }
 
 interface ApiDashboard {
@@ -167,15 +168,20 @@ export class DashboardService {
       location: item.location,
       liturgicalTime: item.liturgicalTime ?? '',
       status:
-        item.status === 'PUBLISHED'
-          ? 'CONFIRMED'
-          : item.status === 'DRAFT'
-            ? 'PENDING'
-            : 'ATTENTION',
+        item.myConfirmation === 'PENDING'
+          ? 'PENDING'
+          : item.myConfirmation === 'DECLINED'
+            ? 'ATTENTION'
+            : item.status === 'PUBLISHED'
+              ? 'CONFIRMED'
+              : item.status === 'DRAFT'
+                ? 'PENDING'
+                : 'ATTENTION',
       members: [],
       totalMembers: item.memberCount,
       repertoireCount: item.repertoireCount,
       alert: item.status === 'ATTENTION' ? item.notes : undefined,
+      myConfirmation: item.myConfirmation,
     };
   }
 

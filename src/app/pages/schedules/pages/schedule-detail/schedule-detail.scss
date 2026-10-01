@@ -10,6 +10,7 @@
 .status--published { background: var(--color-success-soft); color: var(--color-success); }
 .status--draft { background: #edf0f2; color: var(--color-muted); }
 .status--attention { background: var(--color-danger-soft); color: var(--color-danger); }
+.status--cancelled { background: var(--color-danger-soft); color: var(--color-danger); }
 .facts { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 1rem; padding: 1rem; }
 .facts div { display: grid; grid-template-columns: 28px 1fr; grid-template-rows: auto auto; border-right: 1px solid var(--color-line); padding: .25rem 1rem; }
 .facts div:last-child { border: 0; }

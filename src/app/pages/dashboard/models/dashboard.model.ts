@@ -1,4 +1,5 @@
 export type ScheduleStatus = 'CONFIRMED' | 'PENDING' | 'ATTENTION';
+export type ConfirmationStatus = 'CONFIRMED' | 'PENDING' | 'DECLINED';
 
 export interface DashboardSummary {
   readonly celebrations: number;
@@ -28,6 +29,7 @@ export interface WeekSchedule {
   readonly totalMembers: number;
   readonly repertoireCount: number;
   readonly alert?: string;
+  readonly myConfirmation?: ConfirmationStatus;
 }
 
 export interface DashboardData {

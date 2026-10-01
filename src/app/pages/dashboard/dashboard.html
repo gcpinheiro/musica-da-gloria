@@ -27,12 +27,12 @@
     </article>
     <article class="summary-card summary-card--green">
       <span class="summary-card__icon" aria-hidden="true">✓</span>
-      <div><strong>{{ facade.monthSummary().confirmedMembers }}</strong><span>Confirmados</span></div>
-      <small>membros escalados</small>
+      <div><strong>{{ facade.monthSummary().confirmedMembers }}</strong><span>{{ authFacade.isMember() ? 'Presenças confirmadas' : 'Confirmados' }}</span></div>
+      <small>{{ authFacade.isMember() ? 'nas suas escalas' : 'membros escalados' }}</small>
     </article>
     <article class="summary-card summary-card--gold">
       <span class="summary-card__icon" aria-hidden="true">◷</span>
-      <div><strong>{{ facade.monthSummary().pendingConfirmations }}</strong><span>Pendentes</span></div>
+      <div><strong>{{ facade.monthSummary().pendingConfirmations }}</strong><span>{{ authFacade.isMember() ? 'Suas pendências' : 'Pendentes' }}</span></div>
       <small>aguardando resposta</small>
     </article>
     <article class="summary-card summary-card--red">
@@ -41,6 +41,15 @@
       <small>funções sem músico</small>
     </article>
   </section>
+
+  @if (authFacade.isMember() && facade.pendingSchedules().length) {
+    <section class="pending-responses card" aria-labelledby="pending-responses-title">
+      <div><span aria-hidden="true">!</span><div><h2 id="pending-responses-title">Você tem {{ facade.pendingSchedules().length }} {{ facade.pendingSchedules().length === 1 ? 'escala aguardando' : 'escalas aguardando' }} resposta</h2><p>Confirme sua presença para ajudar o ministério a organizar a formação.</p></div></div>
+      <div class="pending-responses__links">
+        @for (schedule of facade.pendingSchedules(); track schedule.id) { <a [routerLink]="['/escalas', schedule.id]">Responder: {{ schedule.title }} · {{ schedule.date | date: 'dd/MM' : 'UTC' }}</a> }
+      </div>
+    </section>
+  }
 
   <div class="section-heading calendar-heading">
     <div>
@@ -86,7 +95,7 @@
               <div class="title-row">
                 <h3>{{ schedule.title }}</h3>
                 <span class="status" [class]="'status status--' + schedule.status.toLowerCase()">
-                  {{ schedule.status === 'CONFIRMED' ? 'Confirmada' : schedule.status === 'PENDING' ? 'Pendente' : 'Atenção' }}
+                  {{ authFacade.isMember() && schedule.myConfirmation ? (schedule.myConfirmation === 'CONFIRMED' ? 'Presença confirmada' : schedule.myConfirmation === 'PENDING' ? 'Resposta pendente' : 'Não poderá participar') : schedule.status === 'CONFIRMED' ? 'Confirmada' : schedule.status === 'PENDING' ? 'Pendente' : 'Atenção' }}
                 </span>
               </div>
               <p>{{ schedule.ministry }}</p>

@@ -1,4 +1,5 @@
-export type ScheduleStatus = 'DRAFT' | 'PUBLISHED' | 'ATTENTION';
+export type ScheduleStatus = 'DRAFT' | 'PUBLISHED' | 'ATTENTION' | 'CANCELLED';
+export type ConfirmationStatus = 'CONFIRMED' | 'PENDING' | 'DECLINED';
 
 export interface ScheduledPerson {
   readonly id: string;
@@ -6,7 +7,7 @@ export interface ScheduledPerson {
   readonly initials: string;
   readonly whatsapp: string;
   readonly role: string;
-  readonly confirmation: 'CONFIRMED' | 'PENDING' | 'DECLINED';
+  readonly confirmation: ConfirmationStatus;
 }
 
 export interface ScheduledSong {
@@ -32,6 +33,9 @@ export interface Schedule {
   readonly people: readonly ScheduledPerson[];
   readonly songs: readonly ScheduledSong[];
   readonly notes: string;
+  readonly myConfirmation?: ConfirmationStatus;
+  readonly memberCount?: number;
+  readonly repertoireCount?: number;
 }
 
 export interface ScheduleInput {
