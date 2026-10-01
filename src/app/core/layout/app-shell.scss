@@ -112,49 +112,6 @@
   text-align: center;
 }
 
-.sidebar__instagram {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  margin: 0 0.8rem 1rem;
-  padding: 0.8rem;
-  border: 1px solid rgb(198 201 255 / 25%);
-  border-radius: 12px;
-  background: rgb(198 201 255 / 9%);
-
-  &:hover {
-    background: rgb(198 201 255 / 16%);
-  }
-
-  strong,
-  small {
-    display: block;
-  }
-
-  strong {
-    font-family: 'Lora', Georgia, serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-
-  small {
-    color: rgb(255 255 255 / 62%);
-    font-size: 0.68rem;
-  }
-}
-
-.sidebar__instagram-icon {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 9px;
-  background: rgb(198 201 255 / 17%);
-  color: #d4d6ff;
-  font-size: 1.1rem;
-}
-
 .sidebar__footer {
   display: grid;
   gap: 0.8rem;
