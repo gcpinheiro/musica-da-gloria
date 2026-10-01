@@ -1,13 +1,29 @@
 <a class="back-link" routerLink="/repertorio">← Voltar ao repertório</a>
-<header class="page-header"><div><h1 class="display-title">{{ id ? 'Editar música' : 'Nova música' }}</h1><p>Cadastre a letra e a cifra usadas pelo ministério.</p></div></header>
+<header class="page-header"><div><h1 class="display-title">{{ id ? 'Editar música' : 'Nova música' }}</h1><p>Cadastre o conteúdo autorizado ou indique uma cifra mantida pela fonte original.</p></div></header>
 <form class="card song-form" [formGroup]="form" (ngSubmit)="submit()">
   <div class="form-grid">
     <div class="field"><label for="title">Título</label><input id="title" formControlName="title" /></div>
     <div class="field"><label for="author">Autor ou origem</label><input id="author" formControlName="author" /></div>
     <div class="field"><label for="key">Tom padrão</label><input id="key" formControlName="defaultKey" /></div>
     <div class="field"><label for="moments">Momentos litúrgicos</label><input id="moments" formControlName="moments" placeholder="Entrada, Envio" /></div>
-    <div class="field field--wide"><label for="chords">Cifra acompanhando a letra</label><textarea id="chords" rows="16" formControlName="chords" placeholder="G        D/F#&#10;Texto cantado nesta linha&#10;C        Am   D&#10;Texto cantado na linha seguinte"></textarea><small>Coloque os acordes na linha imediatamente acima do verso correspondente.</small></div>
-    <div class="field field--wide"><label for="lyrics">Letra limpa</label><textarea id="lyrics" rows="10" formControlName="lyrics"></textarea><small>Usada para consulta, pesquisa e futuras projeções.</small></div>
+
+    <fieldset class="content-mode field--wide">
+      <legend>Onde está a letra e a cifra?</legend>
+      <label><input type="radio" formControlName="contentMode" value="INTERNAL" /> Conteúdo autorizado no Música da Glória</label>
+      <label><input type="radio" formControlName="contentMode" value="EXTERNAL_EMBED" /> Página de uma fonte externa</label>
+    </fieldset>
+
+    @if (form.controls.contentMode.value === 'EXTERNAL_EMBED') {
+      <div class="field field--wide">
+        <label for="externalUrl">Link da cifra</label>
+        <input id="externalUrl" type="url" formControlName="externalUrl" placeholder="https://cifrascatolicas.com.br/..." />
+        <small>Fontes permitidas: Cifras Católicas e Cifra Club. O conteúdo não será copiado para o nosso banco.</small>
+        @if (form.controls.externalUrl.touched && form.controls.externalUrl.invalid) { <span class="field-error">Informe um link HTTPS de uma fonte permitida.</span> }
+      </div>
+    } @else {
+      <div class="field field--wide"><label for="chords">Cifra acompanhando a letra</label><textarea id="chords" rows="16" formControlName="chords" placeholder="G        D/F#&#10;Texto cantado nesta linha&#10;C        Am   D&#10;Texto cantado na linha seguinte"></textarea><small>Coloque os acordes na linha imediatamente acima do verso correspondente.</small></div>
+      <div class="field field--wide"><label for="lyrics">Letra limpa</label><textarea id="lyrics" rows="10" formControlName="lyrics"></textarea><small>Use apenas conteúdo fornecido ou autorizado pela paróquia, ou com licença compatível.</small></div>
+    }
   </div>
   <footer><a class="button button--secondary" routerLink="/repertorio">Cancelar</a><button class="button button--primary" [disabled]="facade.saving()">Salvar música</button></footer>
 </form>

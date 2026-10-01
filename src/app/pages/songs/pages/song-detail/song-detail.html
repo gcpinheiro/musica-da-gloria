@@ -28,6 +28,21 @@
   </div>
   <header class="song-header card"><div class="key">{{ currentKey() }}</div><div><p>{{ song.liturgicalMoments.join(' · ') }}</p><h1 class="display-title">{{ song.title }}</h1><small>{{ song.author }} · Tom original {{ song.defaultKey }}</small></div>@if (authFacade.canManage()) {<a class="button button--secondary" [routerLink]="['/repertorio/musicas',song.id,'editar']">Editar música</a>}</header>
 
+  @if (isExternal()) {
+    <section class="external-reader card" aria-labelledby="external-reader-title">
+      <header>
+        <div><p>Conteúdo na fonte original</p><h2 id="external-reader-title">Cifra externa</h2></div>
+        @if (externalSource(); as source) { <a class="button button--primary" [href]="source.url" target="_blank" rel="noopener noreferrer">Abrir em {{ source.name }} ↗</a> }
+      </header>
+      <p class="external-reader__notice">A letra e a cifra não são copiadas pelo Música da Glória. Elas permanecem sob responsabilidade da fonte indicada.</p>
+      @if (externalFrameUrl(); as frameUrl) {
+        <iframe class="external-reader__frame" [src]="frameUrl" [title]="'Cifra de ' + song.title" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        <p class="external-reader__fallback">Se a página não aparecer acima, use o botão “Abrir” para consultá-la diretamente no site da fonte.</p>
+      } @else {
+        <p class="external-reader__error" role="alert">A fonte desta música não é válida ou não está entre as fontes permitidas.</p>
+      }
+    </section>
+  } @else {
   <section class="song-reader card" [class.song-reader--expanded]="expanded()" [attr.role]="expanded() ? 'dialog' : null" [attr.aria-modal]="expanded() ? 'true' : null" aria-label="Cifra e letra da música">
     <header class="reader-toolbar">
       <div class="reader-heading"><h2>{{ activeTab() === 'chords' ? 'Letra com cifra' : 'Letra' }}</h2>@if (activeTab() === 'chords') { <span>Tom <button #keyTrigger class="key-trigger" type="button" (click)="openKeyModal()" aria-haspopup="dialog">{{ currentKey() }}</button></span> } @else { <span>Modo de leitura</span> }</div>
@@ -76,5 +91,6 @@
         </div>
       </section>
     </div>
+  }
   }
 }

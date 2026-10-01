@@ -1,0 +1,8 @@
+.external-reader { overflow:hidden; margin-top:1rem; }
+.external-reader>header { display:flex; align-items:center; justify-content:space-between; gap:1rem; border-bottom:1px solid var(--color-line); padding:1rem 1.2rem; }
+.external-reader>header p { margin:0 0 .2rem; color:var(--color-sky); font-size:.64rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.external-reader h2 { margin:0; font-size:1.1rem; }
+.external-reader__notice,.external-reader__fallback,.external-reader__error { margin:.85rem 1.2rem; color:var(--color-muted); font-size:.72rem; line-height:1.5; }
+.external-reader__frame { display:block; width:100%; min-height:70vh; border:0; border-block:1px solid var(--color-line); background:white; }
+.external-reader__error { border-radius:8px; background:#fff2f2; padding:.8rem; color:#8b2424; font-weight:600; }
+@media(max-width:760px){.external-reader>header{align-items:flex-start;flex-direction:column}.external-reader>header .button{width:100%}.external-reader__frame{min-height:65vh}}

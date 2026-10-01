@@ -5,14 +5,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SongsFacade } from '../../data-access/songs.facade';
 import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { isChordLine, transposeChordLine, transposeKey } from '../../utils/song-transposition';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { externalSongSource } from '../../utils/external-song-source';
 
 interface SheetLine { readonly text: string; readonly type: 'section' | 'chord' | 'lyric' | 'blank'; }
 type ReaderTab = 'lyrics' | 'chords';
 
-@Component({ selector: 'app-song-detail', imports: [RouterLink], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './song-navigation.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-song-detail', imports: [RouterLink], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './song-navigation.scss', './external-song-reader.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class SongDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly scrollContainer = viewChild<ElementRef<HTMLElement>>('scrollContainer');
   private readonly keyTrigger = viewChild<ElementRef<HTMLButtonElement>>('keyTrigger');
   private readonly keyModalClose = viewChild<ElementRef<HTMLButtonElement>>('keyModalClose');
@@ -27,6 +30,12 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly fontSize = signal(18);
   protected readonly semitoneOffset = signal(0);
   protected readonly keyModalOpen = signal(false);
+  protected readonly externalSource = computed(() => externalSongSource(this.facade.selected()?.externalUrl));
+  protected readonly isExternal = computed(() => this.facade.selected()?.contentMode === 'EXTERNAL_EMBED');
+  protected readonly externalFrameUrl = computed<SafeResourceUrl | null>(() => {
+    const source = this.externalSource();
+    return source ? this.sanitizer.bypassSecurityTrustResourceUrl(source.url) : null;
+  });
   protected readonly currentKey = computed(() => transposeKey(this.facade.selected()?.defaultKey ?? '', this.semitoneOffset()));
   protected readonly availableKeys = computed(() => Array.from({ length: 12 }, (_, offset) => ({ offset, label: transposeKey(this.facade.selected()?.defaultKey ?? '', offset) })));
   protected readonly sheetLines = computed<readonly SheetLine[]>(() => {

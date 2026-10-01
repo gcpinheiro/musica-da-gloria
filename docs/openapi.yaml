@@ -1098,14 +1098,25 @@ components:
             setlist: { $ref: '#/components/schemas/SetlistInput' }
     SongInput:
       type: object
-      required: [title, author, defaultKey, liturgicalMoments, lyrics, chords]
+      required: [title, author, defaultKey, liturgicalMoments, contentMode]
       properties:
         title: { type: string }
         author: { type: string }
         defaultKey: { type: string }
         liturgicalMoments: { type: array, items: { type: string } }
+        contentMode: { type: string, enum: [INTERNAL, EXTERNAL_EMBED] }
         lyrics: { type: string }
         chords: { type: string }
+        externalUrl: { type: [string, 'null'], format: uri }
+      oneOf:
+        - title: Conteúdo autorizado armazenado internamente
+          required: [lyrics, chords]
+          properties:
+            contentMode: { const: INTERNAL }
+        - title: Página mantida por uma fonte externa permitida
+          required: [externalUrl]
+          properties:
+            contentMode: { const: EXTERNAL_EMBED }
     Song:
       allOf:
         - { $ref: '#/components/schemas/SongInput' }

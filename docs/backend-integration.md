@@ -378,9 +378,9 @@ obrigatória. A exceção e sua justificativa devem constar no `AuditLog`.
 | Método | Endpoint | Papel | Uso no front |
 |---|---|---|---|
 | `GET` | `/songs?query=&status=ACTIVE&page=` | Autenticado | Biblioteca e busca |
-| `POST` | `/songs` | ADMIN, LEADER | Cadastrar música |
-| `GET` | `/songs/{id}` | Autenticado | Letra e cifra |
-| `PATCH` | `/songs/{id}` | ADMIN, LEADER | Editar metadados, letra e cifra |
+| `POST` | `/songs` | SUPER_ADMIN, LEADER | Cadastrar conteúdo autorizado ou referência externa permitida |
+| `GET` | `/songs/{id}` | Autenticado | Letra/cifra interna ou metadados e URL da fonte externa |
+| `PATCH` | `/songs/{id}` | SUPER_ADMIN, LEADER | Editar metadados e modalidade do conteúdo |
 | `POST` | `/songs/{id}/archive` | ADMIN, LEADER | Arquivar preservando setlists |
 
 ## 5. DTOs principais
