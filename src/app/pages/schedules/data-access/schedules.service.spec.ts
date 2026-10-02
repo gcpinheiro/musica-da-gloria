@@ -65,4 +65,22 @@ describe('SchedulesService', () => {
     expect(confirmed.myConfirmation).toBe('CONFIRMED');
     expect(confirmed.people[0].confirmation).toBe('CONFIRMED');
   });
+
+  it('archives a schedule so it no longer appears in the list', async () => {
+    const schedule = await firstValueFrom(service.create({
+      title: 'Escala para excluir',
+      date: '2026-10-12',
+      time: '18:00',
+      location: 'Igreja Matriz',
+      ministry: 'Santa Cecília',
+      liturgicalTime: 'Tempo Comum',
+      notes: '',
+      people: [],
+      songs: [],
+    }));
+
+    await firstValueFrom(service.archive(schedule.id));
+
+    expect((await firstValueFrom(service.list())).some((item) => item.id === schedule.id)).toBeFalse();
+  });
 });

@@ -2,7 +2,7 @@
 
 ## Status
 
-Aceita em 28/09/2026.
+Aceita em 28/09/2026. A decisão sobre fotos foi substituída pela ADR 0002.
 
 ## Decisão
 
@@ -14,7 +14,7 @@ Aceita em 28/09/2026.
   em container isolado antes da inicialização da API;
 - BullMQ e Redis para a fila `email-delivery`;
 - sessão opaca em cookie `HttpOnly`, `Secure` em produção e `SameSite=Lax`;
-- fotos fora do banco, em volume persistente;
+- fotos fora do banco, em volume persistente (substituído pela ADR 0002);
 - erros HTTP em `application/problem+json`.
 
 ## Consequências

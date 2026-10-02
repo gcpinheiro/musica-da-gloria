@@ -78,6 +78,16 @@ export class SchedulesFacade {
   addSong(song: ScheduleSongOption): void { this.updateSelected(this.service.addSong(this.selectedState()?.id ?? '', { ...song, id: `item-${Date.now()}` })); }
   removeSong(itemId: string): void { this.updateSelected(this.service.removeSong(this.selectedState()?.id ?? '', itemId)); }
   publish(): void { this.updateSelected(this.service.publish(this.selectedState()?.id ?? ''), 'Escala publicada. Os membros escalados já podem responder.'); }
+  archive(): void {
+    const id = this.selectedState()?.id;
+    if (!id) return;
+    this.savingState.set(true);
+    this.errorState.set(null);
+    this.service.archive(id).pipe(finalize(() => this.savingState.set(false))).subscribe({
+      next: () => { this.selectedState.set(null); void this.router.navigate(['/escalas']); },
+      error: () => this.errorState.set('Não foi possível excluir esta escala.'),
+    });
+  }
   respond(confirmation: Exclude<ConfirmationStatus, 'PENDING'>): void {
     const scheduleId = this.selectedState()?.id;
     const memberId = this.authFacade.user()?.memberId;

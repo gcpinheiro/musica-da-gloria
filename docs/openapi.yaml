@@ -402,7 +402,10 @@ paths:
                 type: object
                 required: [photoUrl]
                 properties:
-                  photoUrl: { type: string, format: uri }
+                  photoUrl:
+                    type: string
+                    pattern: '^data:image/(jpeg|png|webp);base64,'
+                    description: Data URL Base64 persistido no PostgreSQL.
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/ValidationError' }
@@ -557,6 +560,14 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OccurrenceDetail' }
         '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Occurrences]
+      operationId: archiveOccurrence
+      description: Arquiva a escala sem remover integrantes, confirmações, repertório ou auditoria.
+      responses:
+        '204': { description: Escala arquivada }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /occurrences/{occurrenceId}/members:
     parameters:
       - { $ref: '#/components/parameters/OccurrenceId' }
@@ -971,7 +982,10 @@ components:
           properties:
             id: { type: string, format: uuid }
             initials: { type: string }
-            photoUrl: { type: [string, 'null'], format: uri }
+            photoUrl:
+              type: [string, 'null']
+              pattern: '^data:image/(jpeg|png|webp);base64,'
+              description: Presente no detalhe do membro e omitido nas listagens.
             ministries:
               type: array
               items:

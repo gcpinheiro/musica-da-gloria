@@ -26,6 +26,7 @@ export class MemberForm implements OnInit {
   protected readonly memberId = this.route.snapshot.paramMap.get('id');
   protected readonly isEditing = this.memberId !== null;
   protected readonly photoError = signal<string | null>(null);
+  private readonly photoChanged = signal(false);
   protected readonly form = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
@@ -53,6 +54,7 @@ export class MemberForm implements OnInit {
       availability: member.availability,
       notes: member.notes,
     });
+    this.photoChanged.set(false);
   });
 
   ngOnInit(): void {
@@ -66,7 +68,7 @@ export class MemberForm implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
-    this.facade.save(this.form.getRawValue(), this.memberId ?? undefined);
+    this.facade.save({ ...this.form.getRawValue(), photoChanged: this.photoChanged() }, this.memberId ?? undefined);
   }
 
   protected onPhotoSelected(event: Event): void {
@@ -85,7 +87,10 @@ export class MemberForm implements OnInit {
       return;
     }
     const reader = new FileReader();
-    reader.addEventListener('load', () => this.form.controls.photoUrl.setValue(String(reader.result ?? '')), { once: true });
+    reader.addEventListener('load', () => {
+      this.form.controls.photoUrl.setValue(String(reader.result ?? ''));
+      this.photoChanged.set(true);
+    }, { once: true });
     reader.addEventListener('error', () => this.photoError.set('Não foi possível ler a foto selecionada.'), { once: true });
     reader.readAsDataURL(file);
   }

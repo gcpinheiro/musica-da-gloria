@@ -8,6 +8,7 @@
     @if (authFacade.canManage()) {
       @if (schedule.status === 'DRAFT') { <button class="button button--primary" type="button" (click)="facade.publish()" [disabled]="facade.saving()">{{ facade.saving() ? 'Publicando…' : 'Publicar escala' }}</button> }
       <a class="button button--secondary" routerLink="/escalas/nova">Duplicar como nova</a>
+      <button #deleteTrigger class="button button--danger" type="button" (click)="openDeleteDialog()" [disabled]="facade.saving()">Excluir escala</button>
     }
   </header>
   <section class="facts card" aria-label="Informações da celebração">
@@ -60,4 +61,17 @@
     </section>
   </div>
   <section class="card notes"><h2>Orientações</h2><p>{{ schedule.notes || 'Nenhuma orientação cadastrada.' }}</p></section>
+  @if (deleteDialogOpen()) {
+    <div class="delete-dialog-backdrop" role="presentation" (click)="closeDeleteDialog()">
+      <section class="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title" (click)="$event.stopPropagation()">
+        <p class="eyebrow">Ação permanente na interface</p>
+        <h2 id="delete-dialog-title">Excluir esta escala?</h2>
+        <p>A escala deixará de aparecer no calendário e nas listagens. O histórico será preservado para auditoria.</p>
+        <div class="delete-dialog__actions">
+          <button #deleteDialogCancel class="button button--secondary" type="button" (click)="closeDeleteDialog()">Cancelar</button>
+          <button class="button button--danger" type="button" (click)="confirmDelete()" [disabled]="facade.saving()">{{ facade.saving() ? 'Excluindo…' : 'Sim, excluir escala' }}</button>
+        </div>
+      </section>
+    </div>
+  }
 }

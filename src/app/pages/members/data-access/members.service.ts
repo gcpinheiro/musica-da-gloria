@@ -36,13 +36,13 @@ export class MembersService {
     );
   }
   create(input: MemberInput): Observable<Member> {
-    if (this.usesApi()) return this.http!.post<ApiMember>(`${environment.apiBaseUrl}/members`, this.toApi(input), this.options()).pipe(switchMap((member) => this.uploadPhoto(member, input.photoUrl)), map((member) => this.fromApi(member)));
+    if (this.usesApi()) return this.http!.post<ApiMember>(`${environment.apiBaseUrl}/members`, this.toApi(input), this.options()).pipe(switchMap((member) => this.uploadPhoto(member, input.photoUrl, input.photoChanged)), map((member) => this.fromApi(member)));
     const member: Member = { ...input, id: `mem-${Date.now()}`, initials: this.initials(input.name), status: 'ACTIVE' };
     this.members = [member, ...this.members];
     return of({ ...member }).pipe(delay(420));
   }
   update(id: string, input: MemberInput): Observable<Member> {
-    if (this.usesApi()) return this.http!.patch<ApiMember>(`${environment.apiBaseUrl}/members/${id}`, this.toApi(input), this.options()).pipe(switchMap((member) => this.uploadPhoto(member, input.photoUrl)), map((member) => this.fromApi(member)));
+    if (this.usesApi()) return this.http!.patch<ApiMember>(`${environment.apiBaseUrl}/members/${id}`, this.toApi(input), this.options()).pipe(switchMap((member) => this.uploadPhoto(member, input.photoUrl, input.photoChanged)), map((member) => this.fromApi(member)));
     const current = this.members.find((member) => member.id === id);
     if (!current) return throwError(() => new Error('MEMBER_NOT_FOUND'));
     const updated: Member = { ...current, ...input, initials: this.initials(input.name) };
@@ -73,8 +73,8 @@ export class MembersService {
   private fromApi(item: ApiMember): Member {
     return { id: item.id, name: item.name, email: item.email, phone: item.phone ?? '', photoUrl: item.photoUrl ?? undefined, initials: item.initials, talents: item.talentIds ?? [], ministries: item.ministries?.map((ministry) => ministry.name) ?? [], ministryIds: item.ministries?.map((ministry) => ministry.id) ?? [], availability: item.availability?.[0] ?? { weekday: 'SUNDAY', startTime: '00:00', endTime: '23:59' }, status: item.status, notes: item.notes ?? '' };
   }
-  private uploadPhoto(member: ApiMember, value?: string): Observable<ApiMember> {
-    if (!value?.startsWith('data:image/')) return of(member);
+  private uploadPhoto(member: ApiMember, value?: string, changed = false): Observable<ApiMember> {
+    if (!changed || !value?.startsWith('data:image/')) return of(member);
     const [metadata, encoded] = value.split(',');
     const mime = metadata.match(/^data:([^;]+)/)?.[1] ?? 'image/jpeg';
     const bytes = Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));

@@ -162,9 +162,10 @@ gestão. Essa regra deve ser aplicada na API; apenas esconder o botão no Angula
 não protege o dado.
 
 A foto deve ser enviada como arquivo JPG, PNG ou WebP, com limite inicial de 5 MB.
-No mock, o front mantém uma representação local; na API real, `PUT
-/members/{memberId}/photo` recebe `multipart/form-data`, armazena o arquivo fora do
-banco e devolve a URL ou referência gerenciada.
+O endpoint `PUT /members/{memberId}/photo` recebe `multipart/form-data`, confere a
+assinatura real do arquivo, converte a imagem para Data URL Base64 e a armazena no
+PostgreSQL. A listagem omite o Base64 para evitar respostas excessivamente grandes;
+o conteúdo é retornado no detalhe do membro.
 
 Suspender um `User` bloqueia somente sua autenticação. O `MemberProfile`, seus
 vínculos e suas escalas permanecem intactos. Afastamento pastoral e arquivamento
@@ -354,6 +355,7 @@ sequenceDiagram
 | `POST` | `/occurrences` | LEADER | Criar escala avulsa |
 | `GET` | `/occurrences/{id}` | Autenticado | Detalhe, formação e repertório |
 | `PATCH` | `/occurrences/{id}` | LEADER | Data, local, título e orientações |
+| `DELETE` | `/occurrences/{id}` | LEADER | Arquivar a escala, preservando histórico, formação e repertório |
 | `POST` | `/occurrences/{id}/publish` | LEADER | Publicar escala e liberá-la aos membros escalados |
 | `PUT` | `/occurrences/{id}/members` | LEADER | Substituir formação somente da data, preservando respostas de quem permanece |
 | `POST` | `/occurrences/{id}/members` | LEADER | Adicionar integrante |
