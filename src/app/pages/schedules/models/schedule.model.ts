@@ -23,6 +23,12 @@ export interface ScheduledSong {
 
 export interface ScheduleMemberOption extends ScheduledPerson { readonly available: boolean; }
 export type ScheduleSongOption = Omit<ScheduledSong, 'id'>;
+export interface ScheduleSongPage {
+  readonly items: readonly ScheduleSongOption[];
+  readonly page: number;
+  readonly pageSize: number;
+  readonly total: number;
+}
 
 export interface Schedule {
   readonly id: string;

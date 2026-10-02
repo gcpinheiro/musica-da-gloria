@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SchedulesFacade } from '../../data-access/schedules.facade';
 import { ScheduleMemberOption, ScheduleSongOption } from '../../models/schedule.model';
@@ -7,8 +7,9 @@ import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { canMemberViewScheduleContacts } from '../../utils/schedule-contact';
 import { Avatar } from '../../../../shared/components/avatar/avatar';
 
-@Component({ selector: 'app-schedule-detail', imports: [DatePipe, RouterLink, Avatar], templateUrl: './schedule-detail.html', styleUrls: ['./schedule-detail.scss', './delete-schedule-dialog.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
-export class ScheduleDetail implements OnInit {
+@Component({ selector: 'app-schedule-detail', imports: [DatePipe, RouterLink, Avatar], templateUrl: './schedule-detail.html', styleUrls: ['./schedule-detail.scss', './schedule-song-picker.scss', './delete-schedule-dialog.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
+export class ScheduleDetail implements OnInit, OnDestroy {
+  private songSearchTimer?: ReturnType<typeof setTimeout>;
   private readonly route = inject(ActivatedRoute);
   protected readonly facade = inject(SchedulesFacade);
   protected readonly authFacade = inject(AuthFacade);
@@ -18,8 +19,11 @@ export class ScheduleDetail implements OnInit {
   private readonly deleteDialogCancel = viewChild<ElementRef<HTMLButtonElement>>('deleteDialogCancel');
   private readonly deleteTrigger = viewChild<ElementRef<HTMLButtonElement>>('deleteTrigger');
   ngOnInit(): void { this.facade.loadOne(this.route.snapshot.paramMap.get('id') ?? ''); }
+  ngOnDestroy(): void { clearTimeout(this.songSearchTimer); }
   protected addMember(member: ScheduleMemberOption): void { this.facade.addMember(member); this.memberPickerOpen.set(false); }
-  protected addSong(song: ScheduleSongOption): void { this.facade.addSong(song); this.songPickerOpen.set(false); }
+  protected addSong(song: ScheduleSongOption): void { this.facade.addSong(song); }
+  protected searchSongs(event: Event): void { const query = (event.target as HTMLInputElement).value; clearTimeout(this.songSearchTimer); this.songSearchTimer = setTimeout(() => this.facade.loadSongOptions(query, 1), 250); }
+  protected changeSongPage(page: number): void { if (page >= 1 && page <= this.facade.songPageCount()) this.facade.loadSongOptions(this.facade.songQuery(), page); }
   protected openDeleteDialog(): void { this.deleteDialogOpen.set(true); queueMicrotask(() => this.deleteDialogCancel()?.nativeElement.focus()); }
   protected closeDeleteDialog(): void { this.deleteDialogOpen.set(false); queueMicrotask(() => this.deleteTrigger()?.nativeElement.focus()); }
   protected confirmDelete(): void { this.closeDeleteDialog(); this.facade.archive(); }

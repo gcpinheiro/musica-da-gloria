@@ -37,7 +37,7 @@ describe('SchedulesService', () => {
     const withMember = await firstValueFrom(service.addMember('occ-001', member));
     expect(withMember.people.length).toBe(original.people.length + 1);
 
-    const song = (await firstValueFrom(service.listSongOptions())).find((item) => item.songId === 'song-005')!;
+    const song = (await firstValueFrom(service.listSongOptions('', 1, 100))).items.find((item) => item.songId === 'song-005')!;
     const withSong = await firstValueFrom(service.addSong('occ-001', { ...song, id: 'item-test' }));
     expect(withSong.songs.some((item) => item.songId === 'song-005')).toBeTrue();
 
@@ -82,6 +82,28 @@ describe('SchedulesService', () => {
     await firstValueFrom(service.archive(schedule.id));
 
     expect((await firstValueFrom(service.list())).some((item) => item.id === schedule.id)).toBeFalse();
+  });
+
+  it('paginates and filters song options', async () => {
+    const page = await firstValueFrom(service.listSongOptions('Eis', 1, 2));
+    expect(page.items.length).toBeLessThanOrEqual(2);
+    expect(page.items.length).toBeGreaterThan(0);
+    expect(page.items.every((item) => item.title.toLocaleLowerCase('pt-BR').includes('eis'))).toBeTrue();
+  });
+
+  it('archives multiple selected schedules', async () => {
+    const before = await firstValueFrom(service.list());
+    const ids = before.slice(0, 2).map((schedule) => schedule.id);
+    await firstValueFrom(service.archiveMany(ids));
+    const after = await firstValueFrom(service.list());
+    expect(after.some((schedule) => ids.includes(schedule.id))).toBeFalse();
+  });
+
+  it('keeps the explicit repertoire order', async () => {
+    const schedule = await firstValueFrom(service.getById('occ-001'));
+    const reordered = [...schedule.songs].reverse();
+    const updated = await firstValueFrom(service.reorderSongs(schedule.id, reordered));
+    expect(updated.songs.map((song) => song.id)).toEqual(reordered.map((song) => song.id));
   });
 
   it('stores a formatted lyrics arrangement only on the selected schedule item', async () => {

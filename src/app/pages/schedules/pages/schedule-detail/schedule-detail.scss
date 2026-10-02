@@ -57,7 +57,7 @@
 .song-list { margin: 0; padding: 0; list-style: none; }
 .song-list li { display: flex; align-items: center; gap: .65rem; min-height: 64px; border-bottom: 1px solid var(--color-line); padding: .65rem 1rem; }
 .song-list li > span { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 8px; background: var(--color-gold-soft); color: #715a29; font-size: .65rem; font-weight: 800; }
-.song-list li div { flex: 1; }
+.song-list li > div:nth-child(2) { flex: 1; }
 .song-list strong, .song-list small { display: block; }
 .song-list strong { font-size: .77rem; }
 .song-list small { color: var(--color-muted); font-size: .64rem; }

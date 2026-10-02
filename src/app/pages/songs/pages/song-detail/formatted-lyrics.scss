@@ -31,6 +31,15 @@
 .lyrics-editing { padding: 18px; background: #eef2f6; }
 .lyrics-editing__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
 .reader-button--edit { border-color: #c5a35a; color: var(--color-navy-900); }
+.song-reader--light .formatted-lyrics,
+.song-reader--light .formatted-lyrics__segment--all,
+.song-reader--light .formatted-lyrics__segment--default { color: #111820; }
+.song-reader--light .formatted-lyrics__segment--women { color: #a51682; }
+.song-reader--light .formatted-lyrics__segment--men { color: #155f9f; }
+.song-reader--light .voice-legend { border-bottom-color: rgb(17 24 32 / 16%); color: #334254; }
+.song-reader--light .voice-dot--women { background: #a51682; }
+.song-reader--light .voice-dot--men { background: #155f9f; }
+.song-reader--light .voice-dot--all { background: #111820; }
 
 @media (max-width: 560px) {
   .lyrics-editing { padding: 10px; }

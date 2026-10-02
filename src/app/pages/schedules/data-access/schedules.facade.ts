@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
-import { ConfirmationStatus, Schedule, ScheduleInput, ScheduledPerson, ScheduleSongOption, ScheduleStatus, ScheduleMemberOption } from '../models/schedule.model';
+import { ConfirmationStatus, Schedule, ScheduleInput, ScheduledPerson, ScheduledSong, ScheduleSongOption, ScheduleStatus, ScheduleMemberOption } from '../models/schedule.model';
 import { SchedulesService } from './schedules.service';
 import { MinistriesService } from '../../ministries/data-access/ministries.service';
 import { Ministry } from '../../ministries/models/ministry.model';
@@ -19,6 +19,11 @@ export class SchedulesFacade {
   private readonly selectedState = signal<Schedule | null>(null);
   private readonly memberOptionsState = signal<readonly ScheduleMemberOption[]>([]);
   private readonly songOptionsState = signal<readonly ScheduleSongOption[]>([]);
+  private readonly songPageState = signal(1);
+  private readonly songPageSizeState = signal(8);
+  private readonly songTotalState = signal(0);
+  private readonly songQueryState = signal('');
+  private readonly songOptionsLoadingState = signal(false);
   private readonly ministryOptionsState = signal<readonly Ministry[]>([]);
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
@@ -32,6 +37,12 @@ export class SchedulesFacade {
   readonly selected = this.selectedState.asReadonly();
   readonly memberOptions = this.memberOptionsState.asReadonly();
   readonly songOptions = this.songOptionsState.asReadonly();
+  readonly songPage = this.songPageState.asReadonly();
+  readonly songPageSize = this.songPageSizeState.asReadonly();
+  readonly songTotal = this.songTotalState.asReadonly();
+  readonly songQuery = this.songQueryState.asReadonly();
+  readonly songOptionsLoading = this.songOptionsLoadingState.asReadonly();
+  readonly songPageCount = computed(() => Math.max(1, Math.ceil(this.songTotalState() / this.songPageSizeState())));
   readonly ministryOptions = this.ministryOptionsState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly saving = this.savingState.asReadonly();
@@ -58,11 +69,19 @@ export class SchedulesFacade {
     this.loadOptions();
   }
   loadOptions(): void {
-    this.service.listSongOptions().subscribe((items) => this.songOptionsState.set(items));
+    this.loadSongOptions('', 1);
     if (this.authFacade.canManage()) {
       this.service.listMemberOptions().subscribe((items) => this.memberOptionsState.set(items));
       this.ministriesService.list().subscribe((items) => this.ministryOptionsState.set(items.filter((item) => item.active)));
     }
+  }
+  loadSongOptions(query = this.songQueryState(), page = 1): void {
+    this.songQueryState.set(query);
+    this.songOptionsLoadingState.set(true);
+    this.service.listSongOptions(query, page, this.songPageSizeState()).pipe(finalize(() => this.songOptionsLoadingState.set(false))).subscribe({
+      next: (result) => { this.songOptionsState.set(result.items); this.songPageState.set(result.page); this.songTotalState.set(result.total); },
+      error: () => this.errorState.set('Não foi possível carregar as músicas.'),
+    });
   }
   setStatus(status: ScheduleStatus | 'ALL'): void { this.statusState.set(status); }
   configureMemberFilter(memberId: string): void { this.currentMemberIdState.set(memberId); this.assignmentFilterState.set('MINE'); }
@@ -77,6 +96,16 @@ export class SchedulesFacade {
   removeMember(memberId: string): void { this.updateSelected(this.service.removeMember(this.selectedState()?.id ?? '', memberId)); }
   addSong(song: ScheduleSongOption): void { this.updateSelected(this.service.addSong(this.selectedState()?.id ?? '', { ...song, id: `item-${Date.now()}` })); }
   removeSong(itemId: string): void { this.updateSelected(this.service.removeSong(this.selectedState()?.id ?? '', itemId)); }
+  moveSong(itemId: string, direction: -1 | 1): void {
+    const schedule = this.selectedState();
+    if (!schedule) return;
+    const current = schedule.songs.findIndex((item) => item.id === itemId);
+    const target = current + direction;
+    if (current < 0 || target < 0 || target >= schedule.songs.length) return;
+    const songs: ScheduledSong[] = [...schedule.songs];
+    [songs[current], songs[target]] = [songs[target], songs[current]];
+    this.updateSelected(this.service.reorderSongs(schedule.id, songs), 'Ordem do repertório atualizada.');
+  }
   publish(): void { this.updateSelected(this.service.publish(this.selectedState()?.id ?? ''), 'Escala publicada. Os membros escalados já podem responder.'); }
   archive(): void {
     const id = this.selectedState()?.id;
@@ -86,6 +115,16 @@ export class SchedulesFacade {
     this.service.archive(id).pipe(finalize(() => this.savingState.set(false))).subscribe({
       next: () => { this.selectedState.set(null); void this.router.navigate(['/escalas']); },
       error: () => this.errorState.set('Não foi possível excluir esta escala.'),
+    });
+  }
+  archiveMany(ids: readonly string[]): void {
+    if (!ids.length) return;
+    this.savingState.set(true);
+    this.errorState.set(null);
+    this.messageState.set(null);
+    this.service.archiveMany(ids).pipe(finalize(() => this.savingState.set(false))).subscribe({
+      next: () => { const removed = new Set(ids); this.schedulesState.update((items) => items.filter((item) => !removed.has(item.id))); this.messageState.set(`${ids.length} escala(s) excluída(s).`); },
+      error: () => this.errorState.set('Não foi possível excluir as escalas selecionadas.'),
     });
   }
   respond(confirmation: Exclude<ConfirmationStatus, 'PENDING'>): void {

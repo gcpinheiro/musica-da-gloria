@@ -12,8 +12,9 @@ import { LyricsDocument, plainLyricsDocument } from '../../../../shared/models/l
 
 interface SheetLine { readonly text: string; readonly type: 'section' | 'chord' | 'lyric' | 'blank'; }
 type ReaderTab = 'lyrics' | 'chords';
+type ReaderTheme = 'dark' | 'light';
 
-@Component({ selector: 'app-song-detail', imports: [RouterLink, LyricsEditor], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './song-navigation.scss', './external-song-reader.scss', './formatted-lyrics.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-song-detail', imports: [RouterLink, LyricsEditor], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './reader-theme.scss', './song-navigation.scss', './external-song-reader.scss', './formatted-lyrics.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class SongDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -27,6 +28,7 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly authFacade = inject(AuthFacade);
   protected readonly expanded = signal(false);
   protected readonly activeTab = signal<ReaderTab>('chords');
+  protected readonly readerTheme = signal<ReaderTheme>('dark');
   protected readonly autoScrolling = signal(false);
   protected readonly scrollSpeed = signal(4);
   protected readonly fontSize = signal(18);
@@ -91,6 +93,7 @@ export class SongDetail implements OnInit, OnDestroy {
   protected changeSpeed(event: Event): void { this.scrollSpeed.set(Number((event.target as HTMLInputElement).value)); }
   protected adjustFontSize(change: number): void { this.fontSize.update((size) => Math.min(32, Math.max(14, size + change))); }
   protected resetFontSize(): void { this.fontSize.set(18); }
+  protected toggleReaderTheme(): void { this.readerTheme.update((theme) => theme === 'dark' ? 'light' : 'dark'); }
   protected transpose(change: number): void { this.semitoneOffset.update((offset) => Math.min(11, Math.max(-11, offset + change))); }
   protected resetKey(): void { this.semitoneOffset.set(0); }
   protected startLyricsEditing(): void { this.editableLyrics.set(this.lyricsDocument()); this.editingLyrics.set(true); }

@@ -363,6 +363,7 @@ sequenceDiagram
 | `GET` | `/occurrences/{id}` | Autenticado | Detalhe, formação e repertório |
 | `PATCH` | `/occurrences/{id}` | LEADER | Data, local, título e orientações |
 | `DELETE` | `/occurrences/{id}` | LEADER | Arquivar a escala, preservando histórico, formação e repertório |
+| `POST` | `/occurrences/archive` | LEADER | Arquivar atomicamente as escalas selecionadas, após confirmação na interface |
 | `POST` | `/occurrences/{id}/publish` | LEADER | Publicar escala e liberá-la aos membros escalados |
 | `PUT` | `/occurrences/{id}/members` | LEADER | Substituir formação somente da data, preservando respostas de quem permanece |
 | `POST` | `/occurrences/{id}/members` | LEADER | Adicionar integrante |
@@ -385,6 +386,14 @@ biblioteca e outras escalas não são alteradas. A API persiste um documento JSO
 validado, nunca HTML arbitrário. A cifra permanece referenciada pela música
 original e não participa do editor.
 
+O seletor de repertório usa `GET /songs/options` com busca e paginação real. As
+músicas escolhidas permanecem em uma lista separada ao trocar de página e podem
+ser ordenadas antes de salvar. A posição persistida em `SetlistItem` define a
+sequência do detalhe e da navegação anterior/próxima.
+
+O leitor oferece tema escuro e tema claro como preferência local. O tema claro
+usa fundo branco e texto escuro, sem alterar letra, cifra ou escala.
+
 Indisponibilidade e conflito com outra escala não impedem definitivamente a ação
 da líder. Sem exceção explícita, a API responde `409` com os conflitos encontrados.
 A líder pode repetir o comando com `overrideConflicts: true` e uma justificativa
@@ -395,6 +404,7 @@ obrigatória. A exceção e sua justificativa devem constar no `AuditLog`.
 | Método | Endpoint | Papel | Uso no front |
 |---|---|---|---|
 | `GET` | `/songs?query=&status=ACTIVE&page=` | Autenticado | Biblioteca e busca |
+| `GET` | `/songs/options?query=&page=&pageSize=` | Autenticado | Busca paginada para selecionar o repertório da escala |
 | `POST` | `/songs` | SUPER_ADMIN, LEADER | Cadastrar conteúdo autorizado ou referência externa permitida |
 | `GET` | `/songs/{id}` | Autenticado | Letra/cifra interna ou metadados e URL da fonte externa |
 | `PATCH` | `/songs/{id}` | SUPER_ADMIN, LEADER | Editar metadados e modalidade do conteúdo |

@@ -43,7 +43,7 @@
       }
     </section>
   } @else {
-  <section class="song-reader card" [class.song-reader--expanded]="expanded()" [attr.role]="expanded() ? 'dialog' : null" [attr.aria-modal]="expanded() ? 'true' : null" aria-label="Cifra e letra da música">
+  <section class="song-reader card" [class.song-reader--expanded]="expanded()" [class.song-reader--light]="readerTheme() === 'light'" [attr.role]="expanded() ? 'dialog' : null" [attr.aria-modal]="expanded() ? 'true' : null" aria-label="Cifra e letra da música">
     <header class="reader-toolbar">
       <div class="reader-heading"><h2>{{ activeTab() === 'chords' ? 'Letra com cifra' : 'Letra' }}</h2>@if (activeTab() === 'chords') { <span>Tom <button #keyTrigger class="key-trigger" type="button" (click)="openKeyModal()" aria-haspopup="dialog">{{ currentKey() }}</button></span> } @else { <span>Modo de leitura</span> }</div>
       <div class="reader-tabs" role="tablist" aria-label="Formato da música">
@@ -71,6 +71,7 @@
         </div>
         <label class="speed"><span>Velocidade</span><input type="range" min="1" max="10" [value]="scrollSpeed()" (input)="changeSpeed($event)" /></label>
         <button type="button" class="reader-button" (click)="restartScroll()" title="Voltar ao início">↥ Início</button>
+        <button type="button" class="reader-button" [attr.aria-pressed]="readerTheme() === 'light'" (click)="toggleReaderTheme()">{{ readerTheme() === 'dark' ? '☀ Fundo claro' : '◐ Fundo escuro' }}</button>
         <button type="button" class="reader-button" [class.reader-button--active]="autoScrolling()" (click)="toggleAutoScroll()">{{ autoScrolling() ? 'Ⅱ Pausar' : '▶ Autorrolagem' }}</button>
         <button type="button" class="reader-button" (click)="toggleExpanded()">{{ expanded() ? '⊙ Recolher' : '⛶ Expandir' }}</button>
         }
@@ -104,7 +105,7 @@
       </div>
     </div>
     }
-    <p class="scroll-status sr-only" aria-live="polite">Tom atual: {{ currentKey() }}. Tamanho da letra: {{ fontSize() }} pixels. {{ autoScrolling() ? 'Rolagem automática ativada' : 'Rolagem automática pausada' }}</p>
+    <p class="scroll-status sr-only" aria-live="polite">Tom atual: {{ currentKey() }}. Tamanho da letra: {{ fontSize() }} pixels. Tema {{ readerTheme() === 'dark' ? 'escuro' : 'claro' }}. {{ autoScrolling() ? 'Rolagem automática ativada' : 'Rolagem automática pausada' }}</p>
   </section>
   @if (keyModalOpen()) {
     <div class="key-modal-backdrop" role="presentation" (click)="closeKeyModal()">
