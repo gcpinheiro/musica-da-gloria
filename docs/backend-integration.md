@@ -362,6 +362,7 @@ sequenceDiagram
 | `DELETE` | `/occurrences/{id}/members/{memberId}` | LEADER | Remover integrante da ocorrência |
 | `PATCH` | `/occurrences/{id}/members/{memberId}/confirmation` | Próprio MEMBER, LEADER | Confirmar ou recusar participação em escala publicada |
 | `PUT` | `/occurrences/{id}/setlist` | LEADER | Salvar ordem completa do repertório |
+| `PATCH` | `/occurrences/{id}/setlist/items/{itemId}/lyrics` | LEADER | Editar a cópia formatada da letra somente nesta escala |
 | `POST` | `/occurrences/{id}/setlist/items` | LEADER | Adicionar música |
 | `PATCH` | `/occurrences/{id}/setlist/items/{itemId}` | LEADER | Alterar tom/momento/observação |
 | `DELETE` | `/occurrences/{id}/setlist/items/{itemId}` | LEADER | Remover música |
@@ -369,6 +370,13 @@ sequenceDiagram
 O filtro do membro deve usar o `memberId` obtido em `/auth/me`. Para `MEMBER`, a
 API deve ignorar ou rejeitar um `memberId` de terceiro e sempre aplicar o próprio
 vínculo.
+
+Ao adicionar uma música ao repertório, a API copia a letra vigente para
+`SetlistItem.lyricsSnapshot`. O líder pode formatar e ajustar essa cópia com
+negrito, itálico e os papéis vocais `WOMEN`, `MEN` e `ALL`; a música original da
+biblioteca e outras escalas não são alteradas. A API persiste um documento JSON
+validado, nunca HTML arbitrário. A cifra permanece referenciada pela música
+original e não participa do editor.
 
 Indisponibilidade e conflito com outra escala não impedem definitivamente a ação
 da líder. Sem exceção explícita, a API responde `409` com os conflitos encontrados.

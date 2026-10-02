@@ -7,11 +7,13 @@ import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { isChordLine, transposeChordLine, transposeKey } from '../../utils/song-transposition';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { externalSongSource } from '../../utils/external-song-source';
+import { LyricsEditor } from '../../components/lyrics-editor/lyrics-editor';
+import { LyricsDocument, plainLyricsDocument } from '../../../../shared/models/lyrics-document.model';
 
 interface SheetLine { readonly text: string; readonly type: 'section' | 'chord' | 'lyric' | 'blank'; }
 type ReaderTab = 'lyrics' | 'chords';
 
-@Component({ selector: 'app-song-detail', imports: [RouterLink], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './song-navigation.scss', './external-song-reader.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-song-detail', imports: [RouterLink, LyricsEditor], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './song-navigation.scss', './external-song-reader.scss', './formatted-lyrics.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class SongDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -30,6 +32,8 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly fontSize = signal(18);
   protected readonly semitoneOffset = signal(0);
   protected readonly keyModalOpen = signal(false);
+  protected readonly editingLyrics = signal(false);
+  protected readonly editableLyrics = signal<LyricsDocument | null>(null);
   protected readonly externalSource = computed(() => externalSongSource(this.facade.selected()?.externalUrl));
   protected readonly isExternal = computed(() => this.facade.selected()?.contentMode === 'EXTERNAL_EMBED');
   protected readonly externalFrameUrl = computed<SafeResourceUrl | null>(() => {
@@ -38,6 +42,16 @@ export class SongDetail implements OnInit, OnDestroy {
   });
   protected readonly currentKey = computed(() => transposeKey(this.facade.selected()?.defaultKey ?? '', this.semitoneOffset()));
   protected readonly availableKeys = computed(() => Array.from({ length: 12 }, (_, offset) => ({ offset, label: transposeKey(this.facade.selected()?.defaultKey ?? '', offset) })));
+  protected readonly setlistItem = computed(() => {
+    const songId = this.facade.selected()?.id;
+    return this.facade.contextSchedule()?.songs.find((item) => item.songId === songId) ?? null;
+  });
+  protected readonly lyricsDocument = computed(() => {
+    const song = this.facade.selected();
+    const item = this.setlistItem();
+    return item?.formattedLyrics ?? plainLyricsDocument(item?.lyricsSnapshot ?? song?.lyrics ?? '');
+  });
+  protected readonly hasVoiceFormatting = computed(() => this.lyricsDocument().segments.some((segment) => Boolean(segment.voice)));
   protected readonly sheetLines = computed<readonly SheetLine[]>(() => {
     const song = this.facade.selected();
     const chordsActive = this.activeTab() === 'chords';
@@ -56,6 +70,8 @@ export class SongDetail implements OnInit, OnDestroy {
     ).subscribe(({ songId, scheduleId }) => {
       this.stopAutoScroll();
       this.semitoneOffset.set(0);
+      this.editingLyrics.set(false);
+      this.editableLyrics.set(null);
       this.restartScroll();
       this.facade.loadOne(songId, scheduleId);
     });
@@ -77,6 +93,16 @@ export class SongDetail implements OnInit, OnDestroy {
   protected resetFontSize(): void { this.fontSize.set(18); }
   protected transpose(change: number): void { this.semitoneOffset.update((offset) => Math.min(11, Math.max(-11, offset + change))); }
   protected resetKey(): void { this.semitoneOffset.set(0); }
+  protected startLyricsEditing(): void { this.editableLyrics.set(this.lyricsDocument()); this.editingLyrics.set(true); }
+  protected updateEditableLyrics(content: LyricsDocument): void { this.editableLyrics.set(content); }
+  protected cancelLyricsEditing(): void { this.editingLyrics.set(false); this.editableLyrics.set(null); }
+  protected saveLyricsEditing(): void {
+    const item = this.setlistItem();
+    const content = this.editableLyrics();
+    if (!item || !content) return;
+    this.facade.saveSetlistLyrics(item.id, content);
+    this.editingLyrics.set(false);
+  }
   protected openKeyModal(): void { this.keyModalOpen.set(true); queueMicrotask(() => this.keyModalClose()?.nativeElement.focus()); }
   protected closeKeyModal(): void { this.keyModalOpen.set(false); queueMicrotask(() => this.keyTrigger()?.nativeElement.focus()); }
   protected selectKey(offset: number): void { this.semitoneOffset.set(offset); this.closeKeyModal(); }

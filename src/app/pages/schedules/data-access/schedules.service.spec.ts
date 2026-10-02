@@ -83,4 +83,15 @@ describe('SchedulesService', () => {
 
     expect((await firstValueFrom(service.list())).some((item) => item.id === schedule.id)).toBeFalse();
   });
+
+  it('stores a formatted lyrics arrangement only on the selected schedule item', async () => {
+    const original = await firstValueFrom(service.getById('occ-001'));
+    const item = original.songs[0];
+    const content = { version: 1 as const, segments: [{ text: 'Mulheres', bold: true as const, voice: 'WOMEN' as const }] };
+
+    const updated = await firstValueFrom(service.updateSetlistLyrics(original.id, item.id, content));
+
+    expect(updated.songs[0].formattedLyrics).toEqual(content);
+    expect((await firstValueFrom(service.getById('occ-002'))).songs[0].formattedLyrics).toBeUndefined();
+  });
 });

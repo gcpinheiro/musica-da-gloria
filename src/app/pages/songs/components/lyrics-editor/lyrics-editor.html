@@ -1,0 +1,42 @@
+<section class="lyrics-editor" aria-labelledby="lyrics-editor-title">
+  <header>
+    <div>
+      <p>Arranjo desta escala</p>
+      <h3 id="lyrics-editor-title">Editar letra e divisão de vozes</h3>
+    </div>
+    <span>Selecione um trecho e aplique a formatação.</span>
+  </header>
+  <div class="lyrics-editor__toolbar" role="toolbar" aria-label="Formatação da letra">
+    <div role="group" aria-label="Estilo do texto">
+      <button type="button" aria-label="Negrito" title="Negrito" (mousedown)="preserveSelection($event)" (click)="apply('bold')"><strong>N</strong></button>
+      <button type="button" aria-label="Itálico" title="Itálico" (mousedown)="preserveSelection($event)" (click)="apply('italic')"><em>I</em></button>
+    </div>
+    <div role="group" aria-label="Divisão de vozes">
+      <button type="button" class="voice voice--women" (mousedown)="preserveSelection($event)" (click)="applyVoice('WOMEN')"><span aria-hidden="true"></span>Mulheres</button>
+      <button type="button" class="voice voice--men" (mousedown)="preserveSelection($event)" (click)="applyVoice('MEN')"><span aria-hidden="true"></span>Homens</button>
+      <button type="button" class="voice voice--all" (mousedown)="preserveSelection($event)" (click)="applyVoice('ALL')"><span aria-hidden="true"></span>Todos</button>
+    </div>
+    <div role="group" aria-label="Histórico e limpeza">
+      <button type="button" (mousedown)="preserveSelection($event)" (click)="apply('undo')" aria-label="Desfazer">↶</button>
+      <button type="button" (mousedown)="preserveSelection($event)" (click)="apply('redo')" aria-label="Refazer">↷</button>
+      <button type="button" (mousedown)="preserveSelection($event)" (click)="apply('removeFormat')">Limpar</button>
+    </div>
+  </div>
+  <div
+    #editable
+    class="lyrics-editor__surface"
+    contenteditable="true"
+    role="textbox"
+    aria-multiline="true"
+    aria-label="Letra formatada"
+    spellcheck="true"
+    (input)="emitValue()"
+    (keydown.enter)="insertLineBreak($event)"
+    (paste)="pastePlainText($event)"
+  ></div>
+  <footer>
+    <span><i class="legend legend--women" aria-hidden="true"></i> Mulheres</span>
+    <span><i class="legend legend--men" aria-hidden="true"></i> Homens</span>
+    <span><i class="legend legend--all" aria-hidden="true"></i> Todos</span>
+  </footer>
+</section>

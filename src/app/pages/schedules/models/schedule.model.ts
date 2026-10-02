@@ -16,6 +16,8 @@ export interface ScheduledSong {
   readonly title: string;
   readonly key: string;
   readonly liturgicalMoment: string;
+  readonly lyricsSnapshot?: string;
+  readonly formattedLyrics?: LyricsDocument | null;
 }
 
 export interface ScheduleMemberOption extends ScheduledPerson { readonly available: boolean; }
@@ -54,3 +56,4 @@ export interface GeneratedScheduleInput extends ScheduleInput {
   readonly id: string;
   readonly sourceMinistryId: string;
 }
+import { LyricsDocument } from '../../../shared/models/lyrics-document.model';

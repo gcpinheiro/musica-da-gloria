@@ -5,6 +5,7 @@ import { Schedule } from '../../schedules/models/schedule.model';
 import { SchedulesService } from '../../schedules/data-access/schedules.service';
 import { Song, SongInput } from '../models/song.model';
 import { SongsService } from './songs.service';
+import { LyricsDocument } from '../../../shared/models/lyrics-document.model';
 
 @Injectable({ providedIn: 'root' })
 export class SongsFacade {
@@ -29,4 +30,16 @@ export class SongsFacade {
       .subscribe({ next: ({ song, songs, schedule }) => { this.songsState.set(songs); this.selectedState.set(song); this.contextScheduleState.set(schedule); }, error: () => this.errorState.set('Música não encontrada.') });
   }
   save(input: SongInput, id?: string): void { this.savingState.set(true); const request = id ? this.service.update(id, input) : this.service.create(input); request.pipe(finalize(() => this.savingState.set(false))).subscribe({ next: (song) => void this.router.navigate(['/repertorio', 'musicas', song.id]), error: () => this.errorState.set('Não foi possível salvar a música.') }); }
+  saveSetlistLyrics(itemId: string, content: LyricsDocument): void {
+    const schedule = this.contextScheduleState();
+    if (!schedule) return;
+    this.savingState.set(true);
+    this.errorState.set(null);
+    this.schedulesService.updateSetlistLyrics(schedule.id, itemId, content)
+      .pipe(finalize(() => this.savingState.set(false)))
+      .subscribe({
+        next: (updated) => this.contextScheduleState.set(updated),
+        error: () => this.errorState.set('Não foi possível salvar a formatação da letra.'),
+      });
+  }
 }
