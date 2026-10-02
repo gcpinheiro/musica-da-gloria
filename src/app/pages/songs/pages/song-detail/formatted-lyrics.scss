@@ -30,7 +30,7 @@
 
 .lyrics-editing { padding: 18px; background: #eef2f6; }
 .lyrics-editing__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
-.reader-button--edit { border-color: #c5a35a; color: #fff4cf; }
+.reader-button--edit { border-color: var(--color-navy-900); color: #fff4cf; }
 
 @media (max-width: 560px) {
   .lyrics-editing { padding: 10px; }
