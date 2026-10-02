@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MembersFacade } from '../../data-access/members.facade';
@@ -25,13 +25,10 @@ export class MemberForm implements OnInit {
   protected readonly weekdays = WEEKDAY_OPTIONS;
   protected readonly memberId = this.route.snapshot.paramMap.get('id');
   protected readonly isEditing = this.memberId !== null;
-  protected readonly photoError = signal<string | null>(null);
-  private readonly photoChanged = signal(false);
   protected readonly form = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
     phone: new FormControl('', { nonNullable: true }),
-    photoUrl: new FormControl('', { nonNullable: true }),
     talents: new FormControl<string[]>([], { nonNullable: true, validators: [Validators.required] }),
     ministries: new FormControl<string[]>([], { nonNullable: true }),
     availability: new FormGroup({
@@ -48,13 +45,11 @@ export class MemberForm implements OnInit {
       name: member.name,
       email: member.email,
       phone: member.phone,
-      photoUrl: member.photoUrl ?? '',
       talents: [...member.talents],
       ministries: [...(member.ministryIds ?? [])],
       availability: member.availability,
       notes: member.notes,
     });
-    this.photoChanged.set(false);
   });
 
   ngOnInit(): void {
@@ -68,30 +63,6 @@ export class MemberForm implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
-    this.facade.save({ ...this.form.getRawValue(), photoChanged: this.photoChanged() }, this.memberId ?? undefined);
-  }
-
-  protected onPhotoSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    this.photoError.set(null);
-    if (!file) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      this.photoError.set('Escolha uma imagem JPG, PNG ou WebP.');
-      input.value = '';
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      this.photoError.set('A foto deve ter no máximo 5 MB.');
-      input.value = '';
-      return;
-    }
-    const reader = new FileReader();
-    reader.addEventListener('load', () => {
-      this.form.controls.photoUrl.setValue(String(reader.result ?? ''));
-      this.photoChanged.set(true);
-    }, { once: true });
-    reader.addEventListener('error', () => this.photoError.set('Não foi possível ler a foto selecionada.'), { once: true });
-    reader.readAsDataURL(file);
+    this.facade.save(this.form.getRawValue(), this.memberId ?? undefined);
   }
 }

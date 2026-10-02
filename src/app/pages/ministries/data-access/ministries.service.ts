@@ -4,8 +4,9 @@ import { delay, map, Observable, of, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Ministry, MinistryInput, MinistryParticipant, MinistryWeekday } from '../models/ministry.model';
 import { MINISTRIES_MOCK } from './ministries.mock';
+import { memberPhotoUrl } from '../../../shared/utils/member-photo-url';
 
-interface ApiMinistryMember { readonly memberId: string; readonly name: string; readonly initials: string; readonly whatsapp?: string | null; readonly role: string; }
+interface ApiMinistryMember { readonly memberId: string; readonly name: string; readonly initials: string; readonly photoUrl?: string | null; readonly hasPhoto?: boolean; readonly whatsapp?: string | null; readonly role: string; }
 interface ApiSeries { readonly id: string; readonly title: string; readonly location: string; readonly weekday: MinistryWeekday; readonly localTime: string; }
 interface ApiMinistry { readonly id: string; readonly name: string; readonly status: 'ACTIVE' | 'ARCHIVED'; readonly members: readonly ApiMinistryMember[]; readonly series: readonly ApiSeries[]; }
 export interface GenerationResult { readonly createdCount: number; readonly skippedCount: number; readonly generatedThrough: string; }
@@ -24,5 +25,5 @@ export class MinistriesService {
   private usesApi(): boolean { return Boolean(this.http) && !environment.useMocks; }
   private options() { return { withCredentials: true } as const; }
   private toApi(input: MinistryInput) { return { name: input.name, memberIds: input.participants.map((person) => person.id), defaultSeries: { title: input.celebrationTitle, location: input.location, weekday: input.weekday, localTime: input.time, timezone: 'America/Fortaleza' } }; }
-  private fromApi(item: ApiMinistry): Ministry { const series = item.series[0]; const participants: MinistryParticipant[] = item.members.map((member) => ({ id: member.memberId, name: member.name, initials: member.initials, whatsapp: member.whatsapp ?? '', role: member.role })); return { id: item.id, name: item.name, participants, weekday: series?.weekday ?? 'SUNDAY', time: series?.localTime?.slice(0, 5) ?? '00:00', celebrationTitle: series?.title ?? item.name, location: series?.location ?? '', active: item.status === 'ACTIVE', seriesId: series?.id }; }
+  private fromApi(item: ApiMinistry): Ministry { const series = item.series[0]; const participants: MinistryParticipant[] = item.members.map((member) => ({ id: member.memberId, name: member.name, initials: member.initials, photoUrl: memberPhotoUrl(member.memberId, member.hasPhoto, member.photoUrl), whatsapp: member.whatsapp ?? '', role: member.role })); return { id: item.id, name: item.name, participants, weekday: series?.weekday ?? 'SUNDAY', time: series?.localTime?.slice(0, 5) ?? '00:00', celebrationTitle: series?.title ?? item.name, location: series?.location ?? '', active: item.status === 'ACTIVE', seriesId: series?.id }; }
 }

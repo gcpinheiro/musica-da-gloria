@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SchedulesFacade } from '../../data-access/schedules.facade';
+import { Avatar } from '../../../../shared/components/avatar/avatar';
 
-@Component({ selector: 'app-schedule-form', imports: [ReactiveFormsModule, RouterLink], templateUrl: './schedule-form.html', styleUrl: './schedule-form.scss', changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-schedule-form', imports: [ReactiveFormsModule, RouterLink, Avatar], templateUrl: './schedule-form.html', styleUrl: './schedule-form.scss', changeDetection: ChangeDetectionStrategy.OnPush })
 export class ScheduleForm implements OnInit {
   protected readonly facade = inject(SchedulesFacade);
   protected readonly selectedMembers = signal<readonly string[]>([]);

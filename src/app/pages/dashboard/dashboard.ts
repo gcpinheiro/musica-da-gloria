@@ -4,10 +4,11 @@ import { PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DashboardFacade } from './data-access/dashboard.facade';
 import { AuthFacade } from '../../core/auth/auth.facade';
+import { Avatar } from '../../shared/components/avatar/avatar';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, Avatar],
   providers: [DashboardFacade],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',

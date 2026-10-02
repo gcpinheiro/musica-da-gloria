@@ -3,6 +3,7 @@ import { Injectable, Optional } from '@angular/core';
 import { delay, Observable, of, throwError } from 'rxjs';
 import { AuthUser, InvitationAcceptance, LoginCredentials } from './auth.models';
 import { environment } from '../../../environments/environment';
+import { memberPhotoUrl } from '../../shared/utils/member-photo-url';
 
 const DEMO_USERS: readonly AuthUser[] = [{
   id: 'usr-leader-01',
@@ -32,7 +33,7 @@ export class AuthService {
     if (this.http && !environment.useMocks) {
       return new Observable<AuthUser>((subscriber) => {
         this.http!.post<AuthSession>(`${environment.apiBaseUrl}/auth/login`, credentials, { withCredentials: true })
-          .subscribe({ next: ({ user }) => { subscriber.next(user); subscriber.complete(); }, error: (error) => subscriber.error(error) });
+          .subscribe({ next: ({ user }) => { subscriber.next(this.present(user)); subscriber.complete(); }, error: (error) => subscriber.error(error) });
       });
     }
     const user = DEMO_USERS.find((item) => item.email === credentials.email.trim().toLowerCase());
@@ -56,7 +57,7 @@ export class AuthService {
     if (this.http && !environment.useMocks) {
       return new Observable<AuthUser>((subscriber) => {
         this.http!.get<AuthSession>(`${environment.apiBaseUrl}/auth/me`, { withCredentials: true })
-          .subscribe({ next: ({ user }) => { subscriber.next(user); subscriber.complete(); }, error: (error) => subscriber.error(error) });
+          .subscribe({ next: ({ user }) => { subscriber.next(this.present(user)); subscriber.complete(); }, error: (error) => subscriber.error(error) });
       });
     }
     return throwError(() => new Error('UNAUTHENTICATED'));
@@ -66,7 +67,11 @@ export class AuthService {
     if (!this.http) return throwError(() => new Error('API_REQUIRED'));
     return new Observable<AuthUser>((subscriber) => {
       this.http!.post<AuthSession>(`${environment.apiBaseUrl}/users/invitations/${encodeURIComponent(token)}/accept`, input, { withCredentials: true })
-        .subscribe({ next: ({ user }) => { subscriber.next(user); subscriber.complete(); }, error: (error) => subscriber.error(error) });
+        .subscribe({ next: ({ user }) => { subscriber.next(this.present(user)); subscriber.complete(); }, error: (error) => subscriber.error(error) });
     });
+  }
+
+  private present(user: AuthUser): AuthUser {
+    return { ...user, photoUrl: user.memberId ? memberPhotoUrl(user.memberId, user.hasPhoto) : undefined };
   }
 }

@@ -18,6 +18,7 @@ export const routes: Routes = [
       { path: 'membros', canActivate: [managementGuard], loadChildren: () => import('./pages/members/members.routes').then((routes) => routes.MEMBERS_ROUTES) },
       { path: 'ministerios', canActivate: [managementGuard], loadChildren: () => import('./pages/ministries/ministries.routes').then((routes) => routes.MINISTRIES_ROUTES) },
       { path: 'repertorio', loadChildren: () => import('./pages/songs/songs.routes').then((routes) => routes.SONGS_ROUTES) },
+      { path: 'perfil', loadComponent: () => import('./pages/profile/profile').then((component) => component.ProfilePage), title: 'Meu perfil | Música da Glória' },
       { path: 'administracao', canActivate: [superAdminGuard], loadComponent: () => import('./pages/administration/pages/administration').then((component) => component.Administration) },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],

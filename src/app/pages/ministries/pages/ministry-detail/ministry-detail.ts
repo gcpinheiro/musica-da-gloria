@@ -2,8 +2,9 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MinistriesFacade } from '../../data-access/ministries.facade';
+import { Avatar } from '../../../../shared/components/avatar/avatar';
 
-@Component({ selector: 'app-ministry-detail', imports: [DatePipe, RouterLink], providers: [MinistriesFacade], templateUrl: './ministry-detail.html', styleUrl: './ministry-detail.scss', changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-ministry-detail', imports: [DatePipe, RouterLink, Avatar], providers: [MinistriesFacade], templateUrl: './ministry-detail.html', styleUrl: './ministry-detail.scss', changeDetection: ChangeDetectionStrategy.OnPush })
 export class MinistryDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   protected readonly facade = inject(MinistriesFacade);

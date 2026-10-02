@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, Optional } from '@angular/core';
-import { delay, map, Observable, of, switchMap, throwError } from 'rxjs';
+import { delay, map, Observable, of, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AvailabilityRule, Member, MemberInput, MemberInvitation, MemberInvitationWithLink, MemberMinistryOption } from '../models/member.model';
 import { MEMBERS_MOCK } from './members.mock';
+import { memberPhotoUrl } from '../../../shared/utils/member-photo-url';
 
 interface ApiMember {
   readonly id: string; readonly name: string; readonly email: string; readonly phone: string | null;
-  readonly photoUrl?: string | null; readonly initials: string; readonly talentIds?: readonly string[];
+  readonly photoUrl?: string | null; readonly hasPhoto?: boolean; readonly initials: string; readonly talentIds?: readonly string[];
   readonly availability?: readonly AvailabilityRule[]; readonly notes?: string | null;
   readonly status: 'ACTIVE' | 'INACTIVE';
   readonly ministries?: readonly MemberMinistryOption[];
@@ -36,13 +37,13 @@ export class MembersService {
     );
   }
   create(input: MemberInput): Observable<Member> {
-    if (this.usesApi()) return this.http!.post<ApiMember>(`${environment.apiBaseUrl}/members`, this.toApi(input), this.options()).pipe(switchMap((member) => this.uploadPhoto(member, input.photoUrl, input.photoChanged)), map((member) => this.fromApi(member)));
+    if (this.usesApi()) return this.http!.post<ApiMember>(`${environment.apiBaseUrl}/members`, this.toApi(input), this.options()).pipe(map((member) => this.fromApi(member)));
     const member: Member = { ...input, id: `mem-${Date.now()}`, initials: this.initials(input.name), status: 'ACTIVE' };
     this.members = [member, ...this.members];
     return of({ ...member }).pipe(delay(420));
   }
   update(id: string, input: MemberInput): Observable<Member> {
-    if (this.usesApi()) return this.http!.patch<ApiMember>(`${environment.apiBaseUrl}/members/${id}`, this.toApi(input), this.options()).pipe(switchMap((member) => this.uploadPhoto(member, input.photoUrl, input.photoChanged)), map((member) => this.fromApi(member)));
+    if (this.usesApi()) return this.http!.patch<ApiMember>(`${environment.apiBaseUrl}/members/${id}`, this.toApi(input), this.options()).pipe(map((member) => this.fromApi(member)));
     const current = this.members.find((member) => member.id === id);
     if (!current) return throwError(() => new Error('MEMBER_NOT_FOUND'));
     const updated: Member = { ...current, ...input, initials: this.initials(input.name) };
@@ -71,16 +72,7 @@ export class MembersService {
   private options() { return { withCredentials: true } as const; }
   private toApi(input: MemberInput) { return { name: input.name, email: input.email, phone: this.normalizePhone(input.phone), talentIds: input.talents, ministryIds: input.ministries, availability: [input.availability], notes: input.notes }; }
   private fromApi(item: ApiMember): Member {
-    return { id: item.id, name: item.name, email: item.email, phone: item.phone ?? '', photoUrl: item.photoUrl ?? undefined, initials: item.initials, talents: item.talentIds ?? [], ministries: item.ministries?.map((ministry) => ministry.name) ?? [], ministryIds: item.ministries?.map((ministry) => ministry.id) ?? [], availability: item.availability?.[0] ?? { weekday: 'SUNDAY', startTime: '00:00', endTime: '23:59' }, status: item.status, notes: item.notes ?? '' };
-  }
-  private uploadPhoto(member: ApiMember, value?: string, changed = false): Observable<ApiMember> {
-    if (!changed || !value?.startsWith('data:image/')) return of(member);
-    const [metadata, encoded] = value.split(',');
-    const mime = metadata.match(/^data:([^;]+)/)?.[1] ?? 'image/jpeg';
-    const bytes = Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
-    const form = new FormData();
-    form.append('file', new Blob([bytes], { type: mime }), `member.${mime.split('/')[1] ?? 'jpg'}`);
-    return this.http!.put<{ photoUrl: string }>(`${environment.apiBaseUrl}/members/${member.id}/photo`, form, this.options()).pipe(map(({ photoUrl }) => ({ ...member, photoUrl })));
+    return { id: item.id, name: item.name, email: item.email, phone: item.phone ?? '', photoUrl: memberPhotoUrl(item.id, item.hasPhoto, item.photoUrl), initials: item.initials, talents: item.talentIds ?? [], ministries: item.ministries?.map((ministry) => ministry.name) ?? [], ministryIds: item.ministries?.map((ministry) => ministry.id) ?? [], availability: item.availability?.[0] ?? { weekday: 'SUNDAY', startTime: '00:00', endTime: '23:59' }, status: item.status, notes: item.notes ?? '' };
   }
   private initials(name: string): string { return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join(''); }
   private normalizePhone(value: string): string | undefined { let digits = value.replace(/\D/g, ''); if (!digits) return undefined; if (digits.length === 10 || digits.length === 11) digits = `55${digits}`; return `+${digits}`; }

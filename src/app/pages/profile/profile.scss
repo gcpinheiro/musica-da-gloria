@@ -1,0 +1,26 @@
+.eyebrow { margin: 0 0 .35rem; color: var(--color-sky); font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.profile-layout { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.photo-card { display: grid; justify-items: center; gap: 1rem; padding: 2rem 1.25rem; text-align: center; }
+.photo-card h2 { margin: 0; font-size: 1.2rem; }
+.photo-card p { margin: .25rem 0 0; color: var(--color-muted); font-size: .8rem; overflow-wrap: anywhere; }
+.photo-card small { color: var(--color-muted); font-size: .72rem; }
+.photo-button { position: relative; width: 100%; overflow: hidden; cursor: pointer; }
+.photo-button input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.photo-button--disabled { opacity: .6; pointer-events: none; }
+.remove-photo { width: 100%; }
+.profile-form { display: grid; gap: 1.15rem; padding: 1.5rem; }
+.profile-form header { border-bottom: 1px solid var(--color-line); padding-bottom: 1rem; }
+.profile-form h2 { margin: 0; font-size: 1.2rem; }
+.profile-form header > p:last-child { margin: .35rem 0 0; color: var(--color-muted); }
+.field { display: grid; gap: .4rem; }
+.field label { color: var(--color-navy-900); font-size: .78rem; font-weight: 750; }
+.field input { min-height: 45px; border: 1px solid var(--color-line); border-radius: 9px; padding: .7rem .8rem; }
+.field input:focus { border-color: var(--color-sky); outline: 3px solid rgb(75 131 182 / 16%); }
+.field input:disabled { background: #f0f2f4; color: var(--color-muted); }
+.field small { color: var(--color-muted); font-size: .7rem; }
+.field .field-error, .field-error { color: var(--color-danger); }
+.form-message { margin: 0; border-radius: 8px; background: var(--color-success-soft); padding: .7rem; color: var(--color-success); }
+.form-message--error { background: #fff0f0; color: var(--color-danger); }
+.profile-form footer { display: flex; justify-content: flex-end; border-top: 1px solid var(--color-line); padding-top: 1rem; }
+.profile-state { padding: 3rem; text-align: center; }
+@media (max-width: 760px) { .profile-layout { grid-template-columns: 1fr; } .profile-form footer .button { width: 100%; } }

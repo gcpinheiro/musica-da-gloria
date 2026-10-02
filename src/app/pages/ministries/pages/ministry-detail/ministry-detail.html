@@ -7,7 +7,7 @@
   @if (facade.error()) { <p class="error-message" role="alert">{{ facade.error() }}</p> }
   <div class="detail-grid">
     <section class="card panel"><div class="panel__header"><div><h2>Participantes habituais</h2><p>{{ ministry.participants.length }} pessoas nesta formação</p></div><a [routerLink]="['editar']">Editar formação</a></div><div class="people-list">
-      @for (person of ministry.participants; track person.id) { <article><span class="avatar">{{ person.initials }}</span><div><strong>{{ person.name }}</strong><small>{{ person.role }}</small></div></article> }
+      @for (person of ministry.participants; track person.id) { <article><app-avatar [initials]="person.initials" [photoUrl]="person.photoUrl" [size]="35" /><div><strong>{{ person.name }}</strong><small>{{ person.role }}</small></div></article> }
     </div></section>
     <aside class="card generation"><span class="generation__icon" aria-hidden="true">▦</span><h2>Gerar pré-set de escalas</h2><p>Crie automaticamente uma escala em cada {{ facade.weekdayLabel(ministry.weekday).toLowerCase() }}, às {{ ministry.time }}, copiando esta formação.</p>
       @if (ministry.generatedThrough) { <small>Gerado anteriormente até {{ ministry.generatedThrough | date: 'dd/MM/yyyy' : 'UTC' }}</small> }

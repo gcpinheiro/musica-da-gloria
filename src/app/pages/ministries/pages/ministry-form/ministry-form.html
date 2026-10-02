@@ -10,7 +10,7 @@
     <div class="field"><label for="location">Local</label><select id="location" formControlName="location"><option>Igreja Matriz</option><option>Capela do Santíssimo</option><option>Centro Pastoral</option></select></div>
   </div></section>
   <section class="card form-section"><div class="section-title"><span>2</span><div><h2>Participantes habituais</h2><p>A formação será copiada para cada escala gerada.</p></div></div><div class="member-grid">
-    @for (member of facade.memberOptions(); track member.id) { <label class="member-option"><input type="checkbox" [checked]="selectedMembers().includes(member.id)" (change)="toggleMember(member.id)" /><span class="avatar">{{ member.initials }}</span><span><strong>{{ member.name }}</strong><small>{{ member.role }}</small></span></label> }
+    @for (member of facade.memberOptions(); track member.id) { <label class="member-option"><input type="checkbox" [checked]="selectedMembers().includes(member.id)" (change)="toggleMember(member.id)" /><app-avatar [initials]="member.initials" [photoUrl]="member.photoUrl" [size]="34" /><span><strong>{{ member.name }}</strong><small>{{ member.role }}</small></span></label> }
     @if (!selectedMembers().length && form.touched) { <p class="selection-error">Selecione ao menos um participante.</p> }
   </div></section>
   @if (facade.error()) { <p class="form-error" role="alert">{{ facade.error() }}</p> }

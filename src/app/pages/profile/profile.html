@@ -1,0 +1,45 @@
+<header class="page-header">
+  <div><p class="eyebrow">Sua conta</p><h1 class="display-title">Meu perfil</h1><p>Atualize seus dados de contato e a imagem exibida para a pastoral.</p></div>
+</header>
+
+@if (facade.loading()) {
+  <section class="card profile-state">Carregando perfil…</section>
+} @else if (facade.profile(); as profile) {
+  <div class="profile-layout">
+    <aside class="card photo-card">
+      <app-avatar [initials]="profile.initials" [photoUrl]="profile.photoUrl" [size]="128" />
+      <div><h2>{{ profile.name }}</h2><p>{{ profile.email }}</p></div>
+      <label class="button button--primary photo-button" [class.photo-button--disabled]="facade.saving()">
+        Escolher foto
+        <input type="file" accept="image/jpeg,image/png,image/webp" [disabled]="facade.saving()" (change)="selectPhoto($event)" />
+      </label>
+      @if (profile.photoUrl) { <button class="button button--secondary remove-photo" type="button" [disabled]="facade.saving()" (click)="facade.removePhoto()">Remover foto</button> }
+      <small>JPG, PNG ou WebP, com no máximo 5 MB.</small>
+      @if (photoError()) { <p class="field-error" role="alert">{{ photoError() }}</p> }
+    </aside>
+
+    <form class="card profile-form" [formGroup]="form" (ngSubmit)="submit()">
+      <header><p class="eyebrow">Dados pessoais</p><h2>Informações do perfil</h2><p>Seu nome e WhatsApp aparecem nos recursos permitidos da sua paróquia.</p></header>
+      <div class="field">
+        <label for="profile-name">Nome completo</label>
+        <input id="profile-name" type="text" autocomplete="name" formControlName="name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) { <small class="field-error">Informe seu nome completo.</small> }
+      </div>
+      <div class="field">
+        <label for="profile-email">E-mail de acesso</label>
+        <input id="profile-email" type="email" [value]="profile.email" disabled />
+        <small>Para alterar o e-mail de acesso, entre em contato com a liderança.</small>
+      </div>
+      <div class="field">
+        <label for="profile-phone">WhatsApp</label>
+        <input id="profile-phone" type="tel" autocomplete="tel" placeholder="(85) 99999-9999" formControlName="phone" />
+        @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="field-error">Informe um WhatsApp válido com DDD.</small> }
+      </div>
+      @if (facade.error()) { <p class="form-message form-message--error" role="alert">{{ facade.error() }}</p> }
+      @if (facade.message()) { <p class="form-message" role="status">{{ facade.message() }}</p> }
+      <footer><button class="button button--primary" type="submit" [disabled]="facade.saving()">{{ facade.saving() ? 'Salvando…' : 'Salvar alterações' }}</button></footer>
+    </form>
+  </div>
+} @else if (facade.error()) {
+  <section class="card profile-state" role="alert">{{ facade.error() }}</section>
+}

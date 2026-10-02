@@ -5,8 +5,9 @@ import { SchedulesFacade } from '../../data-access/schedules.facade';
 import { ScheduleMemberOption, ScheduleSongOption } from '../../models/schedule.model';
 import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { canMemberViewScheduleContacts } from '../../utils/schedule-contact';
+import { Avatar } from '../../../../shared/components/avatar/avatar';
 
-@Component({ selector: 'app-schedule-detail', imports: [DatePipe, RouterLink], templateUrl: './schedule-detail.html', styleUrls: ['./schedule-detail.scss', './delete-schedule-dialog.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-schedule-detail', imports: [DatePipe, RouterLink, Avatar], templateUrl: './schedule-detail.html', styleUrls: ['./schedule-detail.scss', './delete-schedule-dialog.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class ScheduleDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   protected readonly facade = inject(SchedulesFacade);

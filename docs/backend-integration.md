@@ -161,11 +161,15 @@ passada. Membros que não pertencem à ocorrência recebem `whatsapp` omitido. O
 gestão. Essa regra deve ser aplicada na API; apenas esconder o botão no Angular
 não protege o dado.
 
-A foto deve ser enviada como arquivo JPG, PNG ou WebP, com limite inicial de 5 MB.
-O endpoint `PUT /members/{memberId}/photo` recebe `multipart/form-data`, confere a
-assinatura real do arquivo, converte a imagem para Data URL Base64 e a armazena no
-PostgreSQL. A listagem omite o Base64 para evitar respostas excessivamente grandes;
-o conteúdo é retornado no detalhe do membro.
+A foto deve ser enviada pelo próprio usuário autenticado como arquivo JPG, PNG ou
+WebP, com limite inicial de 5 MB. O líder não escolhe a foto ao cadastrar ou editar
+outro membro. A página **Meu perfil** usa `PUT /profile/photo` com
+`multipart/form-data`; a API confere a assinatura real do arquivo, converte a
+imagem para Data URL Base64 e a armazena no PostgreSQL. `PATCH /profile` atualiza
+nome e WhatsApp do próprio perfil. A listagem omite o Base64 e retorna apenas
+`hasPhoto`; `GET /members/{memberId}/photo` entrega o conteúdo binário somente no
+escopo da mesma paróquia. A interface exibe a foto nos avatares e usa as iniciais
+como fallback quando não há imagem ou quando ela não pode ser carregada.
 
 Suspender um `User` bloqueia somente sua autenticação. O `MemberProfile`, seus
 vínculos e suas escalas permanecem intactos. Afastamento pastoral e arquivamento
@@ -299,8 +303,11 @@ atômica: a solicitação não pode aparecer como aprovada se a alteração falh
 | `POST` | `/members` | ADMIN, LEADER | Criar membro |
 | `GET` | `/members/{id}` | ADMIN, LEADER | Detalhe |
 | `PATCH` | `/members/{id}` | ADMIN, LEADER | Editar dados, talentos e disponibilidade |
-| `PUT` | `/members/{id}/photo` | LEADER, próprio usuário | Enviar ou substituir foto |
-| `DELETE` | `/members/{id}/photo` | LEADER, próprio usuário | Remover foto |
+| `GET` | `/members/{id}/photo` | Autenticado da mesma paróquia | Obter o arquivo da foto para os avatares |
+| `GET` | `/profile` | LEADER, MEMBER | Consultar o próprio perfil pastoral |
+| `PATCH` | `/profile` | LEADER, MEMBER | Editar o próprio nome e WhatsApp |
+| `PUT` | `/profile/photo` | LEADER, MEMBER | Enviar ou substituir a própria foto |
+| `DELETE` | `/profile/photo` | LEADER, MEMBER | Remover a própria foto |
 | `POST` | `/members/{id}/archive` | ADMIN, LEADER | Desativar preservando histórico |
 | `GET` | `/talents` | ADMIN, LEADER | Opções normalizadas de talentos |
 | `POST` | `/members/{id}/unavailabilities` | ADMIN, LEADER, próprio MEMBER | Bloqueio pontual de agenda |

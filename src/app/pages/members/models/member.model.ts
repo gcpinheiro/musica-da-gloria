@@ -28,8 +28,6 @@ export interface MemberInput {
   readonly name: string;
   readonly email: string;
   readonly phone: string;
-  readonly photoUrl?: string;
-  readonly photoChanged?: boolean;
   readonly talents: readonly string[];
   readonly ministries: readonly string[];
   readonly availability: AvailabilityRule;

@@ -6,7 +6,7 @@
   <section class="card detail-state" role="alert"><strong>{{ facade.error() }}</strong></section>
 } @else if (facade.selectedMember(); as member) {
   <header class="profile-header card">
-    <span class="profile-avatar">{{ member.initials }}</span>
+    <app-avatar [initials]="member.initials" [photoUrl]="member.photoUrl" [size]="72" />
     <div>
       <div class="profile-name"><h1 class="display-title">{{ member.name }}</h1><span>{{ member.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}</span></div>
       <p>{{ member.email }} · {{ member.phone || 'WhatsApp pendente' }}</p>

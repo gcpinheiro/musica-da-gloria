@@ -86,6 +86,7 @@ export class DashboardService {
             id: person.id,
             name: person.name,
             initials: person.initials,
+            photoUrl: person.photoUrl,
             role: person.role,
             confirmed: person.confirmation === 'CONFIRMED',
           })),

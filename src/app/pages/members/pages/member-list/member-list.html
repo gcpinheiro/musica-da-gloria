@@ -37,7 +37,7 @@
     @for (member of facade.filteredMembers(); track member.id) {
       <article class="member-card card" [class.member-card--inactive]="member.status === 'INACTIVE'">
         <div class="member-card__top">
-          <span class="member-avatar">{{ member.initials }}</span>
+          <app-avatar [initials]="member.initials" [photoUrl]="member.photoUrl" [size]="48" />
           <span class="status" [class.status--inactive]="member.status === 'INACTIVE'">
             {{ member.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
           </span>

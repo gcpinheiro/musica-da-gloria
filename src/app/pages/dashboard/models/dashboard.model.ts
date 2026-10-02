@@ -12,6 +12,7 @@ export interface DashboardMember {
   readonly id: string;
   readonly name: string;
   readonly initials: string;
+  readonly photoUrl?: string;
   readonly role: string;
   readonly confirmed: boolean;
 }

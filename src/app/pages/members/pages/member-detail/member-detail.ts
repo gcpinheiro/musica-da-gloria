@@ -3,10 +3,11 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, PLATFORM_ID, signal
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MembersFacade } from '../../data-access/members.facade';
 import { AvailabilityLabelPipe } from '../../components/availability-label.pipe';
+import { Avatar } from '../../../../shared/components/avatar/avatar';
 
 @Component({
   selector: 'app-member-detail',
-  imports: [RouterLink, AvailabilityLabelPipe, DatePipe],
+  imports: [RouterLink, AvailabilityLabelPipe, DatePipe, Avatar],
   templateUrl: './member-detail.html',
   styleUrl: './member-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

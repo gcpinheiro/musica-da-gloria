@@ -8,6 +8,8 @@ export interface AuthUser {
   readonly initials: string;
   readonly parishId: string | null;
   readonly memberId: string | null;
+  readonly hasPhoto?: boolean;
+  readonly photoUrl?: string;
 }
 
 export interface LoginCredentials {

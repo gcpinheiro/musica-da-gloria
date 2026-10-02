@@ -112,7 +112,7 @@
           <div class="schedule-card__footer">
             <div class="member-stack" aria-label="Membros escalados">
               @for (member of schedule.members; track member.id) {
-                <span class="member-avatar" [title]="member.name + ' — ' + member.role">{{ member.initials }}</span>
+                <app-avatar [initials]="member.initials" [photoUrl]="member.photoUrl" [size]="32" [title]="member.name + ' — ' + member.role" />
               }
               @if (schedule.totalMembers > schedule.members.length) {
                 <span class="member-avatar member-avatar--more">+{{ schedule.totalMembers - schedule.members.length }}</span>

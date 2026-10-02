@@ -3,10 +3,11 @@ import { RouterLink } from '@angular/router';
 import { MembersFacade } from '../../data-access/members.facade';
 import { MemberStatus } from '../../models/member.model';
 import { AvailabilityLabelPipe } from '../../components/availability-label.pipe';
+import { Avatar } from '../../../../shared/components/avatar/avatar';
 
 @Component({
   selector: 'app-member-list',
-  imports: [RouterLink, AvailabilityLabelPipe],
+  imports: [RouterLink, AvailabilityLabelPipe, Avatar],
   templateUrl: './member-list.html',
   styleUrl: './member-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

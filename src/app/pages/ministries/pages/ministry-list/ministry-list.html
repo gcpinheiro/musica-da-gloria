@@ -14,8 +14,8 @@
         <h2>{{ ministry.name }}</h2><p>{{ ministry.celebrationTitle }} · {{ ministry.location }}</p>
         <div class="recurrence"><small>Disponibilidade recorrente</small><strong>{{ facade.weekdayLabel(ministry.weekday) }} às {{ ministry.time }}</strong></div>
         <div class="participants"><span>{{ ministry.participants.length }} participantes</span><div>
-          @for (person of ministry.participants.slice(0, 4); track person.id) { <span class="avatar" [title]="person.name">{{ person.initials }}</span> }
-          @if (ministry.participants.length > 4) { <span class="avatar">+{{ ministry.participants.length - 4 }}</span> }
+          @for (person of ministry.participants.slice(0, 4); track person.id) { <app-avatar [initials]="person.initials" [photoUrl]="person.photoUrl" [size]="32" [title]="person.name" /> }
+          @if (ministry.participants.length > 4) { <app-avatar [initials]="'+' + (ministry.participants.length - 4)" [size]="32" title="Outros integrantes" /> }
         </div></div>
         <a class="open-link" [routerLink]="[ministry.id]">Ver formação e gerar escalas →</a>
       </article>

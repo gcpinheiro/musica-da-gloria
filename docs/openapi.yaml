@@ -12,6 +12,7 @@ tags:
   - name: Parishes
   - name: Users
   - name: Dashboard
+  - name: Profile
   - name: Members
   - name: Ministries
   - name: Series
@@ -378,9 +379,52 @@ paths:
   /members/{memberId}/photo:
     parameters:
       - { $ref: '#/components/parameters/MemberId' }
-    put:
+    get:
       tags: [Members]
-      operationId: uploadMemberPhoto
+      operationId: getMemberPhoto
+      description: Retorna a foto de um membro da mesma paróquia. Responde 404 para outro escopo ou foto ausente.
+      responses:
+        '200':
+          description: Conteúdo da foto
+          headers:
+            Cache-Control:
+              schema: { type: string, example: 'private, no-store' }
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /profile:
+    get:
+      tags: [Profile]
+      operationId: getOwnProfile
+      responses:
+        '200':
+          description: Perfil pastoral vinculado à sessão
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Profile]
+      operationId: updateOwnProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileInput' }
+      responses:
+        '200':
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /profile/photo:
+    put:
+      tags: [Profile]
+      operationId: uploadOwnProfilePhoto
       requestBody:
         required: true
         content:
@@ -406,15 +450,13 @@ paths:
                     type: string
                     pattern: '^data:image/(jpeg|png|webp);base64,'
                     description: Data URL Base64 persistido no PostgreSQL.
-        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/ValidationError' }
     delete:
-      tags: [Members]
-      operationId: deleteMemberPhoto
+      tags: [Profile]
+      operationId: deleteOwnProfilePhoto
       responses:
         '204': { description: Foto removida }
-        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
   /ministries:
     get:
@@ -842,6 +884,9 @@ components:
           format: uuid
           description: Nulo somente para SUPER_ADMIN.
         memberId: { type: [string, 'null'], format: uuid }
+        hasPhoto:
+          type: boolean
+          description: Indica se o perfil pastoral vinculado possui foto.
     AuthSession:
       type: object
       required: [user]
@@ -1002,6 +1047,15 @@ components:
           description: Ministérios ativos da mesma paróquia aos quais o membro será vinculado.
         availability: { type: array, items: { $ref: '#/components/schemas/AvailabilityRule' } }
         notes: { type: string }
+    ProfileInput:
+      type: object
+      required: [name, phone]
+      properties:
+        name: { type: string, minLength: 3 }
+        phone:
+          type: string
+          pattern: '^\+[1-9]\d{7,14}$'
+          example: '+5585999999999'
     Member:
       allOf:
         - { $ref: '#/components/schemas/MemberInput' }
@@ -1014,6 +1068,9 @@ components:
               type: [string, 'null']
               pattern: '^data:image/(jpeg|png|webp);base64,'
               description: Presente no detalhe do membro e omitido nas listagens.
+            hasPhoto:
+              type: boolean
+              description: Permite exibir a foto pela rota binária sem transportar Base64 nas listagens.
             ministries:
               type: array
               items:
@@ -1083,6 +1140,7 @@ components:
           properties:
             name: { type: string }
             initials: { type: string }
+            hasPhoto: { type: boolean }
             whatsapp:
               type: [string, 'null']
               pattern: '^\+[1-9]\d{7,14}$'

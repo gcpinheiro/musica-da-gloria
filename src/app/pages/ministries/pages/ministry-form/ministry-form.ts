@@ -3,8 +3,9 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MinistriesFacade } from '../../data-access/ministries.facade';
 import { MinistryWeekday, MINISTRY_WEEKDAYS } from '../../models/ministry.model';
+import { Avatar } from '../../../../shared/components/avatar/avatar';
 
-@Component({ selector: 'app-ministry-form', imports: [ReactiveFormsModule, RouterLink], providers: [MinistriesFacade], templateUrl: './ministry-form.html', styleUrl: './ministry-form.scss', changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-ministry-form', imports: [ReactiveFormsModule, RouterLink, Avatar], providers: [MinistriesFacade], templateUrl: './ministry-form.html', styleUrl: './ministry-form.scss', changeDetection: ChangeDetectionStrategy.OnPush })
 export class MinistryForm implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly patchedId = signal<string | null>(null);

@@ -76,6 +76,20 @@ export class AuthFacade {
     this.errorState.set('O link do convite está incompleto ou inválido.');
   }
 
+  refreshUser(): void {
+    this.authService.me().subscribe({ next: (user) => this.userState.set(user) });
+  }
+
+  updateProfileIdentity(name: string, photoUrl?: string): void {
+    this.userState.update((user) => user ? {
+      ...user,
+      name,
+      initials: name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join(''),
+      photoUrl,
+      hasPhoto: Boolean(photoUrl),
+    } : user);
+  }
+
   logout(): void {
     this.authService.logout().subscribe(() => {
       this.userState.set(null);

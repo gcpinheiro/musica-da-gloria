@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthFacade } from '../auth/auth.facade';
+import { Avatar } from '../../shared/components/avatar/avatar';
 
 interface NavigationItem {
   readonly label: string;
@@ -14,7 +15,7 @@ interface NavigationItem {
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, Avatar],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +30,7 @@ export class AppShell {
     { label: 'Membros', route: '/membros', icon: '♙', managementOnly: true, pastoralOnly: true },
     { label: 'Ministérios', route: '/ministerios', icon: '♫', managementOnly: true, pastoralOnly: true },
     { label: 'Repertório', route: '/repertorio', icon: '♫', pastoralOnly: true },
+    { label: 'Meu perfil', route: '/perfil', icon: '♙', pastoralOnly: true },
   ];
   protected readonly visibleNavigation = computed(() =>
     this.navigation.filter((item) =>
