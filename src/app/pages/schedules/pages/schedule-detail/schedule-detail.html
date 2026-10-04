@@ -6,6 +6,7 @@
     <div class="date-block"><strong>{{ schedule.date | date: 'dd' : 'UTC' }}</strong><span>{{ schedule.date | date: 'MMMM' : 'UTC' : 'pt-BR' }}</span></div>
     <div class="schedule-header__title"><span class="status status--{{ schedule.status.toLowerCase() }}">{{ schedule.status === 'PUBLISHED' ? 'Publicada' : schedule.status === 'DRAFT' ? 'Rascunho' : schedule.status === 'CANCELLED' ? 'Cancelada' : 'Atenção' }}</span><h1 class="display-title">{{ schedule.title }}</h1><p>{{ schedule.ministry }} · {{ schedule.liturgicalTime }}</p></div>
     @if (authFacade.canManage()) {
+      @if (schedule.canEdit !== false) { <a class="button button--secondary" [routerLink]="['/escalas', schedule.id, 'editar']">Editar escala</a> }
       @if (schedule.status === 'DRAFT') { <button class="button button--primary" type="button" (click)="facade.publish()" [disabled]="facade.saving()">{{ facade.saving() ? 'Publicando…' : 'Publicar escala' }}</button> }
       <a class="button button--secondary" routerLink="/escalas/nova">Duplicar como nova</a>
       <button #deleteTrigger class="button button--danger" type="button" (click)="openDeleteDialog()" [disabled]="facade.saving()">Excluir escala</button>

@@ -37,6 +37,10 @@ export interface Schedule {
   readonly time: string;
   readonly location: string;
   readonly ministry: string;
+  readonly ministryId?: string;
+  readonly timezone?: string;
+  readonly version?: number;
+  readonly canEdit?: boolean;
   readonly status: ScheduleStatus;
   readonly liturgicalTime: string;
   readonly people: readonly ScheduledPerson[];

@@ -92,6 +92,18 @@ export class SchedulesFacade {
     const ministryId = this.ministryOptionsState().find((item) => item.name === input.ministry)?.id;
     this.service.create(input, ministryId).pipe(finalize(() => this.savingState.set(false))).subscribe({ next: (item) => void this.router.navigate(['/escalas', item.id]), error: () => this.errorState.set('Não foi possível criar a escala.') });
   }
+  updateOccurrence(input: ScheduleInput): void {
+    const schedule = this.selectedState();
+    if (schedule?.canEdit === false) { this.errorState.set('Somente quem criou esta escala pode editá-la.'); return; }
+    const ministryId = this.ministryOptionsState().find((item) => item.name === input.ministry)?.id ?? schedule?.ministryId;
+    if (!schedule || !ministryId) { this.errorState.set('Não foi possível identificar o ministério da escala.'); return; }
+    this.savingState.set(true);
+    this.errorState.set(null);
+    this.service.updateOccurrence(schedule.id, input, ministryId, schedule.version ?? 0).pipe(finalize(() => this.savingState.set(false))).subscribe({
+      next: (item) => { this.selectedState.set(item); void this.router.navigate(['/escalas', item.id]); },
+      error: () => this.errorState.set('Não foi possível salvar as alterações da escala.'),
+    });
+  }
   addMember(member: ScheduledPerson): void { this.updateSelected(this.service.addMember(this.selectedState()?.id ?? '', member)); }
   removeMember(memberId: string): void { this.updateSelected(this.service.removeMember(this.selectedState()?.id ?? '', memberId)); }
   addSong(song: ScheduleSongOption): void { this.updateSelected(this.service.addSong(this.selectedState()?.id ?? '', { ...song, id: `item-${Date.now()}` })); }
