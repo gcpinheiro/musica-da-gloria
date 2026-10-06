@@ -33,7 +33,7 @@ describe('SchedulesService', () => {
 
   it('changes only the concrete occurrence formation and repertoire', async () => {
     const original = await firstValueFrom(service.getById('occ-001'));
-    const member = (await firstValueFrom(service.listMemberOptions())).find((item) => item.id === 'mem-004')!;
+    const member = (await firstValueFrom(service.listMemberOptions('', 1, 100))).items.find((item) => item.id === 'mem-004')!;
     const withMember = await firstValueFrom(service.addMember('occ-001', member));
     expect(withMember.people.length).toBe(original.people.length + 1);
 
@@ -89,6 +89,42 @@ describe('SchedulesService', () => {
     expect(page.items.length).toBeLessThanOrEqual(2);
     expect(page.items.length).toBeGreaterThan(0);
     expect(page.items.every((item) => item.title.toLocaleLowerCase('pt-BR').includes('eis'))).toBeTrue();
+  });
+
+  it('paginates members while keeping the page metadata', async () => {
+    const page = await firstValueFrom(service.listMemberOptions('', 1, 2));
+    expect(page.items.length).toBeLessThanOrEqual(2);
+    expect(page.page).toBe(1);
+    expect(page.pageSize).toBe(2);
+    expect(page.total).toBeGreaterThan(0);
+  });
+
+  it('creates independent schedules and replays the same idempotent batch', async () => {
+    const ministryMembers = (await firstValueFrom(service.listMemberOptions('', 1, 100))).items.slice(0, 2);
+    const input = {
+      title: 'Retiro dos Acólitos',
+      location: 'Centro Pastoral',
+      ministryId: 'min-001',
+      liturgicalTime: 'Retiro',
+      notes: '',
+      slots: [
+        { date: '2026-10-14', time: '09:00', people: ministryMembers },
+        { date: '2026-10-28', time: '19:00', people: ministryMembers.slice(0, 1) },
+      ],
+      songs: [],
+    };
+
+    const created = await firstValueFrom(service.createBatch(input, ministryMembers, 'batch-key'));
+    const replayed = await firstValueFrom(service.createBatch(input, ministryMembers, 'batch-key'));
+    const first = await firstValueFrom(service.getById(created.occurrenceIds[0]));
+    const second = await firstValueFrom(service.getById(created.occurrenceIds[1]));
+
+    expect(created.createdCount).toBe(2);
+    expect(replayed.replayed).toBeTrue();
+    expect(replayed.occurrenceIds).toEqual(created.occurrenceIds);
+    expect(first.people.length).toBe(2);
+    expect(second.people.length).toBe(1);
+    expect(first.people).not.toBe(second.people);
   });
 
   it('archives multiple selected schedules', async () => {

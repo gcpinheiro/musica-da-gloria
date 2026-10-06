@@ -22,6 +22,12 @@ export interface ScheduledSong {
 }
 
 export interface ScheduleMemberOption extends ScheduledPerson { readonly available: boolean; }
+export interface ScheduleMemberPage {
+  readonly items: readonly ScheduleMemberOption[];
+  readonly page: number;
+  readonly pageSize: number;
+  readonly total: number;
+}
 export type ScheduleSongOption = Omit<ScheduledSong, 'id'>;
 export interface ScheduleSongPage {
   readonly items: readonly ScheduleSongOption[];
@@ -61,6 +67,29 @@ export interface ScheduleInput {
   readonly notes: string;
   readonly people: readonly ScheduledPerson[];
   readonly songs: readonly ScheduledSong[];
+}
+
+export interface ScheduleBatchSlotInput {
+  readonly date: string;
+  readonly time: string;
+  readonly people: readonly ScheduledPerson[];
+}
+
+export interface ScheduleBatchInput {
+  readonly title: string;
+  readonly location: string;
+  readonly ministryId: string;
+  readonly liturgicalTime: string;
+  readonly notes: string;
+  readonly slots: readonly ScheduleBatchSlotInput[];
+  readonly songs: readonly ScheduledSong[];
+}
+
+export interface ScheduleBatchResult {
+  readonly batchId: string;
+  readonly createdCount: number;
+  readonly replayed: boolean;
+  readonly occurrenceIds: readonly string[];
 }
 
 export interface GeneratedScheduleInput extends ScheduleInput {

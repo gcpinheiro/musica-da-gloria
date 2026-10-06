@@ -575,6 +575,35 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/OccurrenceDetail' }
+  /occurrences/batch:
+    post:
+      tags: [Occurrences]
+      operationId: createOccurrenceBatch
+      description: >-
+        Cria de forma atômica uma ou mais escalas independentes para o mesmo
+        ministério. A formação habitual é copiada e cada data pode informar
+        inclusões e exclusões que não alteram o ministério.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: UUID reutilizado somente ao repetir exatamente o mesmo lote.
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OccurrenceBatchInput' }
+      responses:
+        '201':
+          description: Lote criado ou resposta original recuperada de forma idempotente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OccurrenceBatchResult' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /occurrences/archive:
     post:
       tags: [Occurrences]
@@ -1192,6 +1221,56 @@ components:
         liturgicalTime: { type: string }
         notes: { type: string }
         version: { type: integer, minimum: 0 }
+    OccurrenceConflictOverrideInput:
+      type: object
+      required: [memberId, conflictJustification]
+      properties:
+        memberId: { type: string, format: uuid }
+        conflictJustification: { type: string, minLength: 10 }
+    OccurrenceBatchSlotInput:
+      type: object
+      required: [startsAt, excludedMemberIds, additionalMembers]
+      properties:
+        startsAt: { type: string, format: date-time }
+        excludedMemberIds:
+          type: array
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        additionalMembers:
+          type: array
+          items: { $ref: '#/components/schemas/OccurrenceMemberInput' }
+        conflictOverrides:
+          type: array
+          items: { $ref: '#/components/schemas/OccurrenceConflictOverrideInput' }
+    OccurrenceBatchInput:
+      type: object
+      required: [title, timezone, location, ministryId, slots, setlist]
+      properties:
+        title: { type: string, minLength: 1 }
+        timezone: { type: string, const: America/Fortaleza }
+        location: { type: string, minLength: 1 }
+        ministryId: { type: string, format: uuid }
+        liturgicalTime: { type: string }
+        notes: { type: string }
+        slots:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: '#/components/schemas/OccurrenceBatchSlotInput' }
+        setlist: { $ref: '#/components/schemas/SetlistInput' }
+    OccurrenceBatchResult:
+      type: object
+      required: [batchId, createdCount, replayed, occurrenceIds]
+      properties:
+        batchId: { type: string, format: uuid }
+        createdCount: { type: integer, minimum: 1, maximum: 50 }
+        replayed:
+          type: boolean
+          description: Verdadeiro quando a mesma chave e o mesmo payload já haviam sido processados.
+        occurrenceIds:
+          type: array
+          minItems: 1
+          items: { type: string, format: uuid }
     OccurrenceSummary:
       allOf:
         - { $ref: '#/components/schemas/OccurrenceInput' }

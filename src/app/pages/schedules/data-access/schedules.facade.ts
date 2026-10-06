@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
-import { ConfirmationStatus, Schedule, ScheduleInput, ScheduledPerson, ScheduledSong, ScheduleSongOption, ScheduleStatus, ScheduleMemberOption } from '../models/schedule.model';
+import { ConfirmationStatus, Schedule, ScheduleBatchInput, ScheduleInput, ScheduledPerson, ScheduledSong, ScheduleSongOption, ScheduleStatus, ScheduleMemberOption } from '../models/schedule.model';
 import { SchedulesService } from './schedules.service';
 import { MinistriesService } from '../../ministries/data-access/ministries.service';
 import { Ministry } from '../../ministries/models/ministry.model';
@@ -18,6 +18,11 @@ export class SchedulesFacade {
   private readonly schedulesState = signal<readonly Schedule[]>([]);
   private readonly selectedState = signal<Schedule | null>(null);
   private readonly memberOptionsState = signal<readonly ScheduleMemberOption[]>([]);
+  private readonly memberPageState = signal(1);
+  private readonly memberPageSizeState = signal(8);
+  private readonly memberTotalState = signal(0);
+  private readonly memberQueryState = signal('');
+  private readonly memberOptionsLoadingState = signal(false);
   private readonly songOptionsState = signal<readonly ScheduleSongOption[]>([]);
   private readonly songPageState = signal(1);
   private readonly songPageSizeState = signal(8);
@@ -36,6 +41,12 @@ export class SchedulesFacade {
   readonly schedules = this.schedulesState.asReadonly();
   readonly selected = this.selectedState.asReadonly();
   readonly memberOptions = this.memberOptionsState.asReadonly();
+  readonly memberPage = this.memberPageState.asReadonly();
+  readonly memberPageSize = this.memberPageSizeState.asReadonly();
+  readonly memberTotal = this.memberTotalState.asReadonly();
+  readonly memberQuery = this.memberQueryState.asReadonly();
+  readonly memberOptionsLoading = this.memberOptionsLoadingState.asReadonly();
+  readonly memberPageCount = computed(() => Math.max(1, Math.ceil(this.memberTotalState() / this.memberPageSizeState())));
   readonly songOptions = this.songOptionsState.asReadonly();
   readonly songPage = this.songPageState.asReadonly();
   readonly songPageSize = this.songPageSizeState.asReadonly();
@@ -71,9 +82,17 @@ export class SchedulesFacade {
   loadOptions(): void {
     this.loadSongOptions('', 1);
     if (this.authFacade.canManage()) {
-      this.service.listMemberOptions().subscribe((items) => this.memberOptionsState.set(items));
+      this.loadMemberOptions('', 1);
       this.ministriesService.list().subscribe((items) => this.ministryOptionsState.set(items.filter((item) => item.active)));
     }
+  }
+  loadMemberOptions(query = this.memberQueryState(), page = 1): void {
+    this.memberQueryState.set(query);
+    this.memberOptionsLoadingState.set(true);
+    this.service.listMemberOptions(query, page, this.memberPageSizeState()).pipe(finalize(() => this.memberOptionsLoadingState.set(false))).subscribe({
+      next: (result) => { this.memberOptionsState.set(result.items); this.memberPageState.set(result.page); this.memberTotalState.set(result.total); },
+      error: () => this.errorState.set('Não foi possível carregar os membros.'),
+    });
   }
   loadSongOptions(query = this.songQueryState(), page = 1): void {
     this.songQueryState.set(query);
@@ -91,6 +110,22 @@ export class SchedulesFacade {
     this.errorState.set(null);
     const ministryId = this.ministryOptionsState().find((item) => item.name === input.ministry)?.id;
     this.service.create(input, ministryId).pipe(finalize(() => this.savingState.set(false))).subscribe({ next: (item) => void this.router.navigate(['/escalas', item.id]), error: () => this.errorState.set('Não foi possível criar a escala.') });
+  }
+  createBatch(input: ScheduleBatchInput, idempotencyKey: string): void {
+    const ministry = this.ministryOptionsState().find((item) => item.id === input.ministryId);
+    if (!ministry) { this.errorState.set('Selecione um ministério válido.'); return; }
+    const habitualMembers: ScheduledPerson[] = ministry.participants.map((person) => ({ ...person, confirmation: 'PENDING' }));
+    this.savingState.set(true);
+    this.errorState.set(null);
+    this.messageState.set(null);
+    this.service.createBatch(input, habitualMembers, idempotencyKey).pipe(finalize(() => this.savingState.set(false))).subscribe({
+      next: (result) => {
+        this.messageState.set(`${result.createdCount} escala(s) criada(s) com sucesso.`);
+        if (result.occurrenceIds.length === 1) void this.router.navigate(['/escalas', result.occurrenceIds[0]]);
+        else void this.router.navigate(['/escalas']);
+      },
+      error: () => this.errorState.set('Não foi possível criar as escalas. Revise datas, participantes e conflitos.'),
+    });
   }
   updateOccurrence(input: ScheduleInput): void {
     const schedule = this.selectedState();

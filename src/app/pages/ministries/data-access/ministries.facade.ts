@@ -36,11 +36,11 @@ export class MinistriesFacade {
   loadOne(id: string): void {
     this.loadingState.set(true);
     this.errorState.set(null);
-    forkJoin({ ministry: this.service.getById(id), members: this.schedulesService.listMemberOptions() })
+    forkJoin({ ministry: this.service.getById(id), members: this.schedulesService.listMemberOptions('', 1, 100) })
       .pipe(finalize(() => this.loadingState.set(false)))
-      .subscribe({ next: ({ ministry, members }) => { this.selectedState.set(ministry); this.memberOptionsState.set(members); }, error: () => this.errorState.set('Ministério não encontrado.') });
+      .subscribe({ next: ({ ministry, members }) => { this.selectedState.set(ministry); this.memberOptionsState.set(members.items); }, error: () => this.errorState.set('Ministério não encontrado.') });
   }
-  loadMemberOptions(): void { this.schedulesService.listMemberOptions().subscribe((items) => this.memberOptionsState.set(items)); }
+  loadMemberOptions(): void { this.schedulesService.listMemberOptions('', 1, 100).subscribe((page) => this.memberOptionsState.set(page.items)); }
   save(input: MinistryInput, id?: string): void {
     this.savingState.set(true);
     this.errorState.set(null);

@@ -1,21 +1,275 @@
-<header class="page-header"><div><a class="back-link" [routerLink]="editMode && scheduleId ? ['/escalas', scheduleId] : '/escalas'">← Voltar para escalas</a><h1 class="display-title">{{ editMode ? 'Editar escala' : 'Nova escala' }}</h1><p>{{ editMode ? 'Atualize os dados desta celebração.' : 'Crie a celebração já com a formação e o repertório esperados.' }}</p></div></header>
+<header class="page-header">
+  <div>
+    <a class="back-link" [routerLink]="editMode && scheduleId ? ['/escalas', scheduleId] : '/escalas'">
+      ← Voltar para escalas
+    </a>
+    <h1 class="display-title">{{ editMode ? 'Editar escala' : 'Criar escalas' }}</h1>
+    <p>
+      {{ editMode
+        ? 'Atualize somente esta celebração.'
+        : 'Escolha um ministério e crie uma ou mais datas com formações independentes.' }}
+    </p>
+  </div>
+</header>
+
 <form class="schedule-form" [formGroup]="form" (ngSubmit)="submit()">
-  <section class="card form-section"><div class="form-intro"><span>1</span><div><h2>Dados da celebração</h2><p>Identifique quando e onde o ministério servirá.</p></div></div><div class="form-grid">
-    <div class="field field--wide"><label for="title">Nome da celebração</label><input id="title" formControlName="title" /></div><div class="field"><label for="date">Data</label><input id="date" type="date" formControlName="date" /></div><div class="field"><label for="time">Horário</label><input id="time" type="time" formControlName="time" /></div><div class="field"><label for="location">Local</label><select id="location" formControlName="location"><option>Igreja Matriz</option><option>Capela do Santíssimo</option><option>Centro Pastoral</option></select></div><div class="field"><label for="ministry">Ministério</label><select id="ministry" formControlName="ministry" (change)="applyMinistryPreset($event)"><option value="" disabled>Selecione</option>@for (ministry of facade.ministryOptions(); track ministry.id) { <option [value]="ministry.name">{{ ministry.name }}</option> }</select></div><div class="field field--wide"><label for="liturgicalTime">Tempo ou ocasião litúrgica</label><input id="liturgicalTime" formControlName="liturgicalTime" /></div><div class="field field--wide"><label for="notes">Orientações iniciais</label><textarea id="notes" formControlName="notes"></textarea></div>
-  </div></section>
-  <section class="card form-section"><div class="form-intro"><span>2</span><div><h2>Formação desta escala</h2><p>Escolha a composição concreta sem alterar o ministério habitual.</p></div></div><div class="choice-grid">@for (member of facade.memberOptions(); track member.id) { <label class="choice" [class.choice--disabled]="!member.available"><input type="checkbox" [disabled]="!member.available" [checked]="selectedMembers().includes(member.id)" (change)="toggleMember(member.id)" /><app-avatar [initials]="member.initials" [photoUrl]="member.photoUrl" [size]="34" /><span><strong>{{ member.name }}</strong><small>{{ member.role }} · {{ member.available ? 'Disponível' : 'Indisponível' }}</small></span></label> }</div></section>
-  <section class="card form-section"><div class="form-intro"><span>3</span><div><h2>Repertório</h2><p>Busque, selecione e organize as músicas na ordem da celebração.</p></div></div>
-    <div class="song-selector">
-      <div class="song-library">
-        <label class="song-search" for="song-search"><span>Buscar na biblioteca</span><input id="song-search" type="search" placeholder="Nome da música ou autor" [value]="facade.songQuery()" (input)="searchSongs($event)" /></label>
-        @if (facade.songOptionsLoading()) { <p class="selector-state">Carregando músicas…</p> }
-        @else { <div class="choice-grid choice-grid--songs">@for (song of facade.songOptions(); track song.songId) { <label class="choice"><input type="checkbox" [checked]="selectedSongs().includes(song.songId)" (change)="toggleSong(song)" /><span class="song-key">{{ song.key }}</span><span><strong>{{ song.title }}</strong><small>{{ song.liturgicalMoment }}</small></span></label> } @empty { <p class="selector-state">Nenhuma música encontrada.</p> }</div> }
-        <nav class="song-pages" aria-label="Paginação das músicas"><button type="button" [disabled]="facade.songPage() === 1" (click)="changeSongPage(facade.songPage() - 1)">Anterior</button><span>Página {{ facade.songPage() }} de {{ facade.songPageCount() }} · {{ facade.songTotal() }} músicas</span><button type="button" [disabled]="facade.songPage() >= facade.songPageCount()" (click)="changeSongPage(facade.songPage() + 1)">Próxima</button></nav>
+  <section class="card form-section">
+    <div class="form-intro">
+      <span>1</span>
+      <div>
+        <h2>Dados da celebração</h2>
+        <p>O ministério define a formação habitual que será copiada para cada escala.</p>
       </div>
-      <aside class="selected-songs" aria-label="Músicas selecionadas"><header><strong>Selecionadas</strong><span>{{ selectedSongItems().length }}</span></header><ol>@for (song of selectedSongItems(); track song.songId; let index = $index) { <li><span class="selected-order">{{ index + 1 }}</span><div><strong>{{ song.title }}</strong><small>{{ song.liturgicalMoment }} · Tom {{ song.key }}</small></div><div class="order-actions"><button type="button" [disabled]="index === 0" (click)="moveSelectedSong(index, -1)" [attr.aria-label]="'Mover ' + song.title + ' para cima'">↑</button><button type="button" [disabled]="index === selectedSongItems().length - 1" (click)="moveSelectedSong(index, 1)" [attr.aria-label]="'Mover ' + song.title + ' para baixo'">↓</button><button type="button" class="remove-song" (click)="toggleSong(song)" [attr.aria-label]="'Remover ' + song.title">×</button></div></li> } @empty { <li class="selector-state">As músicas selecionadas aparecerão aqui.</li> }</ol></aside>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="ministry">Ministério</label>
+        <select id="ministry" formControlName="ministryId" (change)="applyMinistryPreset($event)">
+          <option value="" disabled>Selecione</option>
+          @for (ministry of facade.ministryOptions(); track ministry.id) {
+            <option [value]="ministry.id">{{ ministry.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="title">Nome da celebração</label>
+        <input id="title" formControlName="title" />
+      </div>
+      @if (editMode) {
+        <div class="field">
+          <label for="date">Data</label>
+          <input id="date" type="date" formControlName="date" />
+        </div>
+        <div class="field">
+          <label for="time">Horário</label>
+          <input id="time" type="time" formControlName="time" />
+        </div>
+      }
+      <div class="field">
+        <label for="location">Local</label>
+        <select id="location" formControlName="location">
+          <option>Igreja Matriz</option>
+          <option>Capela do Santíssimo</option>
+          <option>Centro Pastoral</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="liturgicalTime">Tempo ou ocasião litúrgica</label>
+        <input id="liturgicalTime" formControlName="liturgicalTime" />
+      </div>
+      <div class="field field--wide">
+        <label for="notes">Orientações iniciais</label>
+        <textarea id="notes" formControlName="notes"></textarea>
+      </div>
     </div>
   </section>
-  @if (form.touched && form.invalid) { <p class="form-error" role="alert">Revise os campos obrigatórios antes de continuar.</p> }
-  @if (facade.error()) { <p class="form-error" role="alert">{{ facade.error() }}</p> }
-  <footer><a class="button button--secondary" [routerLink]="editMode && scheduleId ? ['/escalas', scheduleId] : '/escalas'">Cancelar</a><button class="button button--primary" type="submit" [disabled]="facade.saving() || (editMode && facade.selected()?.canEdit === false)">{{ facade.saving() ? 'Salvando…' : editMode ? 'Salvar alterações' : 'Criar escala completa' }}</button></footer>
+
+  @if (!editMode) {
+    <section class="card form-section">
+      <div class="form-intro form-intro--actions">
+        <span>2</span>
+        <div>
+          <h2>Datas e horários</h2>
+          <p>Cada linha será criada como uma escala independente.</p>
+        </div>
+        <button class="button button--secondary" type="button" (click)="addSlot()">
+          + Adicionar outro dia
+        </button>
+      </div>
+      <div class="slot-list">
+        @for (slot of slots.controls; track slot.controls.key.value; let index = $index) {
+          <div class="slot-row" [formGroup]="slot" [class.slot-row--active]="activeSlotKey() === slot.controls.key.value">
+            <button class="slot-selector" type="button" (click)="selectSlot(slot.controls.key.value)" [attr.aria-pressed]="activeSlotKey() === slot.controls.key.value">
+              <span>{{ index + 1 }}</span>
+              <strong>{{ slotDescription(slot, index) }}</strong>
+              <small>{{ (slotMembers().get(slot.controls.key.value) ?? []).length }} participante(s)</small>
+            </button>
+            <div class="field">
+              <label [for]="'slot-date-' + index">Data</label>
+              <input [id]="'slot-date-' + index" type="date" formControlName="date" />
+            </div>
+            <div class="field">
+              <label [for]="'slot-time-' + index">Horário</label>
+              <input [id]="'slot-time-' + index" type="time" formControlName="time" />
+            </div>
+            <button class="icon-button icon-button--danger" type="button" [disabled]="slots.length === 1" (click)="removeSlot(index)" [attr.aria-label]="'Remover data ' + (index + 1)">
+              ×
+            </button>
+          </div>
+        }
+      </div>
+      <p class="batch-summary">Serão criadas <strong>{{ slots.length }} escala(s)</strong>.</p>
+      @if (slotError()) {
+        <p class="form-error" role="alert">{{ slotError() }}</p>
+      }
+    </section>
+  }
+
+  <section class="card form-section">
+    <div class="form-intro form-intro--actions">
+      <span>{{ editMode ? 2 : 3 }}</span>
+      <div>
+        <h2>Participantes desta escala</h2>
+        @if (editMode) {
+          <p>As mudanças afetam somente esta escala, sem alterar o ministério.</p>
+        } @else {
+          <p>Personalize a formação da data selecionada sem alterar o ministério.</p>
+        }
+      </div>
+      @if (!editMode && slots.length > 1) {
+        <button class="button button--secondary" type="button" (click)="copyActiveFormationToAll()">
+          Aplicar formação a todas
+        </button>
+      }
+    </div>
+
+    @if (!form.controls.ministryId.value) {
+      <p class="selector-state">Selecione um ministério para carregar sua formação habitual.</p>
+    } @else {
+      @if (!editMode) {
+        <nav class="slot-tabs" aria-label="Escolher a data cuja formação será editada">
+          @for (slot of slots.controls; track slot.controls.key.value; let index = $index) {
+            <button type="button" [class.slot-tab--active]="activeSlotKey() === slot.controls.key.value" (click)="selectSlot(slot.controls.key.value)">
+              {{ slotDescription(slot, index) }}
+            </button>
+          }
+        </nav>
+      }
+
+      <div class="picker-layout">
+        <div class="picker-library">
+          <label class="picker-search" for="member-search">
+            <span>Buscar membros da paróquia</span>
+            <input id="member-search" type="search" placeholder="Nome ou e-mail" [value]="facade.memberQuery()" (input)="searchMembers($event)" />
+          </label>
+          @if (facade.memberOptionsLoading()) {
+            <p class="selector-state">Carregando membros…</p>
+          } @else {
+            <div class="choice-grid choice-grid--single">
+              @for (member of facade.memberOptions(); track member.id) {
+                <label class="choice" [class.choice--disabled]="!member.available">
+                  <input type="checkbox" [disabled]="!member.available" [checked]="selectedMemberIds().has(member.id)" (change)="toggleMember(member)" />
+                  <app-avatar [initials]="member.initials" [photoUrl]="member.photoUrl" [size]="34" />
+                  <span>
+                    <strong>{{ member.name }}</strong>
+                    <small>{{ member.role }} · {{ isHabitualMember(member.id) ? 'Do ministério' : 'Disponível na paróquia' }}</small>
+                  </span>
+                </label>
+              } @empty {
+                <p class="selector-state">Nenhum membro encontrado.</p>
+              }
+            </div>
+          }
+          <nav class="picker-pages" aria-label="Paginação dos membros">
+            <button type="button" [disabled]="facade.memberPage() === 1" (click)="changeMemberPage(facade.memberPage() - 1)">Anterior</button>
+            <span>Página {{ facade.memberPage() }} de {{ facade.memberPageCount() }} · {{ facade.memberTotal() }} membros</span>
+            <button type="button" [disabled]="facade.memberPage() >= facade.memberPageCount()" (click)="changeMemberPage(facade.memberPage() + 1)">Próxima</button>
+          </nav>
+        </div>
+
+        <aside class="selected-panel" aria-label="Participantes selecionados">
+          <header>
+            <strong>Selecionados para esta escala</strong>
+            <span>{{ selectedMembers().length }}</span>
+          </header>
+          <ul>
+            @for (member of selectedMembers(); track member.id) {
+              <li>
+                <app-avatar [initials]="member.initials" [photoUrl]="member.photoUrl" [size]="32" />
+                <div>
+                  <strong>{{ member.name }}</strong>
+                  <small>{{ member.role }}</small>
+                  <em [class.member-origin--additional]="!isHabitualMember(member.id)">
+                    {{ isHabitualMember(member.id) ? 'Do ministério' : 'Adicionado nesta escala' }}
+                  </em>
+                </div>
+                <button class="remove-item" type="button" (click)="removeSelectedMember(member.id)" [attr.aria-label]="'Remover ' + member.name">×</button>
+              </li>
+            } @empty {
+              <li class="selector-state">Nenhum participante selecionado.</li>
+            }
+          </ul>
+        </aside>
+      </div>
+    }
+  </section>
+
+  <section class="card form-section">
+    <div class="form-intro">
+      <span>{{ editMode ? 3 : 4 }}</span>
+      <div>
+        <h2>Repertório</h2>
+        <p>O repertório será copiado e poderá ser alterado separadamente em cada escala.</p>
+      </div>
+    </div>
+    <div class="picker-layout">
+      <div class="picker-library">
+        <label class="picker-search" for="song-search">
+          <span>Buscar na biblioteca</span>
+          <input id="song-search" type="search" placeholder="Nome da música ou autor" [value]="facade.songQuery()" (input)="searchSongs($event)" />
+        </label>
+        @if (facade.songOptionsLoading()) {
+          <p class="selector-state">Carregando músicas…</p>
+        } @else {
+          <div class="choice-grid choice-grid--single">
+            @for (song of facade.songOptions(); track song.songId) {
+              <label class="choice">
+                <input type="checkbox" [checked]="selectedSongs().includes(song.songId)" (change)="toggleSong(song)" />
+                <span class="song-key">{{ song.key }}</span>
+                <span>
+                  <strong>{{ song.title }}</strong>
+                  <small>{{ song.liturgicalMoment }}</small>
+                </span>
+              </label>
+            } @empty {
+              <p class="selector-state">Nenhuma música encontrada.</p>
+            }
+          </div>
+        }
+        <nav class="picker-pages" aria-label="Paginação das músicas">
+          <button type="button" [disabled]="facade.songPage() === 1" (click)="changeSongPage(facade.songPage() - 1)">Anterior</button>
+          <span>Página {{ facade.songPage() }} de {{ facade.songPageCount() }} · {{ facade.songTotal() }} músicas</span>
+          <button type="button" [disabled]="facade.songPage() >= facade.songPageCount()" (click)="changeSongPage(facade.songPage() + 1)">Próxima</button>
+        </nav>
+      </div>
+
+      <aside class="selected-panel" aria-label="Músicas selecionadas">
+        <header>
+          <strong>Repertório selecionado</strong>
+          <span>{{ selectedSongItems().length }}</span>
+        </header>
+        <ol>
+          @for (song of selectedSongItems(); track song.songId; let index = $index) {
+            <li>
+              <span class="selected-order">{{ index + 1 }}</span>
+              <div>
+                <strong>{{ song.title }}</strong>
+                <small>{{ song.liturgicalMoment }} · Tom {{ song.key }}</small>
+              </div>
+              <div class="order-actions">
+                <button type="button" [disabled]="index === 0" (click)="moveSelectedSong(index, -1)" [attr.aria-label]="'Mover ' + song.title + ' para cima'">↑</button>
+                <button type="button" [disabled]="index === selectedSongItems().length - 1" (click)="moveSelectedSong(index, 1)" [attr.aria-label]="'Mover ' + song.title + ' para baixo'">↓</button>
+                <button type="button" class="remove-item" (click)="toggleSong(song)" [attr.aria-label]="'Remover ' + song.title">×</button>
+              </div>
+            </li>
+          } @empty {
+            <li class="selector-state">As músicas selecionadas aparecerão aqui.</li>
+          }
+        </ol>
+      </aside>
+    </div>
+  </section>
+
+  @if (form.touched && form.invalid) {
+    <p class="form-error" role="alert">Revise os campos obrigatórios antes de continuar.</p>
+  }
+  @if (facade.error()) {
+    <p class="form-error" role="alert">{{ facade.error() }}</p>
+  }
+  <footer>
+    <a class="button button--secondary" [routerLink]="editMode && scheduleId ? ['/escalas', scheduleId] : '/escalas'">Cancelar</a>
+    <button class="button button--primary" type="submit" [disabled]="facade.saving() || (editMode && facade.selected()?.canEdit === false)">
+      {{ facade.saving() ? 'Salvando…' : editMode ? 'Salvar alterações' : 'Criar ' + slots.length + ' escala(s)' }}
+    </button>
+  </footer>
 </form>

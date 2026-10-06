@@ -360,6 +360,7 @@ sequenceDiagram
 |---|---|---|---|
 | `GET` | `/occurrences?from=&to=&status=&memberId=&ministryId=` | Autenticado | Listar e filtrar escalas |
 | `POST` | `/occurrences` | LEADER | Criar escala avulsa |
+| `POST` | `/occurrences/batch` | LEADER | Criar atomicamente várias escalas independentes para um ministério |
 | `GET` | `/occurrences/{id}` | Autenticado | Detalhe, formação e repertório |
 | `PATCH` | `/occurrences/{id}` | LEADER | Data, local, título e orientações |
 | `DELETE` | `/occurrences/{id}` | LEADER | Arquivar a escala, preservando histórico, formação e repertório |
@@ -378,6 +379,25 @@ sequenceDiagram
 O filtro do membro deve usar o `memberId` obtido em `/auth/me`. Para `MEMBER`, a
 API deve ignorar ou rejeitar um `memberId` de terceiro e sempre aplicar o próprio
 vínculo.
+
+Na criação em lote, o cabeçalho `Idempotency-Key` é obrigatório e recebe um UUID.
+A API persiste a chave e um hash canônico do comando. Repetir a mesma chave com o
+mesmo conteúdo devolve os IDs já criados; reutilizá-la com outro conteúdo responde
+`409`. O lote inteiro é transacional.
+
+Cada data cria uma `CelebrationOccurrence` independente. A API copia a formação
+habitual de `MinistryMember` para `OccurrenceMember`, remove os IDs declarados em
+`excludedMemberIds` e inclui os `additionalMembers` validados na mesma paróquia.
+O repertório também é copiado para `SetlistItem`, incluindo o snapshot da letra.
+Editar integrantes, repertório, confirmações ou letra de uma data nunca altera as
+outras ocorrências do lote nem a formação habitual.
+
+O seletor de participantes usa `GET /members` com `query`, `page`, `pageSize` e
+`status=ACTIVE`. As escolhas permanecem em uma lista separada ao pesquisar ou
+trocar de página. Selecionar o ministério preenche a formação habitual; retirar
+ou acrescentar alguém gera apenas as diferenças daquela ocorrência. Na criação
+com várias datas, a líder pode copiar a formação atual para todas e depois
+personalizar cada data.
 
 Ao adicionar uma música ao repertório, a API copia a letra vigente para
 `SetlistItem.lyricsSnapshot`. O líder pode formatar e ajustar essa cópia com
@@ -526,6 +546,7 @@ sobrescrevam a mesma escala.
 | `MinistriesService` | CRUD e arquivamento | `/ministries` |
 | `MinistriesFacade` | `generateUntil` | `/celebration-series/{id}/occurrences:generate` |
 | `SchedulesService` | `list/getById/create` | `/occurrences` |
+| `SchedulesService` | criação de várias datas | `POST /occurrences/batch` |
 | `SchedulesService` | membros da ocorrência | `/occurrences/{id}/members` |
 | `SchedulesService` | repertório da ocorrência | `/occurrences/{id}/setlist` |
 | `SongsService` | CRUD | `/songs` |

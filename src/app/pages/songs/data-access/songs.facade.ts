@@ -10,8 +10,12 @@ import { LyricsDocument } from '../../../shared/models/lyrics-document.model';
 @Injectable({ providedIn: 'root' })
 export class SongsFacade {
   private readonly service = inject(SongsService); private readonly schedulesService = inject(SchedulesService); private readonly router = inject(Router);
-  private readonly songsState = signal<readonly Song[]>([]); private readonly selectedState = signal<Song | null>(null); private readonly contextScheduleState = signal<Schedule | null>(null); private readonly queryState = signal(''); private readonly loadingState = signal(false); private readonly savingState = signal(false); private readonly errorState = signal<string | null>(null);
-  readonly songs = this.songsState.asReadonly(); readonly selected = this.selectedState.asReadonly(); readonly contextSchedule = this.contextScheduleState.asReadonly(); readonly query = this.queryState.asReadonly(); readonly loading = this.loadingState.asReadonly(); readonly saving = this.savingState.asReadonly(); readonly error = this.errorState.asReadonly();
+  private readonly songsState = signal<readonly Song[]>([]); private readonly selectedState = signal<Song | null>(null);
+  private readonly contextScheduleState = signal<Schedule | null>(null);
+  private readonly queryState = signal(''); private readonly loadingState = signal(false); private readonly savingState = signal(false); private readonly errorState = signal<string | null>(null);
+  readonly songs = this.songsState.asReadonly(); readonly selected = this.selectedState.asReadonly();
+  readonly contextSchedule = this.contextScheduleState.asReadonly();
+  readonly query = this.queryState.asReadonly(); readonly loading = this.loadingState.asReadonly(); readonly saving = this.savingState.asReadonly(); readonly error = this.errorState.asReadonly();
   readonly filtered = computed(() => { const query = this.queryState().toLocaleLowerCase('pt-BR'); return this.songsState().filter((song) => !query || [song.title, song.author, ...song.liturgicalMoments].some((value) => value.toLocaleLowerCase('pt-BR').includes(query))); });
   private readonly navigationSongs = computed(() => {
     const schedule = this.contextScheduleState();
