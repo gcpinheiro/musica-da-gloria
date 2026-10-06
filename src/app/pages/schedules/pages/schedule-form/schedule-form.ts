@@ -55,7 +55,10 @@ export class ScheduleForm implements OnInit, OnDestroy {
     return this.facade.ministryOptions().find((ministry) => ministry.id === ministryId) ?? null;
   });
   protected readonly form = new FormGroup({
-    title: new FormControl('Santa Missa', { nonNullable: true, validators: [Validators.required] }),
+    title: new FormControl('Santa Missa', {
+      nonNullable: true,
+      validators: this.editMode ? [Validators.required] : [],
+    }),
     date: new FormControl('', {
       nonNullable: true,
       validators: this.editMode ? [Validators.required] : [],
@@ -64,9 +67,15 @@ export class ScheduleForm implements OnInit, OnDestroy {
       nonNullable: true,
       validators: this.editMode ? [Validators.required] : [],
     }),
-    location: new FormControl('Igreja Matriz', { nonNullable: true, validators: [Validators.required] }),
+    location: new FormControl('Igreja Matriz', {
+      nonNullable: true,
+      validators: this.editMode ? [Validators.required] : [],
+    }),
     ministryId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    liturgicalTime: new FormControl('Tempo Comum', { nonNullable: true, validators: [Validators.required] }),
+    liturgicalTime: new FormControl('Tempo Comum', {
+      nonNullable: true,
+      validators: this.editMode ? [Validators.required] : [],
+    }),
     notes: new FormControl('', { nonNullable: true }),
   });
 
@@ -175,10 +184,11 @@ export class ScheduleForm implements OnInit, OnDestroy {
     this.selectedMinistryId.set(ministryId);
     const ministry = this.facade.ministryOptions().find((item) => item.id === ministryId);
     if (!ministry) return;
-    this.form.patchValue({
-      location: ministry.location,
-      title: ministry.celebrationTitle,
-    });
+    if (this.editMode)
+      this.form.patchValue({
+        location: ministry.location,
+        title: ministry.celebrationTitle,
+      });
     const participants: ScheduledPerson[] = ministry.participants.map((person) => ({
       ...person,
       confirmation: 'PENDING',
@@ -186,6 +196,8 @@ export class ScheduleForm implements OnInit, OnDestroy {
     const updated = new Map<string, readonly ScheduledPerson[]>();
     for (const slot of this.slots.controls) {
       slot.controls.time.setValue(ministry.time);
+      slot.controls.title.setValue(ministry.celebrationTitle);
+      slot.controls.location.setValue(ministry.location);
       updated.set(slot.controls.key.value, participants.map((member) => ({ ...member })));
     }
     this.slotMembers.set(updated);
@@ -193,7 +205,12 @@ export class ScheduleForm implements OnInit, OnDestroy {
   }
 
   protected addSlot(): void {
-    const slot = this.createSlot(this.selectedMinistry()?.time ?? '19:00');
+    const ministry = this.selectedMinistry();
+    const slot = this.createSlot(
+      ministry?.time ?? '19:00',
+      ministry?.celebrationTitle ?? 'Santa Missa',
+      ministry?.location ?? 'Igreja Matriz',
+    );
     this.slots.push(slot);
     const habitual = (this.selectedMinistry()?.participants ?? []).map(
       (member): ScheduledPerson => ({ ...member, confirmation: 'PENDING' }),
@@ -236,7 +253,7 @@ export class ScheduleForm implements OnInit, OnDestroy {
   protected slotDescription(slot: (typeof this.slots.controls)[number], index: number): string {
     const date = slot.controls.date.value;
     const formattedDate = date ? date.split('-').reverse().join('/') : `Data ${index + 1}`;
-    return `${formattedDate} às ${slot.controls.time.value || '--:--'}`;
+    return `${formattedDate} às ${slot.controls.time.value || '--:--'} · ${slot.controls.title.value}`;
   }
 
   protected submit(): void {
@@ -274,6 +291,10 @@ export class ScheduleForm implements OnInit, OnDestroy {
     const slots = this.slots.controls.map((slot) => ({
       date: slot.controls.date.value,
       time: slot.controls.time.value,
+      title: slot.controls.title.value,
+      location: slot.controls.location.value,
+      liturgicalTime: slot.controls.liturgicalTime.value,
+      notes: slot.controls.notes.value,
       people: this.slotMembers().get(slot.controls.key.value) ?? [],
     }));
     const uniqueSlots = new Set(slots.map((slot) => `${slot.date}|${slot.time}`));
@@ -282,11 +303,7 @@ export class ScheduleForm implements OnInit, OnDestroy {
       return;
     }
     const input = {
-      title: this.form.controls.title.value,
-      location: this.form.controls.location.value,
       ministryId: this.form.controls.ministryId.value,
-      liturgicalTime: this.form.controls.liturgicalTime.value,
-      notes: this.form.controls.notes.value,
       slots,
       songs,
     };
@@ -298,11 +315,19 @@ export class ScheduleForm implements OnInit, OnDestroy {
     this.facade.createBatch(input, this.lastIdempotencyKey);
   }
 
-  private createSlot(time = '19:00') {
+  private createSlot(
+    time = '19:00',
+    title = 'Santa Missa',
+    location = 'Igreja Matriz',
+  ) {
     return new FormGroup({
       key: new FormControl(`slot-${++this.slotSequence}`, { nonNullable: true }),
       date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
       time: new FormControl(time, { nonNullable: true, validators: [Validators.required] }),
+      title: new FormControl(title, { nonNullable: true, validators: [Validators.required] }),
+      location: new FormControl(location, { nonNullable: true, validators: [Validators.required] }),
+      liturgicalTime: new FormControl('Tempo Comum', { nonNullable: true, validators: [Validators.required] }),
+      notes: new FormControl('', { nonNullable: true }),
     });
   }
 

@@ -36,16 +36,16 @@ export class SchedulesService {
     if (this.usesApi()) {
       const habitualById = new Map(habitualMembers.map((member) => [member.id, member]));
       const body = {
-        title: input.title,
         timezone: 'America/Fortaleza',
-        location: input.location,
         ministryId: input.ministryId,
-        liturgicalTime: input.liturgicalTime,
-        notes: input.notes,
         slots: input.slots.map((slot) => {
           const selectedIds = new Set(slot.people.map((member) => member.id));
           return {
             startsAt: `${slot.date.slice(0, 10)}T${slot.time}:00-03:00`,
+            title: slot.title,
+            location: slot.location,
+            liturgicalTime: slot.liturgicalTime,
+            notes: slot.notes,
             excludedMemberIds: habitualMembers.filter((member) => !selectedIds.has(member.id)).map((member) => member.id),
             additionalMembers: slot.people
               .filter((member) => !habitualById.has(member.id) || habitualById.get(member.id)?.role !== member.role)
@@ -64,16 +64,16 @@ export class SchedulesService {
     const now = Date.now();
     const created = input.slots.map((slot, index): Schedule => ({
       id: `occ-${now}-${index}`,
-      title: input.title,
+      title: slot.title,
       date: `${slot.date.slice(0, 10)}T${slot.time}:00-03:00`,
       time: slot.time,
-      location: input.location,
+      location: slot.location,
       ministry: input.ministryId,
       ministryId: input.ministryId,
       timezone: 'America/Fortaleza',
       status: 'DRAFT',
-      liturgicalTime: input.liturgicalTime,
-      notes: input.notes,
+      liturgicalTime: slot.liturgicalTime,
+      notes: slot.notes,
       people: slot.people.map((member) => ({ ...member })),
       songs: input.songs.map((song, songIndex) => ({ ...song, id: `item-${now}-${index}-${songIndex}` })),
     }));

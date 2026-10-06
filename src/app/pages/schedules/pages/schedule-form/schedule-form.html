@@ -31,11 +31,11 @@
           }
         </select>
       </div>
-      <div class="field">
-        <label for="title">Nome da celebração</label>
-        <input id="title" formControlName="title" />
-      </div>
       @if (editMode) {
+        <div class="field">
+          <label for="title">Nome da celebração</label>
+          <input id="title" formControlName="title" />
+        </div>
         <div class="field">
           <label for="date">Data</label>
           <input id="date" type="date" formControlName="date" />
@@ -44,23 +44,23 @@
           <label for="time">Horário</label>
           <input id="time" type="time" formControlName="time" />
         </div>
+        <div class="field">
+          <label for="location">Local</label>
+          <select id="location" formControlName="location">
+            <option>Igreja Matriz</option>
+            <option>Capela do Santíssimo</option>
+            <option>Centro Pastoral</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="liturgicalTime">Tempo ou ocasião litúrgica</label>
+          <input id="liturgicalTime" formControlName="liturgicalTime" />
+        </div>
+        <div class="field field--wide">
+          <label for="notes">Orientações iniciais</label>
+          <textarea id="notes" formControlName="notes"></textarea>
+        </div>
       }
-      <div class="field">
-        <label for="location">Local</label>
-        <select id="location" formControlName="location">
-          <option>Igreja Matriz</option>
-          <option>Capela do Santíssimo</option>
-          <option>Centro Pastoral</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="liturgicalTime">Tempo ou ocasião litúrgica</label>
-        <input id="liturgicalTime" formControlName="liturgicalTime" />
-      </div>
-      <div class="field field--wide">
-        <label for="notes">Orientações iniciais</label>
-        <textarea id="notes" formControlName="notes"></textarea>
-      </div>
     </div>
   </section>
 
@@ -95,6 +95,28 @@
             <button class="icon-button icon-button--danger" type="button" [disabled]="slots.length === 1" (click)="removeSlot(index)" [attr.aria-label]="'Remover data ' + (index + 1)">
               ×
             </button>
+            <div class="form-grid field--wide">
+              <div class="field">
+                <label [for]="'slot-title-' + index">Nome da celebração</label>
+                <input [id]="'slot-title-' + index" formControlName="title" />
+              </div>
+              <div class="field">
+                <label [for]="'slot-location-' + index">Local</label>
+                <select [id]="'slot-location-' + index" formControlName="location">
+                  <option>Igreja Matriz</option>
+                  <option>Capela do Santíssimo</option>
+                  <option>Centro Pastoral</option>
+                </select>
+              </div>
+              <div class="field">
+                <label [for]="'slot-liturgical-time-' + index">Tempo ou ocasião litúrgica</label>
+                <input [id]="'slot-liturgical-time-' + index" formControlName="liturgicalTime" />
+              </div>
+              <div class="field field--wide">
+                <label [for]="'slot-notes-' + index">Orientações desta escala</label>
+                <textarea [id]="'slot-notes-' + index" formControlName="notes"></textarea>
+              </div>
+            </div>
           </div>
         }
       </div>

@@ -385,12 +385,15 @@ A API persiste a chave e um hash canônico do comando. Repetir a mesma chave com
 mesmo conteúdo devolve os IDs já criados; reutilizá-la com outro conteúdo responde
 `409`. O lote inteiro é transacional.
 
-Cada data cria uma `CelebrationOccurrence` independente. A API copia a formação
-habitual de `MinistryMember` para `OccurrenceMember`, remove os IDs declarados em
-`excludedMemberIds` e inclui os `additionalMembers` validados na mesma paróquia.
-O repertório também é copiado para `SetlistItem`, incluindo o snapshot da letra.
-Editar integrantes, repertório, confirmações ou letra de uma data nunca altera as
-outras ocorrências do lote nem a formação habitual.
+Cada data cria uma `CelebrationOccurrence` independente e informa seu próprio
+nome de celebração, local, tempo litúrgico e orientações. Assim, um mesmo lote
+pode conter, por exemplo, uma missa e uma celebração da Palavra em datas e locais
+distintos. A API copia a formação habitual de `MinistryMember` para
+`OccurrenceMember`, remove os IDs declarados em `excludedMemberIds` e inclui os
+`additionalMembers` validados na mesma paróquia. O repertório também é copiado
+para `SetlistItem`, incluindo o snapshot da letra. Editar metadados, integrantes,
+repertório, confirmações ou letra de uma data nunca altera as outras ocorrências
+do lote nem a formação habitual.
 
 O seletor de participantes usa `GET /members` com `query`, `page`, `pageSize` e
 `status=ACTIVE`. As escolhas permanecem em uma lista separada ao pesquisar ou

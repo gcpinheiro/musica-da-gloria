@@ -72,15 +72,15 @@ export interface ScheduleInput {
 export interface ScheduleBatchSlotInput {
   readonly date: string;
   readonly time: string;
+  readonly title: string;
+  readonly location: string;
+  readonly liturgicalTime: string;
+  readonly notes: string;
   readonly people: readonly ScheduledPerson[];
 }
 
 export interface ScheduleBatchInput {
-  readonly title: string;
-  readonly location: string;
   readonly ministryId: string;
-  readonly liturgicalTime: string;
-  readonly notes: string;
   readonly slots: readonly ScheduleBatchSlotInput[];
   readonly songs: readonly ScheduledSong[];
 }

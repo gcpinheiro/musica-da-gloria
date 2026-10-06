@@ -415,7 +415,7 @@ footer {
     grid-template-columns: 1fr;
   }
 
-  .field--wide,
+  .form-grid > .field--wide,
   .slot-selector {
     grid-column: auto;
   }

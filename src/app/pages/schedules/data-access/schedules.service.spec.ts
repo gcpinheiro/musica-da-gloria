@@ -102,14 +102,26 @@ describe('SchedulesService', () => {
   it('creates independent schedules and replays the same idempotent batch', async () => {
     const ministryMembers = (await firstValueFrom(service.listMemberOptions('', 1, 100))).items.slice(0, 2);
     const input = {
-      title: 'Retiro dos Acólitos',
-      location: 'Centro Pastoral',
       ministryId: 'min-001',
-      liturgicalTime: 'Retiro',
-      notes: '',
       slots: [
-        { date: '2026-10-14', time: '09:00', people: ministryMembers },
-        { date: '2026-10-28', time: '19:00', people: ministryMembers.slice(0, 1) },
+        {
+          date: '2026-10-14',
+          time: '09:00',
+          title: 'Retiro dos Acólitos',
+          location: 'Centro Pastoral',
+          liturgicalTime: 'Retiro',
+          notes: 'Encontro da manhã',
+          people: ministryMembers,
+        },
+        {
+          date: '2026-10-28',
+          time: '19:00',
+          title: 'Celebração da Palavra',
+          location: 'Capela do Santíssimo',
+          liturgicalTime: 'Tempo Comum',
+          notes: 'Celebração da noite',
+          people: ministryMembers.slice(0, 1),
+        },
       ],
       songs: [],
     };
@@ -125,6 +137,16 @@ describe('SchedulesService', () => {
     expect(first.people.length).toBe(2);
     expect(second.people.length).toBe(1);
     expect(first.people).not.toBe(second.people);
+    expect(first).toEqual(jasmine.objectContaining({
+      title: 'Retiro dos Acólitos',
+      location: 'Centro Pastoral',
+      liturgicalTime: 'Retiro',
+    }));
+    expect(second).toEqual(jasmine.objectContaining({
+      title: 'Celebração da Palavra',
+      location: 'Capela do Santíssimo',
+      liturgicalTime: 'Tempo Comum',
+    }));
   });
 
   it('archives multiple selected schedules', async () => {
