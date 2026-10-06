@@ -77,12 +77,12 @@ export interface ScheduleBatchSlotInput {
   readonly liturgicalTime: string;
   readonly notes: string;
   readonly people: readonly ScheduledPerson[];
+  readonly songs: readonly ScheduledSong[];
 }
 
 export interface ScheduleBatchInput {
   readonly ministryId: string;
   readonly slots: readonly ScheduleBatchSlotInput[];
-  readonly songs: readonly ScheduledSong[];
 }
 
 export interface ScheduleBatchResult {

@@ -101,6 +101,7 @@ describe('SchedulesService', () => {
 
   it('creates independent schedules and replays the same idempotent batch', async () => {
     const ministryMembers = (await firstValueFrom(service.listMemberOptions('', 1, 100))).items.slice(0, 2);
+    const songs = (await firstValueFrom(service.listSongOptions('', 1, 100))).items.slice(0, 2);
     const input = {
       ministryId: 'min-001',
       slots: [
@@ -112,6 +113,7 @@ describe('SchedulesService', () => {
           liturgicalTime: 'Retiro',
           notes: 'Encontro da manhã',
           people: ministryMembers,
+          songs: songs.slice(0, 1).map((song) => ({ ...song, id: `first-${song.songId}` })),
         },
         {
           date: '2026-10-28',
@@ -121,9 +123,9 @@ describe('SchedulesService', () => {
           liturgicalTime: 'Tempo Comum',
           notes: 'Celebração da noite',
           people: ministryMembers.slice(0, 1),
+          songs: songs.slice(1, 2).map((song) => ({ ...song, id: `second-${song.songId}` })),
         },
       ],
-      songs: [],
     };
 
     const created = await firstValueFrom(service.createBatch(input, ministryMembers, 'batch-key'));
@@ -137,6 +139,8 @@ describe('SchedulesService', () => {
     expect(first.people.length).toBe(2);
     expect(second.people.length).toBe(1);
     expect(first.people).not.toBe(second.people);
+    expect(first.songs.map((song) => song.songId)).toEqual([songs[0].songId]);
+    expect(second.songs.map((song) => song.songId)).toEqual([songs[1].songId]);
     expect(first).toEqual(jasmine.objectContaining({
       title: 'Retiro dos Acólitos',
       location: 'Centro Pastoral',

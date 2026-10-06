@@ -50,9 +50,16 @@ export class SchedulesService {
             additionalMembers: slot.people
               .filter((member) => !habitualById.has(member.id) || habitualById.get(member.id)?.role !== member.role)
               .map((member) => ({ memberId: member.id, role: member.role })),
+            setlist: {
+              items: slot.songs.map((song, index) => ({
+                songId: song.songId,
+                position: index + 1,
+                key: song.key,
+                liturgicalMoment: song.liturgicalMoment,
+              })),
+            },
           };
         }),
-        setlist: { items: input.songs.map((song, index) => ({ songId: song.songId, position: index + 1, key: song.key, liturgicalMoment: song.liturgicalMoment })) },
       };
       return this.http!.post<ScheduleBatchResult>(`${environment.apiBaseUrl}/occurrences/batch`, body, {
         ...this.options(),
@@ -75,7 +82,7 @@ export class SchedulesService {
       liturgicalTime: slot.liturgicalTime,
       notes: slot.notes,
       people: slot.people.map((member) => ({ ...member })),
-      songs: input.songs.map((song, songIndex) => ({ ...song, id: `item-${now}-${index}-${songIndex}` })),
+      songs: slot.songs.map((song, songIndex) => ({ ...song, id: `item-${now}-${index}-${songIndex}` })),
     }));
     this.schedules = [...created, ...this.schedules];
     const result: ScheduleBatchResult = { batchId: `batch-${now}`, createdCount: created.length, replayed: false, occurrenceIds: created.map((schedule) => schedule.id) };

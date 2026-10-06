@@ -72,7 +72,7 @@
           <h2>Datas e horários</h2>
           <p>Cada linha será criada como uma escala independente.</p>
         </div>
-        <button class="button button--secondary" type="button" (click)="addSlot()">
+        <button class="button button--secondary" type="button" [disabled]="slots.length >= 5" (click)="addSlot()">
           + Adicionar outro dia
         </button>
       </div>
@@ -82,7 +82,10 @@
             <button class="slot-selector" type="button" (click)="selectSlot(slot.controls.key.value)" [attr.aria-pressed]="activeSlotKey() === slot.controls.key.value">
               <span>{{ index + 1 }}</span>
               <strong>{{ slotDescription(slot, index) }}</strong>
-              <small>{{ (slotMembers().get(slot.controls.key.value) ?? []).length }} participante(s)</small>
+              <small>
+                {{ (slotMembers().get(slot.controls.key.value) ?? []).length }} participante(s) ·
+                {{ (slotSongs().get(slot.controls.key.value) ?? []).length }} música(s)
+              </small>
             </button>
             <div class="field">
               <label [for]="'slot-date-' + index">Data</label>
@@ -120,7 +123,9 @@
           </div>
         }
       </div>
-      <p class="batch-summary">Serão criadas <strong>{{ slots.length }} escala(s)</strong>.</p>
+      <p class="batch-summary">
+        Serão criadas <strong>{{ slots.length }} escala(s)</strong>. Máximo de 5 por lote.
+      </p>
       @if (slotError()) {
         <p class="form-error" role="alert">{{ slotError() }}</p>
       }
@@ -217,13 +222,31 @@
   </section>
 
   <section class="card form-section">
-    <div class="form-intro">
+    <div class="form-intro form-intro--actions">
       <span>{{ editMode ? 3 : 4 }}</span>
       <div>
         <h2>Repertório</h2>
-        <p>O repertório será copiado e poderá ser alterado separadamente em cada escala.</p>
+        <p>
+          {{ editMode
+            ? 'As mudanças afetam somente esta escala.'
+            : 'Escolha e ordene o repertório da data selecionada.' }}
+        </p>
       </div>
+      @if (!editMode && slots.length > 1) {
+        <button class="button button--secondary" type="button" (click)="copyActiveRepertoireToAll()">
+          Aplicar repertório a todas
+        </button>
+      }
     </div>
+    @if (!editMode) {
+      <nav class="slot-tabs" aria-label="Escolher a data cujo repertório será editado">
+        @for (slot of slots.controls; track slot.controls.key.value; let index = $index) {
+          <button type="button" [class.slot-tab--active]="activeSlotKey() === slot.controls.key.value" (click)="selectSlot(slot.controls.key.value)">
+            {{ slotDescription(slot, index) }}
+          </button>
+        }
+      </nav>
+    }
     <div class="picker-layout">
       <div class="picker-library">
         <label class="picker-search" for="song-search">

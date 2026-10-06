@@ -37,13 +37,21 @@ export class ScheduleForm implements OnInit, OnDestroy {
   protected readonly facade = inject(SchedulesFacade);
   protected readonly scheduleId = this.route.snapshot.paramMap.get('id');
   protected readonly editMode = Boolean(this.scheduleId);
-  protected readonly selectedSongItems = signal<readonly ScheduleSongOption[]>([]);
-  protected readonly selectedSongs = computed(() => this.selectedSongItems().map((item) => item.songId));
+  private readonly editSongItems = signal<readonly ScheduleSongOption[]>([]);
   protected readonly slotMembers = signal<ReadonlyMap<string, readonly ScheduledPerson[]>>(new Map());
+  protected readonly slotSongs = signal<ReadonlyMap<string, readonly ScheduleSongOption[]>>(new Map());
   protected readonly slotError = signal<string | null>(null);
   protected readonly selectedMinistryId = signal('');
   protected readonly slots = new FormArray([this.createSlot()]);
   protected readonly activeSlotKey = signal(this.slots.controls[0].controls.key.value);
+  protected readonly selectedSongItems = computed(() =>
+    this.editMode
+      ? this.editSongItems()
+      : this.slotSongs().get(this.activeSlotKey()) ?? [],
+  );
+  protected readonly selectedSongs = computed(() =>
+    this.selectedSongItems().map((item) => item.songId),
+  );
   protected readonly selectedMembers = computed(
     () => this.slotMembers().get(this.activeSlotKey()) ?? [],
   );
@@ -82,6 +90,7 @@ export class ScheduleForm implements OnInit, OnDestroy {
   constructor() {
     const firstSlotKey = this.slots.controls[0].controls.key.value;
     this.slotMembers.set(new Map([[firstSlotKey, []]]));
+    this.slotSongs.set(new Map([[firstSlotKey, []]]));
     effect(() => {
       const schedule = this.facade.selected();
       if (!this.editMode || !schedule || this.editInitialized) return;
@@ -103,7 +112,7 @@ export class ScheduleForm implements OnInit, OnDestroy {
       });
       this.selectedMinistryId.set(schedule.ministryId ?? '');
       this.setMembersForSlot(firstSlotKey, schedule.people);
-      this.selectedSongItems.set(schedule.songs.map(({ id: _id, ...song }) => song));
+      this.editSongItems.set(schedule.songs.map(({ id: _id, ...song }) => song));
     });
   }
 
@@ -151,11 +160,10 @@ export class ScheduleForm implements OnInit, OnDestroy {
   }
 
   protected toggleSong(song: ScheduleSongOption): void {
-    this.selectedSongItems.update((items) =>
-      items.some((item) => item.songId === song.songId)
-        ? items.filter((item) => item.songId !== song.songId)
-        : [...items, song],
-    );
+    const updated = this.selectedSongItems().some((item) => item.songId === song.songId)
+      ? this.selectedSongItems().filter((item) => item.songId !== song.songId)
+      : [...this.selectedSongItems(), song];
+    this.setSongsForActiveSlot(updated);
   }
 
   protected searchSongs(event: Event): void {
@@ -172,11 +180,9 @@ export class ScheduleForm implements OnInit, OnDestroy {
   protected moveSelectedSong(index: number, direction: -1 | 1): void {
     const target = index + direction;
     if (target < 0 || target >= this.selectedSongItems().length) return;
-    this.selectedSongItems.update((items) => {
-      const reordered = [...items];
-      [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
-      return reordered;
-    });
+    const reordered = [...this.selectedSongItems()];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    this.setSongsForActiveSlot(reordered);
   }
 
   protected applyMinistryPreset(event: Event): void {
@@ -205,6 +211,10 @@ export class ScheduleForm implements OnInit, OnDestroy {
   }
 
   protected addSlot(): void {
+    if (this.slots.length >= 5) {
+      this.slotError.set('Cada lote pode conter no máximo 5 escalas.');
+      return;
+    }
     const ministry = this.selectedMinistry();
     const slot = this.createSlot(
       ministry?.time ?? '19:00',
@@ -216,6 +226,7 @@ export class ScheduleForm implements OnInit, OnDestroy {
       (member): ScheduledPerson => ({ ...member, confirmation: 'PENDING' }),
     );
     this.setMembersForSlot(slot.controls.key.value, habitual);
+    this.setSongsForSlot(slot.controls.key.value, []);
     this.activeSlotKey.set(slot.controls.key.value);
     this.slotError.set(null);
   }
@@ -225,6 +236,11 @@ export class ScheduleForm implements OnInit, OnDestroy {
     const key = this.slots.at(index).controls.key.value;
     this.slots.removeAt(index);
     this.slotMembers.update((current) => {
+      const next = new Map(current);
+      next.delete(key);
+      return next;
+    });
+    this.slotSongs.update((current) => {
       const next = new Map(current);
       next.delete(key);
       return next;
@@ -245,6 +261,18 @@ export class ScheduleForm implements OnInit, OnDestroy {
         this.slots.controls.map((slot) => [
           slot.controls.key.value,
           selected.map((member) => ({ ...member })),
+        ]),
+      ),
+    );
+  }
+
+  protected copyActiveRepertoireToAll(): void {
+    const selected = this.selectedSongItems().map((song) => ({ ...song }));
+    this.slotSongs.update(() =>
+      new Map(
+        this.slots.controls.map((slot) => [
+          slot.controls.key.value,
+          selected.map((song) => ({ ...song })),
         ]),
       ),
     );
@@ -285,7 +313,11 @@ export class ScheduleForm implements OnInit, OnDestroy {
 
     if (this.slots.invalid) {
       this.slots.markAllAsTouched();
-      this.slotError.set('Preencha a data e o horário de todas as escalas.');
+      this.slotError.set('Preencha os dados obrigatórios de todas as escalas.');
+      return;
+    }
+    if (this.slots.length > 5) {
+      this.slotError.set('Cada lote pode conter no máximo 5 escalas.');
       return;
     }
     const slots = this.slots.controls.map((slot) => ({
@@ -296,6 +328,10 @@ export class ScheduleForm implements OnInit, OnDestroy {
       liturgicalTime: slot.controls.liturgicalTime.value,
       notes: slot.controls.notes.value,
       people: this.slotMembers().get(slot.controls.key.value) ?? [],
+      songs: (this.slotSongs().get(slot.controls.key.value) ?? []).map((item, index) => ({
+        ...item,
+        id: `new-${slot.controls.key.value}-${index}-${item.songId}`,
+      })),
     }));
     const uniqueSlots = new Set(slots.map((slot) => `${slot.date}|${slot.time}`));
     if (uniqueSlots.size !== slots.length) {
@@ -305,7 +341,6 @@ export class ScheduleForm implements OnInit, OnDestroy {
     const input = {
       ministryId: this.form.controls.ministryId.value,
       slots,
-      songs,
     };
     const payload = JSON.stringify(input);
     if (payload !== this.lastSubmissionPayload) {
@@ -335,6 +370,22 @@ export class ScheduleForm implements OnInit, OnDestroy {
     this.slotMembers.update((current) => {
       const next = new Map(current);
       next.set(key, members.map((member) => ({ ...member })));
+      return next;
+    });
+  }
+
+  private setSongsForActiveSlot(songs: readonly ScheduleSongOption[]): void {
+    if (this.editMode) {
+      this.editSongItems.set(songs.map((song) => ({ ...song })));
+      return;
+    }
+    this.setSongsForSlot(this.activeSlotKey(), songs);
+  }
+
+  private setSongsForSlot(key: string, songs: readonly ScheduleSongOption[]): void {
+    this.slotSongs.update((current) => {
+      const next = new Map(current);
+      next.set(key, songs.map((song) => ({ ...song })));
       return next;
     });
   }
