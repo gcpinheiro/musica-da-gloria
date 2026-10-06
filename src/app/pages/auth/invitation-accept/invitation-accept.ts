@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthFacade } from '../../../core/auth/auth.facade';
 
 function normalizeWhatsapp(value: string): string | undefined {
@@ -14,9 +14,10 @@ function whatsappValidator(control: AbstractControl<string>): ValidationErrors |
   return !control.value.trim() || normalizeWhatsapp(control.value) ? null : { whatsappFormat: true };
 }
 
-@Component({ selector: 'app-invitation-accept', imports: [ReactiveFormsModule], templateUrl: './invitation-accept.html', styleUrl: './invitation-accept.scss', changeDetection: ChangeDetectionStrategy.OnPush })
-export class InvitationAccept {
+@Component({ selector: 'app-invitation-accept', imports: [ReactiveFormsModule, RouterLink], templateUrl: './invitation-accept.html', styleUrl: './invitation-accept.scss', changeDetection: ChangeDetectionStrategy.OnPush })
+export class InvitationAccept implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly token = this.route.snapshot.paramMap.get('token');
   protected readonly authFacade = inject(AuthFacade);
   protected readonly showPassword = signal(false);
   protected readonly showPasswordConfirmation = signal(false);
@@ -25,14 +26,14 @@ export class InvitationAccept {
     passwordConfirmation: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(8)] }),
     whatsapp: new FormControl('', { nonNullable: true, validators: [Validators.required, whatsappValidator] }),
   });
+  ngOnInit(): void { this.authFacade.validateInvitation(this.token); }
   protected togglePassword(): void { this.showPassword.update((value) => !value); }
   protected togglePasswordConfirmation(): void { this.showPasswordConfirmation.update((value) => !value); }
   protected submit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const value = this.form.getRawValue();
     if (value.password !== value.passwordConfirmation) { this.form.controls.passwordConfirmation.setErrors({ mismatch: true }); return; }
-    const token = this.route.snapshot.paramMap.get('token');
-    if (!token) { this.authFacade.invalidInvitation(); return; }
-    this.authFacade.acceptInvitation(token, { ...value, whatsapp: normalizeWhatsapp(value.whatsapp) });
+    if (!this.token || this.authFacade.invitationValidation() !== 'valid') { this.authFacade.invalidInvitation(); return; }
+    this.authFacade.acceptInvitation(this.token, { ...value, whatsapp: normalizeWhatsapp(value.whatsapp) });
   }
 }

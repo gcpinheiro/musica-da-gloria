@@ -18,3 +18,8 @@ export interface LoginCredentials {
 }
 
 export interface InvitationAcceptance { readonly password: string; readonly passwordConfirmation: string; readonly whatsapp?: string; }
+
+export interface InvitationValidation {
+  readonly valid: true;
+  readonly expiresAt: string;
+}

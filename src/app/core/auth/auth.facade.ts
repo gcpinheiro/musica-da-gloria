@@ -15,10 +15,12 @@ export class AuthFacade {
   private readonly userState = signal<AuthUser | null>(null);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
+  private readonly invitationValidationState = signal<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
 
   readonly user = this.userState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  readonly invitationValidation = this.invitationValidationState.asReadonly();
   readonly isAuthenticated = computed(() => this.userState() !== null);
   readonly canManage = computed(() => this.userState()?.role === 'LEADER');
   readonly isSuperAdmin = computed(() => this.userState()?.role === 'SUPER_ADMIN');
@@ -63,6 +65,7 @@ export class AuthFacade {
             return;
           }
           if (error.status === 409) {
+            this.invitationValidationState.set('invalid');
             this.errorState.set('Este convite expirou ou já foi utilizado. Solicite um novo link.');
             return;
           }
@@ -72,7 +75,24 @@ export class AuthFacade {
     });
   }
 
+  validateInvitation(token: string | null): void {
+    this.errorState.set(null);
+    if (!token) {
+      this.invalidInvitation();
+      return;
+    }
+    this.invitationValidationState.set('validating');
+    this.authService.validateInvitation(token).subscribe({
+      next: () => this.invitationValidationState.set('valid'),
+      error: () => {
+        this.invitationValidationState.set('invalid');
+        this.errorState.set('Este convite é inválido, expirou ou já foi utilizado. Solicite um novo link.');
+      },
+    });
+  }
+
   invalidInvitation(): void {
+    this.invitationValidationState.set('invalid');
     this.errorState.set('O link do convite está incompleto ou inválido.');
   }
 

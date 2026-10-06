@@ -1,20 +1,36 @@
 <main class="invite-page">
-  <form class="card invite-card" [formGroup]="form" (ngSubmit)="submit()">
-    <header class="invite-header">
+  @if (authFacade.invitationValidation() === 'validating' || authFacade.invitationValidation() === 'idle') {
+    <section class="card invite-card invite-state" aria-live="polite" aria-busy="true">
       <span class="invite-mark" aria-hidden="true">♪</span>
-      <div><p class="eyebrow">Convite de acesso</p><h1>Ative sua conta</h1></div>
-    </header>
-    <p class="invite-description">Crie uma senha segura e confirme o WhatsApp que ficará vinculado à sua conta.</p>
-    <label><span>Senha</span><span class="password-field"><input [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password" formControlName="password" /><button type="button" [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'" (click)="togglePassword()">{{ showPassword() ? 'Ocultar' : 'Mostrar' }}</button></span></label>
-    @if (form.controls.password.touched && form.controls.password.invalid) { <p class="field-error">A senha deve ter pelo menos 8 caracteres.</p> }
-    <label><span>Confirme a senha</span><span class="password-field"><input [type]="showPasswordConfirmation() ? 'text' : 'password'" autocomplete="new-password" formControlName="passwordConfirmation" /><button type="button" [attr.aria-label]="showPasswordConfirmation() ? 'Ocultar confirmação da senha' : 'Mostrar confirmação da senha'" (click)="togglePasswordConfirmation()">{{ showPasswordConfirmation() ? 'Ocultar' : 'Mostrar' }}</button></span></label>
-    @if (form.controls.passwordConfirmation.touched && (form.controls.passwordConfirmation.hasError('required') || form.controls.passwordConfirmation.hasError('minlength'))) { <p class="field-error">A confirmação deve ter pelo menos 8 caracteres.</p> }
-    @if (form.controls.passwordConfirmation.touched && form.controls.passwordConfirmation.hasError('mismatch')) { <p class="field-error">As senhas não conferem.</p> }
-    <label><span>WhatsApp</span><input type="tel" autocomplete="tel" placeholder="(85) 99999-9999" formControlName="whatsapp" /></label>
-    <small class="field-help">Você pode informar com ou sem +55.</small>
-    @if (form.controls.whatsapp.touched && form.controls.whatsapp.hasError('whatsappFormat')) { <p class="field-error">Informe um número válido, incluindo DDD.</p> }
-    @if (authFacade.error()) { <p class="error" role="alert">{{ authFacade.error() }}</p> }
-    <button class="button button--primary submit-button" type="submit" [disabled]="authFacade.loading()">{{ authFacade.loading() ? 'Ativando…' : 'Ativar minha conta' }}</button>
-    <p class="privacy-note">Sua senha é enviada de forma segura e não fica visível para a liderança.</p>
-  </form>
+      <div><p class="eyebrow">Convite de acesso</p><h1>Validando convite…</h1></div>
+      <p class="invite-description">Aguarde enquanto confirmamos se este link ainda pode ser utilizado.</p>
+    </section>
+  } @else if (authFacade.invitationValidation() === 'invalid') {
+    <section class="card invite-card invite-state" role="alert">
+      <span class="invite-mark invite-mark--invalid" aria-hidden="true">!</span>
+      <div><p class="eyebrow">Convite indisponível</p><h1>Este link não pode ser utilizado</h1></div>
+      <p class="error">{{ authFacade.error() || 'Este convite é inválido, expirou ou já foi utilizado.' }}</p>
+      <p class="invite-description">Peça à liderança ou à administração um novo link de acesso.</p>
+      <a class="button button--secondary" routerLink="/login">Voltar para o login</a>
+    </section>
+  } @else {
+    <form class="card invite-card" [formGroup]="form" (ngSubmit)="submit()">
+      <header class="invite-header">
+        <span class="invite-mark" aria-hidden="true">♪</span>
+        <div><p class="eyebrow">Convite de acesso</p><h1>Ative sua conta</h1></div>
+      </header>
+      <p class="invite-description">Crie uma senha segura e confirme o WhatsApp que ficará vinculado à sua conta.</p>
+      <label><span>Senha</span><span class="password-field"><input [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password" formControlName="password" /><button type="button" [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'" (click)="togglePassword()">{{ showPassword() ? 'Ocultar' : 'Mostrar' }}</button></span></label>
+      @if (form.controls.password.touched && form.controls.password.invalid) { <p class="field-error">A senha deve ter pelo menos 8 caracteres.</p> }
+      <label><span>Confirme a senha</span><span class="password-field"><input [type]="showPasswordConfirmation() ? 'text' : 'password'" autocomplete="new-password" formControlName="passwordConfirmation" /><button type="button" [attr.aria-label]="showPasswordConfirmation() ? 'Ocultar confirmação da senha' : 'Mostrar confirmação da senha'" (click)="togglePasswordConfirmation()">{{ showPasswordConfirmation() ? 'Ocultar' : 'Mostrar' }}</button></span></label>
+      @if (form.controls.passwordConfirmation.touched && (form.controls.passwordConfirmation.hasError('required') || form.controls.passwordConfirmation.hasError('minlength'))) { <p class="field-error">A confirmação deve ter pelo menos 8 caracteres.</p> }
+      @if (form.controls.passwordConfirmation.touched && form.controls.passwordConfirmation.hasError('mismatch')) { <p class="field-error">As senhas não conferem.</p> }
+      <label><span>WhatsApp</span><input type="tel" autocomplete="tel" placeholder="(85) 99999-9999" formControlName="whatsapp" /></label>
+      <small class="field-help">Você pode informar com ou sem +55.</small>
+      @if (form.controls.whatsapp.touched && form.controls.whatsapp.hasError('whatsappFormat')) { <p class="field-error">Informe um número válido, incluindo DDD.</p> }
+      @if (authFacade.error()) { <p class="error" role="alert">{{ authFacade.error() }}</p> }
+      <button class="button button--primary submit-button" type="submit" [disabled]="authFacade.loading()">{{ authFacade.loading() ? 'Ativando…' : 'Ativar minha conta' }}</button>
+      <p class="privacy-note">Sua senha é enviada de forma segura e não fica visível para a liderança.</p>
+    </form>
+  }
 </main>

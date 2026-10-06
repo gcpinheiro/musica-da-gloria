@@ -1,7 +1,12 @@
 .invite-page { min-height: 100dvh; display: grid; place-items: center; padding: clamp(1rem, 4vw, 2rem); background: radial-gradient(circle at top, #e9f1f8 0, var(--color-surface, #f7f5f0) 48%); }
 .invite-card { width: min(100%, 31rem); display: grid; gap: 1.05rem; border-top: 4px solid var(--color-gold, #c5a35a); padding: clamp(1.4rem, 5vw, 2.3rem); box-shadow: 0 20px 55px rgb(23 60 103 / 12%); }
 .invite-header { display: flex; align-items: center; gap: .9rem; } .invite-header h1, .invite-header p { margin: 0; }
+.invite-state { grid-template-columns: auto 1fr; align-items: center; }
+.invite-state > .invite-description, .invite-state > .error, .invite-state > .button { grid-column: 1 / -1; }
+.invite-state > .button { justify-self: start; }
+.invite-state h1, .invite-state p { margin: 0; }
 .invite-mark { display: grid; width: 3rem; height: 3rem; flex: 0 0 auto; place-items: center; border-radius: 50%; background: var(--color-navy-900, #173c67); color: #fff; font-size: 1.25rem; }
+.invite-mark--invalid { background: #9f2323; }
 .invite-description { margin: 0 0 .25rem; color: var(--color-muted, #52606d); line-height: 1.55; }
 label { display: grid; gap: .45rem; font-size: .82rem; font-weight: 700; } input { width: 100%; min-height: 3rem; border: 1px solid var(--color-line, #d8dee7); border-radius: .65rem; padding: .7rem .85rem; background: #fff; }
 input:focus { border-color: var(--color-sky, #4b83b6); outline: 3px solid rgb(75 131 182 / 18%); }

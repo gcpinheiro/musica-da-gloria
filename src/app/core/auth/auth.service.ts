@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, Optional } from '@angular/core';
 import { delay, Observable, of, throwError } from 'rxjs';
-import { AuthUser, InvitationAcceptance, LoginCredentials } from './auth.models';
+import { AuthUser, InvitationAcceptance, InvitationValidation, LoginCredentials } from './auth.models';
 import { environment } from '../../../environments/environment';
 import { memberPhotoUrl } from '../../shared/utils/member-photo-url';
 
@@ -69,6 +69,11 @@ export class AuthService {
       this.http!.post<AuthSession>(`${environment.apiBaseUrl}/users/invitations/${encodeURIComponent(token)}/accept`, input, { withCredentials: true })
         .subscribe({ next: ({ user }) => { subscriber.next(this.present(user)); subscriber.complete(); }, error: (error) => subscriber.error(error) });
     });
+  }
+
+  validateInvitation(token: string): Observable<InvitationValidation> {
+    if (!this.http) return throwError(() => new Error('API_REQUIRED'));
+    return this.http.get<InvitationValidation>(`${environment.apiBaseUrl}/users/invitations/${encodeURIComponent(token)}/validate`);
   }
 
   private present(user: AuthUser): AuthUser {
