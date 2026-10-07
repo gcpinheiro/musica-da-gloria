@@ -17,6 +17,7 @@ export interface ScheduledSong {
   readonly title: string;
   readonly key: string;
   readonly liturgicalMoment: string;
+  readonly notes?: string;
   readonly lyricsSnapshot?: string;
   readonly formattedLyrics?: LyricsDocument | null;
 }
@@ -29,6 +30,11 @@ export interface ScheduleMemberPage {
   readonly total: number;
 }
 export type ScheduleSongOption = Omit<ScheduledSong, 'id'>;
+export interface ScheduleSetlistItemUpdate {
+  readonly key: string;
+  readonly liturgicalMoment: string;
+  readonly notes?: string;
+}
 export interface ScheduleSongPage {
   readonly items: readonly ScheduleSongOption[];
   readonly page: number;

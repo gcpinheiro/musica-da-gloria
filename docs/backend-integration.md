@@ -411,6 +411,12 @@ biblioteca e outras escalas não são alteradas. A API persiste um documento JSO
 validado, nunca HTML arbitrário. A cifra permanece referenciada pela música
 original e não participa do editor.
 
+Na tela de uma música aberta pelo repertório de uma escala, a edição altera o
+`SetlistItem`, não a música da biblioteca. Tom, momento litúrgico, observações e
+letra formatada ficam isolados naquela ocorrência. Somente o líder que criou a
+escala pode realizar essas alterações; a API valida essa autoria, além do papel e
+do escopo da paróquia.
+
 O seletor de repertório usa `GET /songs/options` com busca e paginação real. As
 músicas escolhidas permanecem em uma lista separada ao trocar de página e podem
 ser ordenadas antes de salvar. A posição persistida em `SetlistItem` define a

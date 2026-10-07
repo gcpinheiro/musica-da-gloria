@@ -178,4 +178,23 @@ describe('SchedulesService', () => {
     expect(updated.songs[0].formattedLyrics).toEqual(content);
     expect((await firstValueFrom(service.getById('occ-002'))).songs[0].formattedLyrics).toBeUndefined();
   });
+
+  it('updates key, liturgical moment and notes only on the selected schedule item', async () => {
+    const original = await firstValueFrom(service.getById('occ-001'));
+    const otherSchedule = await firstValueFrom(service.getById('occ-002'));
+    const item = original.songs[0];
+
+    const updated = await firstValueFrom(service.updateSetlistItem(original.id, item.id, {
+      key: 'D',
+      liturgicalMoment: 'Comunhão',
+      notes: 'Somente nesta escala',
+    }));
+
+    expect(updated.songs[0]).toEqual(jasmine.objectContaining({
+      key: 'D',
+      liturgicalMoment: 'Comunhão',
+      notes: 'Somente nesta escala',
+    }));
+    expect((await firstValueFrom(service.getById('occ-002'))).songs).toEqual(otherSchedule.songs);
+  });
 });

@@ -4,7 +4,7 @@ import { distinctUntilChanged, interval, map, Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SongsFacade } from '../../data-access/songs.facade';
 import { AuthFacade } from '../../../../core/auth/auth.facade';
-import { isChordLine, transposeChordLine, transposeKey } from '../../utils/song-transposition';
+import { isChordLine, keySemitoneOffset, transposeChordLine, transposeKey } from '../../utils/song-transposition';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { externalSongSource } from '../../utils/external-song-source';
 import { LyricsEditor } from '../../components/lyrics-editor/lyrics-editor';
@@ -35,19 +35,45 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly semitoneOffset = signal(0);
   protected readonly keyModalOpen = signal(false);
   protected readonly editingLyrics = signal(false);
+  protected readonly editingSetlistItem = signal(false);
   protected readonly editableLyrics = signal<LyricsDocument | null>(null);
+  protected readonly editableSetlistKey = signal('');
+  protected readonly editableLiturgicalMoment = signal('');
+  protected readonly editableSetlistNotes = signal('');
   protected readonly externalSource = computed(() => externalSongSource(this.facade.selected()?.externalUrl));
   protected readonly isExternal = computed(() => this.facade.selected()?.contentMode === 'EXTERNAL_EMBED');
   protected readonly externalFrameUrl = computed<SafeResourceUrl | null>(() => {
     const source = this.externalSource();
     return source ? this.sanitizer.bypassSecurityTrustResourceUrl(source.url) : null;
   });
-  protected readonly currentKey = computed(() => transposeKey(this.facade.selected()?.defaultKey ?? '', this.semitoneOffset()));
-  protected readonly availableKeys = computed(() => Array.from({ length: 12 }, (_, offset) => ({ offset, label: transposeKey(this.facade.selected()?.defaultKey ?? '', offset) })));
   protected readonly setlistItem = computed(() => {
     const songId = this.facade.selected()?.id;
     return this.facade.contextSchedule()?.songs.find((item) => item.songId === songId) ?? null;
   });
+  protected readonly persistedKeyOffset = computed(() =>
+    keySemitoneOffset(
+      this.facade.selected()?.defaultKey ?? '',
+      this.setlistItem()?.key ?? this.facade.selected()?.defaultKey ?? '',
+    ),
+  );
+  protected readonly transpositionOffset = computed(() =>
+    this.persistedKeyOffset() + this.semitoneOffset(),
+  );
+  protected readonly currentKey = computed(() =>
+    transposeKey(this.facade.selected()?.defaultKey ?? '', this.transpositionOffset()),
+  );
+  protected readonly availableKeys = computed(() =>
+    Array.from({ length: 12 }, (_, offset) => ({
+      offset,
+      label: transposeKey(this.facade.selected()?.defaultKey ?? '', offset),
+    })),
+  );
+  protected readonly setlistKeyOptions = computed(() => [
+    ...new Set([
+      ...this.availableKeys().map((item) => item.label),
+      this.setlistItem()?.key ?? '',
+    ].filter(Boolean)),
+  ]);
   protected readonly lyricsDocument = computed(() => {
     const song = this.facade.selected();
     const item = this.setlistItem();
@@ -60,7 +86,7 @@ export class SongDetail implements OnInit, OnDestroy {
     const content = chordsActive ? song?.chords ?? '' : song?.lyrics ?? '';
     return content.split('\n').map((text) => {
       const type = chordsActive ? this.lineType(text) : this.lyricLineType(text);
-      return { text: type === 'chord' ? transposeChordLine(text, this.semitoneOffset()) : text, type };
+      return { text: type === 'chord' ? transposeChordLine(text, this.transpositionOffset()) : text, type };
     });
   });
 
@@ -73,6 +99,7 @@ export class SongDetail implements OnInit, OnDestroy {
       this.stopAutoScroll();
       this.semitoneOffset.set(0);
       this.editingLyrics.set(false);
+      this.editingSetlistItem.set(false);
       this.editableLyrics.set(null);
       this.restartScroll();
       this.facade.loadOne(songId, scheduleId);
@@ -96,6 +123,35 @@ export class SongDetail implements OnInit, OnDestroy {
   protected toggleReaderTheme(): void { this.readerTheme.update((theme) => theme === 'dark' ? 'light' : 'dark'); }
   protected transpose(change: number): void { this.semitoneOffset.update((offset) => Math.min(11, Math.max(-11, offset + change))); }
   protected resetKey(): void { this.semitoneOffset.set(0); }
+  protected startSetlistItemEditing(): void {
+    const item = this.setlistItem();
+    if (!item) return;
+    this.editableSetlistKey.set(item.key);
+    this.editableLiturgicalMoment.set(item.liturgicalMoment);
+    this.editableSetlistNotes.set(item.notes ?? '');
+    this.editingSetlistItem.set(true);
+  }
+  protected cancelSetlistItemEditing(): void { this.editingSetlistItem.set(false); }
+  protected changeEditableSetlistKey(event: Event): void {
+    this.editableSetlistKey.set((event.target as HTMLSelectElement).value);
+  }
+  protected changeEditableLiturgicalMoment(event: Event): void {
+    this.editableLiturgicalMoment.set((event.target as HTMLInputElement).value);
+  }
+  protected changeEditableSetlistNotes(event: Event): void {
+    this.editableSetlistNotes.set((event.target as HTMLTextAreaElement).value);
+  }
+  protected saveSetlistItemEditing(): void {
+    const item = this.setlistItem();
+    if (!item || !this.editableSetlistKey().trim() || !this.editableLiturgicalMoment().trim()) return;
+    this.facade.saveSetlistItem(item.id, {
+      key: this.editableSetlistKey().trim(),
+      liturgicalMoment: this.editableLiturgicalMoment().trim(),
+      notes: this.editableSetlistNotes().trim() || undefined,
+    });
+    this.semitoneOffset.set(0);
+    this.editingSetlistItem.set(false);
+  }
   protected startLyricsEditing(): void { this.editableLyrics.set(this.lyricsDocument()); this.editingLyrics.set(true); }
   protected updateEditableLyrics(content: LyricsDocument): void { this.editableLyrics.set(content); }
   protected cancelLyricsEditing(): void { this.editingLyrics.set(false); this.editableLyrics.set(null); }
@@ -108,7 +164,17 @@ export class SongDetail implements OnInit, OnDestroy {
   }
   protected openKeyModal(): void { this.keyModalOpen.set(true); queueMicrotask(() => this.keyModalClose()?.nativeElement.focus()); }
   protected closeKeyModal(): void { this.keyModalOpen.set(false); queueMicrotask(() => this.keyTrigger()?.nativeElement.focus()); }
-  protected selectKey(offset: number): void { this.semitoneOffset.set(offset); this.closeKeyModal(); }
+  protected selectKey(offset: number): void { this.semitoneOffset.set(offset - this.persistedKeyOffset()); this.closeKeyModal(); }
+  protected saveCurrentKeyToSchedule(): void {
+    const item = this.setlistItem();
+    if (!item || item.key === this.currentKey()) return;
+    this.facade.saveSetlistItem(item.id, {
+      key: this.currentKey(),
+      liturgicalMoment: item.liturgicalMoment,
+      notes: item.notes,
+    });
+    this.semitoneOffset.set(0);
+  }
   protected songRoute(songId: string): readonly string[] {
     const scheduleId = this.facade.contextSchedule()?.id;
     return scheduleId ? ['/escalas', scheduleId, 'repertorio', songId] : ['/repertorio', 'musicas', songId];

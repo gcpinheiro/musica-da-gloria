@@ -1,4 +1,4 @@
-import { isChordLine, transposeChordLine, transposeKey } from './song-transposition';
+import { isChordLine, keySemitoneOffset, transposeChordLine, transposeKey } from './song-transposition';
 
 describe('song transposition', () => {
   it('transposes chord qualities and inverted bass notes', () => {
@@ -13,5 +13,11 @@ describe('song transposition', () => {
   it('distinguishes chord lines from lyrics', () => {
     expect(isChordLine('Am7  D  G/B')).toBeTrue();
     expect(isChordLine('Vem, Senhor, caminhar ao nosso lado')).toBeFalse();
+  });
+
+  it('calculates the persisted transposition between the library and schedule keys', () => {
+    expect(keySemitoneOffset('C', 'D')).toBe(2);
+    expect(keySemitoneOffset('F', 'Eb')).toBe(10);
+    expect(keySemitoneOffset('Am', 'Bm')).toBe(2);
   });
 });

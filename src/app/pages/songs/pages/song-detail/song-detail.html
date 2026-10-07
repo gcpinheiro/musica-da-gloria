@@ -26,7 +26,53 @@
       </div>
     </nav>
   </div>
-  <header class="song-header card"><div class="key">{{ currentKey() }}</div><div><p>{{ song.liturgicalMoments.join(' · ') }}</p><h1 class="display-title">{{ song.title }}</h1><small>{{ song.author }} · Tom original {{ song.defaultKey }}</small></div>@if (authFacade.canManage()) {<a class="button button--secondary" [routerLink]="['/repertorio/musicas',song.id,'editar']">Editar música</a>}</header>
+  <header class="song-header card">
+    <div class="key">{{ currentKey() }}</div>
+    <div>
+      <p>{{ setlistItem()?.liturgicalMoment ?? song.liturgicalMoments.join(' · ') }}</p>
+      <h1 class="display-title">{{ song.title }}</h1>
+      <small>
+        {{ song.author }} ·
+        @if (setlistItem(); as item) { Tom desta escala {{ item.key }} · Tom original {{ song.defaultKey }} }
+        @else { Tom original {{ song.defaultKey }} }
+      </small>
+    </div>
+    @if (authFacade.canManage()) {
+      @if (facade.contextSchedule(); as schedule) {
+        @if (schedule.canEdit !== false) {
+          <button class="button button--secondary" type="button" (click)="startSetlistItemEditing()">Editar música desta escala</button>
+        }
+      } @else {
+        <a class="button button--secondary" [routerLink]="['/repertorio/musicas',song.id,'editar']">Editar música</a>
+      }
+    }
+  </header>
+
+  @if (editingSetlistItem() && setlistItem(); as item) {
+    <section class="lyrics-editing card" aria-label="Editar música desta escala">
+      <p>Estas alterações serão salvas somente no repertório desta escala.</p>
+      <div class="field">
+        <label for="setlist-key">Tom desta escala</label>
+        <select id="setlist-key" [value]="editableSetlistKey()" (change)="changeEditableSetlistKey($event)">
+          @for (key of setlistKeyOptions(); track key) { <option [value]="key">{{ key }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="setlist-moment">Momento litúrgico</label>
+        <input id="setlist-moment" [value]="editableLiturgicalMoment()" (input)="changeEditableLiturgicalMoment($event)" />
+      </div>
+      <div class="field">
+        <label for="setlist-notes">Observações desta escala</label>
+        <textarea id="setlist-notes" [value]="editableSetlistNotes()" (input)="changeEditableSetlistNotes($event)"></textarea>
+      </div>
+      <div class="lyrics-editing__actions">
+        <button type="button" class="button button--secondary" (click)="cancelSetlistItemEditing()" [disabled]="facade.saving()">Cancelar</button>
+        <button type="button" class="button button--primary" (click)="saveSetlistItemEditing()" [disabled]="facade.saving() || !editableSetlistKey().trim() || !editableLiturgicalMoment().trim()">
+          {{ facade.saving() ? 'Salvando…' : 'Salvar somente nesta escala' }}
+        </button>
+      </div>
+    </section>
+  }
 
   @if (isExternal()) {
     <section class="external-reader card" aria-labelledby="external-reader-title">
@@ -57,9 +103,16 @@
             <button type="button" (click)="transpose(-1)" [disabled]="semitoneOffset() === -11" aria-label="Descer meio tom">−</button>
             <button type="button" class="key-controls__current" (click)="openKeyModal()" aria-haspopup="dialog" [attr.aria-label]="'Escolher tom. Tom atual ' + currentKey()">{{ currentKey() }}</button>
             <button type="button" (click)="transpose(1)" [disabled]="semitoneOffset() === 11" aria-label="Subir meio tom">＋</button>
-            <button type="button" class="key-controls__reset" (click)="resetKey()" [disabled]="semitoneOffset() === 0">Original</button>
+            <button type="button" class="key-controls__reset" (click)="resetKey()" [disabled]="semitoneOffset() === 0">{{ setlistItem() ? 'Tom da escala' : 'Original' }}</button>
           </div>
-        } @else if (authFacade.canManage() && facade.contextSchedule() && !editingLyrics()) {
+          @if (setlistItem(); as item) {
+            @if (facade.contextSchedule()?.canEdit !== false && currentKey() !== item.key) {
+              <button type="button" class="reader-button reader-button--edit" (click)="saveCurrentKeyToSchedule()" [disabled]="facade.saving()">
+                {{ facade.saving() ? 'Salvando…' : 'Salvar tom nesta escala' }}
+              </button>
+            }
+          }
+        } @else if (authFacade.canManage() && facade.contextSchedule()?.canEdit !== false && facade.contextSchedule() && !editingLyrics()) {
           <button type="button" class="reader-button reader-button--edit" (click)="startLyricsEditing()">✎ Editar letra desta escala</button>
         }
         @if (!editingLyrics()) {
@@ -111,7 +164,11 @@
     <div class="key-modal-backdrop" role="presentation" (click)="closeKeyModal()">
       <section class="key-modal" role="dialog" aria-modal="true" aria-labelledby="key-modal-title" (click)="$event.stopPropagation()">
         <header><div><p>Transpor cifra</p><h2 id="key-modal-title">Escolha o tom</h2></div><button #keyModalClose type="button" aria-label="Fechar seleção de tom" (click)="closeKeyModal()">×</button></header>
-        <p class="key-modal__help">Tom original: <strong>{{ song.defaultKey }}</strong>. A alteração vale somente para esta leitura.</p>
+        <p class="key-modal__help">
+          Tom original: <strong>{{ song.defaultKey }}</strong>.
+          @if (setlistItem(); as item) { Tom salvo nesta escala: <strong>{{ item.key }}</strong>. }
+          Escolha um tom e use “Salvar tom nesta escala” para persistir a alteração.
+        </p>
         <div class="key-grid" role="listbox" aria-label="Tons disponíveis">
           @for (key of availableKeys(); track key.offset) { <button type="button" role="option" [attr.aria-selected]="currentKey() === key.label" [class.key-option--selected]="currentKey() === key.label" (click)="selectKey(key.offset)"><span>{{ key.label }}</span>@if (key.offset === 0) { <small>Original</small> }</button> }
         </div>

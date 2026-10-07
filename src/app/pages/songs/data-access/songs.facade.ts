@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, forkJoin, of } from 'rxjs';
-import { Schedule } from '../../schedules/models/schedule.model';
+import { Schedule, ScheduleSetlistItemUpdate } from '../../schedules/models/schedule.model';
 import { SchedulesService } from '../../schedules/data-access/schedules.service';
 import { Song, SongInput } from '../models/song.model';
 import { SongsService } from './songs.service';
@@ -44,6 +44,25 @@ export class SongsFacade {
       .subscribe({
         next: (updated) => this.contextScheduleState.set(updated),
         error: () => this.errorState.set('Não foi possível salvar a formatação da letra.'),
+      });
+  }
+  saveSetlistItem(itemId: string, input: ScheduleSetlistItemUpdate): void {
+    const schedule = this.contextScheduleState();
+    if (!schedule) return;
+    this.contextScheduleState.set({
+      ...schedule,
+      songs: schedule.songs.map((song) => song.id === itemId ? { ...song, ...input } : song),
+    });
+    this.savingState.set(true);
+    this.errorState.set(null);
+    this.schedulesService.updateSetlistItem(schedule.id, itemId, input)
+      .pipe(finalize(() => this.savingState.set(false)))
+      .subscribe({
+        next: (updated) => this.contextScheduleState.set(updated),
+        error: () => {
+          this.contextScheduleState.set(schedule);
+          this.errorState.set('Não foi possível salvar os dados da música nesta escala.');
+        },
       });
   }
 }

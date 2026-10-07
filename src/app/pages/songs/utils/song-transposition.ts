@@ -34,6 +34,14 @@ export function transposeKey(key: string, semitones: number): string {
   return `${transposeNote(match[1], semitones)}${match[2]}`;
 }
 
+export function keySemitoneOffset(fromKey: string, toKey: string): number {
+  const from = fromKey.match(/^([A-G](?:#|b)?)/)?.[1];
+  const to = toKey.match(/^([A-G](?:#|b)?)/)?.[1];
+  if (!from || !to || NOTE_INDEX[from] === undefined || NOTE_INDEX[to] === undefined)
+    return 0;
+  return (NOTE_INDEX[to] - NOTE_INDEX[from] + CHROMATIC_NOTES.length) % CHROMATIC_NOTES.length;
+}
+
 export function transposeChordLine(line: string, semitones: number): string {
   if (semitones === 0) return line;
   return line
