@@ -1,4 +1,5 @@
 const CHROMATIC_NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
+export const MUSICAL_KEYS: readonly string[] = CHROMATIC_NOTES;
 const SHARP_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
 const FLAT_NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
 
@@ -27,6 +28,11 @@ const NOTE_INDEX: Readonly<Record<string, number>> = {
 };
 
 const CHORD_PATTERN = /^([A-G](?:#|b)?)([^/\s]*)(?:\/([A-G](?:#|b)?))?$/;
+
+export function isMusicalKey(key: string): boolean {
+  const root = key.match(/^([A-G](?:#|b)?)/)?.[1];
+  return Boolean(root && NOTE_INDEX[root] !== undefined);
+}
 
 export function transposeKey(key: string, semitones: number): string {
   const match = key.match(/^([A-G](?:#|b)?)(.*)$/);

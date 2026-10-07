@@ -1,4 +1,4 @@
-import { isChordLine, keySemitoneOffset, transposeChordLine, transposeKey } from './song-transposition';
+import { isChordLine, isMusicalKey, keySemitoneOffset, transposeChordLine, transposeKey } from './song-transposition';
 
 describe('song transposition', () => {
   it('transposes chord qualities and inverted bass notes', () => {
@@ -19,5 +19,11 @@ describe('song transposition', () => {
     expect(keySemitoneOffset('C', 'D')).toBe(2);
     expect(keySemitoneOffset('F', 'Eb')).toBe(10);
     expect(keySemitoneOffset('Am', 'Bm')).toBe(2);
+  });
+
+  it('distinguishes musical keys from an uninformed key', () => {
+    expect(isMusicalKey('D')).toBeTrue();
+    expect(isMusicalKey('Bm')).toBeTrue();
+    expect(isMusicalKey('N/I')).toBeFalse();
   });
 });

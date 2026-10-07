@@ -170,7 +170,7 @@
           Escolha um tom e use “Salvar tom nesta escala” para persistir a alteração.
         </p>
         <div class="key-grid" role="listbox" aria-label="Tons disponíveis">
-          @for (key of availableKeys(); track key.offset) { <button type="button" role="option" [attr.aria-selected]="currentKey() === key.label" [class.key-option--selected]="currentKey() === key.label" (click)="selectKey(key.offset)"><span>{{ key.label }}</span>@if (key.offset === 0) { <small>Original</small> }</button> }
+          @for (key of availableKeys(); track key.offset) { <button type="button" role="option" [attr.aria-selected]="currentKey() === key.label" [class.key-option--selected]="currentKey() === key.label" (click)="selectKey(key.offset)"><span>{{ key.label }}</span>@if (key.offset === 0 && hasOriginalMusicalKey()) { <small>Original</small> }</button> }
         </div>
       </section>
     </div>

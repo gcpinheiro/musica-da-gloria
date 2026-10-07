@@ -4,7 +4,7 @@ import { distinctUntilChanged, interval, map, Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SongsFacade } from '../../data-access/songs.facade';
 import { AuthFacade } from '../../../../core/auth/auth.facade';
-import { isChordLine, keySemitoneOffset, transposeChordLine, transposeKey } from '../../utils/song-transposition';
+import { isChordLine, isMusicalKey, keySemitoneOffset, MUSICAL_KEYS, transposeChordLine, transposeKey } from '../../utils/song-transposition';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { externalSongSource } from '../../utils/external-song-source';
 import { LyricsEditor } from '../../components/lyrics-editor/lyrics-editor';
@@ -33,6 +33,7 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly scrollSpeed = signal(4);
   protected readonly fontSize = signal(18);
   protected readonly semitoneOffset = signal(0);
+  protected readonly previewKey = signal<string | null>(null);
   protected readonly keyModalOpen = signal(false);
   protected readonly editingLyrics = signal(false);
   protected readonly editingSetlistItem = signal(false);
@@ -60,14 +61,18 @@ export class SongDetail implements OnInit, OnDestroy {
     this.persistedKeyOffset() + this.semitoneOffset(),
   );
   protected readonly currentKey = computed(() =>
-    transposeKey(this.facade.selected()?.defaultKey ?? '', this.transpositionOffset()),
+    this.previewKey() ?? transposeKey(this.facade.selected()?.defaultKey ?? '', this.transpositionOffset()),
   );
-  protected readonly availableKeys = computed(() =>
-    Array.from({ length: 12 }, (_, offset) => ({
+  protected readonly hasOriginalMusicalKey = computed(() =>
+    isMusicalKey(this.facade.selected()?.defaultKey ?? ''),
+  );
+  protected readonly availableKeys = computed(() => {
+    const originalKey = this.facade.selected()?.defaultKey ?? '';
+    return MUSICAL_KEYS.map((fallbackKey, offset) => ({
       offset,
-      label: transposeKey(this.facade.selected()?.defaultKey ?? '', offset),
-    })),
-  );
+      label: isMusicalKey(originalKey) ? transposeKey(originalKey, offset) : fallbackKey,
+    }));
+  });
   protected readonly setlistKeyOptions = computed(() => [
     ...new Set([
       ...this.availableKeys().map((item) => item.label),
@@ -98,6 +103,7 @@ export class SongDetail implements OnInit, OnDestroy {
     ).subscribe(({ songId, scheduleId }) => {
       this.stopAutoScroll();
       this.semitoneOffset.set(0);
+      this.previewKey.set(null);
       this.editingLyrics.set(false);
       this.editingSetlistItem.set(false);
       this.editableLyrics.set(null);
@@ -121,8 +127,19 @@ export class SongDetail implements OnInit, OnDestroy {
   protected adjustFontSize(change: number): void { this.fontSize.update((size) => Math.min(32, Math.max(14, size + change))); }
   protected resetFontSize(): void { this.fontSize.set(18); }
   protected toggleReaderTheme(): void { this.readerTheme.update((theme) => theme === 'dark' ? 'light' : 'dark'); }
-  protected transpose(change: number): void { this.semitoneOffset.update((offset) => Math.min(11, Math.max(-11, offset + change))); }
-  protected resetKey(): void { this.semitoneOffset.set(0); }
+  protected transpose(change: number): void {
+    if (!this.hasOriginalMusicalKey() || this.previewKey()) {
+      const currentRoot = this.currentKey().match(/^([A-G](?:#|b)?)/)?.[1];
+      const currentIndex = currentRoot ? MUSICAL_KEYS.indexOf(currentRoot) : -1;
+      const nextIndex = currentIndex < 0
+        ? 0
+        : (currentIndex + change + MUSICAL_KEYS.length) % MUSICAL_KEYS.length;
+      this.previewKey.set(MUSICAL_KEYS[nextIndex]);
+      return;
+    }
+    this.semitoneOffset.update((offset) => Math.min(11, Math.max(-11, offset + change)));
+  }
+  protected resetKey(): void { this.semitoneOffset.set(0); this.previewKey.set(null); }
   protected startSetlistItemEditing(): void {
     const item = this.setlistItem();
     if (!item) return;
@@ -150,6 +167,7 @@ export class SongDetail implements OnInit, OnDestroy {
       notes: this.editableSetlistNotes().trim() || undefined,
     });
     this.semitoneOffset.set(0);
+    this.previewKey.set(null);
     this.editingSetlistItem.set(false);
   }
   protected startLyricsEditing(): void { this.editableLyrics.set(this.lyricsDocument()); this.editingLyrics.set(true); }
@@ -164,7 +182,15 @@ export class SongDetail implements OnInit, OnDestroy {
   }
   protected openKeyModal(): void { this.keyModalOpen.set(true); queueMicrotask(() => this.keyModalClose()?.nativeElement.focus()); }
   protected closeKeyModal(): void { this.keyModalOpen.set(false); queueMicrotask(() => this.keyTrigger()?.nativeElement.focus()); }
-  protected selectKey(offset: number): void { this.semitoneOffset.set(offset - this.persistedKeyOffset()); this.closeKeyModal(); }
+  protected selectKey(offset: number): void {
+    if (!this.hasOriginalMusicalKey()) {
+      this.previewKey.set(this.availableKeys()[offset]?.label ?? null);
+    } else {
+      this.previewKey.set(null);
+      this.semitoneOffset.set(offset - this.persistedKeyOffset());
+    }
+    this.closeKeyModal();
+  }
   protected saveCurrentKeyToSchedule(): void {
     const item = this.setlistItem();
     if (!item || item.key === this.currentKey()) return;
@@ -174,6 +200,7 @@ export class SongDetail implements OnInit, OnDestroy {
       notes: item.notes,
     });
     this.semitoneOffset.set(0);
+    this.previewKey.set(null);
   }
   protected songRoute(songId: string): readonly string[] {
     const scheduleId = this.facade.contextSchedule()?.id;
