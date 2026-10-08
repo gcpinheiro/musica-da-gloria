@@ -125,8 +125,8 @@
         <label class="speed"><span>Velocidade</span><input type="range" min="1" max="10" [value]="scrollSpeed()" (input)="changeSpeed($event)" /></label>
         <button type="button" class="reader-button" (click)="restartScroll()" title="Voltar ao início">↥ Início</button>
         <button type="button" class="reader-button" [attr.aria-pressed]="readerTheme() === 'light'" (click)="toggleReaderTheme()">{{ readerTheme() === 'dark' ? '☀ Fundo claro' : '◐ Fundo escuro' }}</button>
-        <button type="button" class="reader-button" [class.reader-button--active]="autoScrolling()" (click)="toggleAutoScroll()">{{ autoScrolling() ? 'Ⅱ Pausar' : '▶ Autorrolagem' }}</button>
-        <button type="button" class="reader-button" (click)="toggleExpanded()">{{ expanded() ? '⊙ Recolher' : '⛶ Expandir' }}</button>
+        <button type="button" class="reader-button reader-button--autoscroll" [class.reader-button--active]="autoScrolling()" (click)="toggleAutoScroll()">{{ autoScrolling() ? 'Ⅱ Pausar' : '▶ Autorrolagem' }}</button>
+        <button type="button" class="reader-button reader-button--expand" (click)="toggleExpanded()">{{ expanded() ? '⊙ Recolher' : '⛶ Expandir' }}</button>
         }
       </div>
     </header>

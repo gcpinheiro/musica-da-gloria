@@ -14,7 +14,7 @@ interface SheetLine { readonly text: string; readonly type: 'section' | 'chord' 
 type ReaderTab = 'lyrics' | 'chords';
 type ReaderTheme = 'dark' | 'light';
 
-@Component({ selector: 'app-song-detail', imports: [RouterLink, LyricsEditor], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './reader-theme.scss', './song-navigation.scss', './external-song-reader.scss', './formatted-lyrics.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-song-detail', imports: [RouterLink, LyricsEditor], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './reader-theme.scss', './reader-mobile.scss', './song-navigation.scss', './external-song-reader.scss', './formatted-lyrics.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class SongDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);

@@ -57,6 +57,18 @@
 .key-grid .key-option--selected { border-color:var(--color-sky);background:var(--color-navy-900);color:white;box-shadow:0 0 0 3px rgb(75 131 182 / 18%); }
 .key-grid .key-option--selected small { color:rgb(255 255 255 / 68%); }
 @media(max-width:900px){.reader-toolbar{align-items:flex-start;flex-wrap:wrap}.reader-actions{width:100%;justify-content:flex-start}}
-@media(max-width:760px){.song-header{align-items:flex-start;flex-wrap:wrap}.song-header .button{width:100%}.reader-toolbar{flex-direction:column}.reader-tabs{width:100%}.reader-tabs button{flex:1}.key-controls,.font-controls{width:100%}.key-controls>span,.font-controls>span{margin-right:auto}.speed{width:100%}.speed input{flex:1}.sheet{max-height:65vh;padding:1rem}.sheet__content{overflow:visible}.song-reader--expanded .sheet{height:calc(100vh - 270px)}}
+@media(max-width:760px){
+  .song-header{align-items:flex-start;flex-wrap:wrap}
+  .song-header .button{width:100%}
+  .reader-toolbar{flex-direction:column}
+  .reader-tabs{width:100%}
+  .reader-tabs button{flex:1}
+  .key-controls,.font-controls{width:100%}
+  .key-controls>span,.font-controls>span{margin-right:auto}
+  .speed{width:100%}
+  .speed input{flex:1}
+  .sheet{max-height:65vh;padding:1rem}
+  .sheet__content{overflow:visible}
+}
 @media(max-width:460px){.key-grid{grid-template-columns:repeat(3,1fr)}}
 @media(prefers-reduced-motion:reduce){.reader-button{transition:none}}
