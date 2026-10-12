@@ -122,7 +122,7 @@
           <button type="button" (click)="resetFontSize()" [attr.aria-label]="'Restaurar tamanho da letra. Tamanho atual ' + fontSize() + ' pixels'">{{ fontSize() }}px</button>
           <button type="button" (click)="adjustFontSize(2)" [disabled]="fontSize() === 32" aria-label="Aumentar tamanho da letra">A＋</button>
         </div>
-        <label class="speed"><span>Velocidade</span><input type="range" min="1" max="10" [value]="scrollSpeed()" (input)="changeSpeed($event)" /></label>
+        <label class="speed"><span>Velocidade</span><input type="range" min="1" max="100" step="1" [value]="scrollSpeed()" (input)="changeSpeed($event)" [attr.aria-valuetext]="scrollSpeed() + ' de 100'" /></label>
         <button type="button" class="reader-button" (click)="restartScroll()" title="Voltar ao início">↥ Início</button>
         <button type="button" class="reader-button" [attr.aria-pressed]="readerTheme() === 'light'" (click)="toggleReaderTheme()">{{ readerTheme() === 'dark' ? '☀ Fundo claro' : '◐ Fundo escuro' }}</button>
         <button type="button" class="reader-button reader-button--autoscroll" [class.reader-button--active]="autoScrolling()" (click)="toggleAutoScroll()">{{ autoScrolling() ? 'Ⅱ Pausar' : '▶ Autorrolagem' }}</button>

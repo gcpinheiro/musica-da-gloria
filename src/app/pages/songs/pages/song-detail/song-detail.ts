@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { distinctUntilChanged, interval, map, Subscription } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SongsFacade } from '../../data-access/songs.facade';
 import { AuthFacade } from '../../../../core/auth/auth.facade';
@@ -9,6 +9,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { externalSongSource } from '../../utils/external-song-source';
 import { LyricsEditor } from '../../components/lyrics-editor/lyrics-editor';
 import { LyricsDocument, plainLyricsDocument } from '../../../../shared/models/lyrics-document.model';
+import { autoScrollPixelsPerSecond } from '../../utils/auto-scroll-speed';
 
 interface SheetLine { readonly text: string; readonly type: 'section' | 'chord' | 'lyric' | 'blank'; }
 type ReaderTab = 'lyrics' | 'chords';
@@ -22,7 +23,9 @@ export class SongDetail implements OnInit, OnDestroy {
   private readonly scrollContainer = viewChild<ElementRef<HTMLElement>>('scrollContainer');
   private readonly keyTrigger = viewChild<ElementRef<HTMLButtonElement>>('keyTrigger');
   private readonly keyModalClose = viewChild<ElementRef<HTMLButtonElement>>('keyModalClose');
-  private scrollSubscription?: Subscription;
+  private scrollAnimationFrame?: number;
+  private previousScrollTimestamp?: number;
+  private autoScrollPosition = 0;
   private readonly scrollPositions: Record<ReaderTab, number> = { lyrics: 0, chords: 0 };
   protected readonly facade = inject(SongsFacade);
   protected readonly authFacade = inject(AuthFacade);
@@ -30,7 +33,7 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly activeTab = signal<ReaderTab>('chords');
   protected readonly readerTheme = signal<ReaderTheme>('dark');
   protected readonly autoScrolling = signal(false);
-  protected readonly scrollSpeed = signal(4);
+  protected readonly scrollSpeed = signal(20);
   protected readonly fontSize = signal(18);
   protected readonly semitoneOffset = signal(0);
   protected readonly previewKey = signal<string | null>(null);
@@ -208,16 +211,44 @@ export class SongDetail implements OnInit, OnDestroy {
   }
   protected toggleAutoScroll(): void {
     if (this.autoScrolling()) { this.stopAutoScroll(); return; }
+    const element = this.scrollContainer()?.nativeElement;
+    if (!element) return;
+    this.autoScrollPosition = element.scrollTop;
+    this.previousScrollTimestamp = undefined;
     this.autoScrolling.set(true);
-    this.scrollSubscription = interval(50).subscribe(() => {
-      const element = this.scrollContainer()?.nativeElement;
-      if (!element) return;
-      element.scrollTop += this.scrollSpeed() / 5;
-      if (element.scrollTop + element.clientHeight >= element.scrollHeight - 1) this.stopAutoScroll();
-    });
+    this.scrollAnimationFrame = requestAnimationFrame((timestamp) => this.advanceAutoScroll(timestamp));
   }
-  protected restartScroll(): void { const element = this.scrollContainer()?.nativeElement; if (element) element.scrollTop = 0; }
-  private stopAutoScroll(): void { this.autoScrolling.set(false); this.scrollSubscription?.unsubscribe(); this.scrollSubscription = undefined; }
+  protected restartScroll(): void {
+    const element = this.scrollContainer()?.nativeElement;
+    if (element) element.scrollTop = 0;
+    this.autoScrollPosition = 0;
+    this.previousScrollTimestamp = undefined;
+  }
+  private advanceAutoScroll(timestamp: number): void {
+    if (!this.autoScrolling()) return;
+    const element = this.scrollContainer()?.nativeElement;
+    if (!element) { this.stopAutoScroll(); return; }
+    if (this.previousScrollTimestamp !== undefined) {
+      if (Math.abs(element.scrollTop - this.autoScrollPosition) > 1) {
+        this.autoScrollPosition = element.scrollTop;
+      }
+      const elapsedSeconds = Math.min(timestamp - this.previousScrollTimestamp, 100) / 1000;
+      this.autoScrollPosition += autoScrollPixelsPerSecond(this.scrollSpeed()) * elapsedSeconds;
+      element.scrollTop = this.autoScrollPosition;
+    }
+    this.previousScrollTimestamp = timestamp;
+    if (element.scrollTop + element.clientHeight >= element.scrollHeight - 1) {
+      this.stopAutoScroll();
+      return;
+    }
+    this.scrollAnimationFrame = requestAnimationFrame((nextTimestamp) => this.advanceAutoScroll(nextTimestamp));
+  }
+  private stopAutoScroll(): void {
+    this.autoScrolling.set(false);
+    if (this.scrollAnimationFrame !== undefined) cancelAnimationFrame(this.scrollAnimationFrame);
+    this.scrollAnimationFrame = undefined;
+    this.previousScrollTimestamp = undefined;
+  }
   private lineType(line: string): SheetLine['type'] {
     const value = line.trim();
     if (!value) return 'blank';

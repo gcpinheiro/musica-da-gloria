@@ -1,7 +1,9 @@
 .formatted-lyrics {
+  max-width: 100%;
   color: #f7f5f0;
   line-height: 1.75;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .formatted-lyrics__segment--women { color: #ff85dc; }
