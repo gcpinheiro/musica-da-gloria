@@ -1416,6 +1416,11 @@ components:
         lyrics: { type: string }
         chords: { type: string }
         externalUrl: { type: [string, 'null'], format: uri }
+        youtubeUrl:
+          type: [string, 'null']
+          format: uri
+          pattern: '^https://(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[A-Za-z0-9_-]{11}'
+          description: Vídeo oficial ou de referência exibido no detalhe da música.
       oneOf:
         - title: Conteúdo autorizado armazenado internamente
           required: [lyrics, chords]

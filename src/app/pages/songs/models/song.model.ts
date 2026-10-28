@@ -10,6 +10,7 @@ export interface Song {
   readonly chords: string;
   readonly contentMode?: SongContentMode;
   readonly externalUrl?: string | null;
+  readonly youtubeUrl?: string | null;
   readonly active: boolean;
 }
 

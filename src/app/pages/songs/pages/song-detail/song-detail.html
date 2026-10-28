@@ -26,6 +26,19 @@
       </div>
     </nav>
   </div>
+  @if (youtubeVideo(); as video) {
+    <section class="song-video card" aria-labelledby="song-video-title">
+      <header class="song-video__header">
+        <div><p>Ouça e ensaie</p><h2 id="song-video-title">Vídeo de referência</h2></div>
+        <a [href]="video.watchUrl" target="_blank" rel="noopener noreferrer">Abrir no YouTube ↗</a>
+      </header>
+      @if (youtubeFrameUrl(); as frameUrl) {
+        <div class="song-video__frame">
+          <iframe [src]="frameUrl" [title]="'Vídeo de referência de ' + song.title" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+      }
+    </section>
+  }
   <header class="song-header card">
     <div class="key">{{ currentKey() }}</div>
     <div>

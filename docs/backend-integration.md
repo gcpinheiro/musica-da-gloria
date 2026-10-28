@@ -425,6 +425,12 @@ sequência do detalhe e da navegação anterior/próxima.
 O leitor oferece tema escuro e tema claro como preferência local. O tema claro
 usa fundo branco e texto escuro, sem alterar letra, cifra ou escala.
 
+Cada música pode informar opcionalmente `youtubeUrl`. A API aceita somente links
+HTTPS de `youtube.com/watch` ou `youtu.be`, normaliza o endereço e devolve a URL
+canônica. O Angular incorpora o vídeo pelo domínio de privacidade aprimorada
+`youtube-nocookie.com`, abaixo da navegação anterior/próxima, e mantém um link
+para abrir o conteúdo diretamente no YouTube.
+
 Indisponibilidade e conflito com outra escala não impedem definitivamente a ação
 da líder. Sem exceção explícita, a API responde `409` com os conflitos encontrados.
 A líder pode repetir o comando com `overrideConflicts: true` e uma justificativa

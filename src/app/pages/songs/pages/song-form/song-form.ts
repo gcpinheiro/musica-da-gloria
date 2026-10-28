@@ -4,9 +4,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SongsFacade } from '../../data-access/songs.facade';
 import { SongContentMode } from '../../models/song.model';
 import { externalSongSource } from '../../utils/external-song-source';
+import { youtubeVideoSource } from '../../utils/youtube-video-source';
 
 const externalSourceValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null =>
   externalSongSource(control.value as string) ? null : { externalSource: true };
+const youtubeSourceValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null =>
+  !control.value || youtubeVideoSource(control.value as string) ? null : { youtubeSource: true };
 
 @Component({
   selector: 'app-song-form',
@@ -26,6 +29,7 @@ export class SongForm implements OnInit {
     moments: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     contentMode: new FormControl<SongContentMode>('INTERNAL', { nonNullable: true }),
     externalUrl: new FormControl('', { nonNullable: true }),
+    youtubeUrl: new FormControl('', { nonNullable: true, validators: [youtubeSourceValidator] }),
     lyrics: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     chords: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
@@ -40,6 +44,7 @@ export class SongForm implements OnInit {
       moments: song.liturgicalMoments.join(', '),
       contentMode: song.contentMode ?? 'INTERNAL',
       externalUrl: song.externalUrl ?? '',
+      youtubeUrl: song.youtubeUrl ?? '',
       lyrics: song.lyrics,
       chords: song.chords,
     });
@@ -65,6 +70,7 @@ export class SongForm implements OnInit {
       liturgicalMoments: value.moments.split(',').map((item) => item.trim()).filter(Boolean),
       contentMode: value.contentMode,
       externalUrl: external ? value.externalUrl : null,
+      youtubeUrl: value.youtubeUrl.trim() || null,
       lyrics: external ? '' : value.lyrics,
       chords: external ? '' : value.chords,
     }, this.id ?? undefined);

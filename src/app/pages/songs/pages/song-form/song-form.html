@@ -13,6 +13,13 @@
       <label><input type="radio" formControlName="contentMode" value="EXTERNAL_EMBED" /> Página de uma fonte externa</label>
     </fieldset>
 
+    <div class="field field--wide">
+      <label for="youtubeUrl">Vídeo de apoio no YouTube <span>(opcional)</span></label>
+      <input id="youtubeUrl" type="url" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
+      <small>Use o vídeo oficial ou a versão de referência usada pelo ministério. Ele será exibido no detalhe da música.</small>
+      @if (form.controls.youtubeUrl.touched && form.controls.youtubeUrl.invalid) { <span class="field-error">Informe um link HTTPS válido do YouTube.</span> }
+    </div>
+
     @if (form.controls.contentMode.value === 'EXTERNAL_EMBED') {
       <div class="field field--wide">
         <label for="externalUrl">Link da cifra</label>

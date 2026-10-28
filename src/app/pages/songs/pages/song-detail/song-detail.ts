@@ -10,12 +10,13 @@ import { externalSongSource } from '../../utils/external-song-source';
 import { LyricsEditor } from '../../components/lyrics-editor/lyrics-editor';
 import { LyricsDocument, plainLyricsDocument } from '../../../../shared/models/lyrics-document.model';
 import { autoScrollPixelsPerSecond } from '../../utils/auto-scroll-speed';
+import { youtubeVideoSource } from '../../utils/youtube-video-source';
 
 interface SheetLine { readonly text: string; readonly type: 'section' | 'chord' | 'lyric' | 'blank'; }
 type ReaderTab = 'lyrics' | 'chords';
 type ReaderTheme = 'dark' | 'light';
 
-@Component({ selector: 'app-song-detail', imports: [RouterLink, LyricsEditor], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './reader-theme.scss', './reader-mobile.scss', './song-navigation.scss', './external-song-reader.scss', './formatted-lyrics.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-song-detail', imports: [RouterLink, LyricsEditor], templateUrl: './song-detail.html', styleUrls: ['./song-detail.scss', './reader-theme.scss', './reader-mobile.scss', './song-navigation.scss', './song-video.scss', './external-song-reader.scss', './formatted-lyrics.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class SongDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -46,6 +47,11 @@ export class SongDetail implements OnInit, OnDestroy {
   protected readonly editableSetlistNotes = signal('');
   protected readonly externalSource = computed(() => externalSongSource(this.facade.selected()?.externalUrl));
   protected readonly isExternal = computed(() => this.facade.selected()?.contentMode === 'EXTERNAL_EMBED');
+  protected readonly youtubeVideo = computed(() => youtubeVideoSource(this.facade.selected()?.youtubeUrl));
+  protected readonly youtubeFrameUrl = computed<SafeResourceUrl | null>(() => {
+    const source = this.youtubeVideo();
+    return source ? this.sanitizer.bypassSecurityTrustResourceUrl(source.embedUrl) : null;
+  });
   protected readonly externalFrameUrl = computed<SafeResourceUrl | null>(() => {
     const source = this.externalSource();
     return source ? this.sanitizer.bypassSecurityTrustResourceUrl(source.url) : null;
