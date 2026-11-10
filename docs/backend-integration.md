@@ -445,6 +445,7 @@ obrigatória. A exceção e sua justificativa devem constar no `AuditLog`.
 | `POST` | `/songs` | SUPER_ADMIN, LEADER | Cadastrar conteúdo autorizado ou referência externa permitida |
 | `GET` | `/songs/{id}` | Autenticado | Letra/cifra interna ou metadados e URL da fonte externa |
 | `PATCH` | `/songs/{id}` | SUPER_ADMIN, LEADER | Editar metadados e modalidade do conteúdo |
+| `PATCH` | `/songs/{id}/chord-review` | LEADER | Aprovar a versão atual da cifra ou reabrir sua revisão; editar a cifra remove a aprovação |
 | `POST` | `/songs/{id}/archive` | ADMIN, LEADER | Arquivar preservando setlists |
 
 ## 5. DTOs principais

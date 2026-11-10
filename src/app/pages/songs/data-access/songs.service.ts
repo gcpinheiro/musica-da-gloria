@@ -5,7 +5,12 @@ import { environment } from '../../../../environments/environment';
 import { Song, SongInput } from '../models/song.model';
 import { SONGS_MOCK } from './songs.mock';
 
-interface ApiSong extends SongInput { readonly id: string; readonly status: 'ACTIVE' | 'ARCHIVED'; }
+interface ApiSong extends SongInput {
+  readonly id: string;
+  readonly status: 'ACTIVE' | 'ARCHIVED';
+  readonly chordsReviewed?: boolean;
+  readonly chordsReviewedAt?: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class SongsService {
@@ -22,7 +27,7 @@ export class SongsService {
   }
   create(input: SongInput): Observable<Song> {
     if (this.usesApi()) return this.http!.post<ApiSong>(`${environment.apiBaseUrl}/songs`, input, this.options()).pipe(map((song) => this.fromApi(song)));
-    const song: Song = { ...input, id: `song-${Date.now()}`, active: true };
+    const song: Song = { ...input, id: `song-${Date.now()}`, chordsReviewed: false, chordsReviewedAt: null, active: true };
     this.songs = [song, ...this.songs]; return of(song).pipe(delay(350));
   }
   update(id: string, input: SongInput): Observable<Song> {
@@ -30,7 +35,13 @@ export class SongsService {
     const current = this.songs.find((song) => song.id === id); if (!current) return throwError(() => new Error('SONG_NOT_FOUND'));
     const song = { ...current, ...input }; this.songs = this.songs.map((item) => item.id === id ? song : item); return of(song).pipe(delay(350));
   }
+  setChordReview(id: string, reviewed: boolean): Observable<Song> {
+    if (this.usesApi()) return this.http!.patch<ApiSong>(`${environment.apiBaseUrl}/songs/${id}/chord-review`, { reviewed }, this.options()).pipe(map((song) => this.fromApi(song)));
+    const current = this.songs.find((song) => song.id === id); if (!current) return throwError(() => new Error('SONG_NOT_FOUND'));
+    const song: Song = { ...current, chordsReviewed: reviewed, chordsReviewedAt: reviewed ? new Date().toISOString() : null };
+    this.songs = this.songs.map((item) => item.id === id ? song : item); return of(song).pipe(delay(250));
+  }
   private usesApi(): boolean { return Boolean(this.http) && !environment.useMocks; }
   private options() { return { withCredentials: true } as const; }
-  private fromApi(song: ApiSong): Song { return { ...song, active: song.status === 'ACTIVE' }; }
+  private fromApi(song: ApiSong): Song { return { ...song, chordsReviewed: song.chordsReviewed ?? false, chordsReviewedAt: song.chordsReviewedAt ?? null, active: song.status === 'ACTIVE' }; }
 }

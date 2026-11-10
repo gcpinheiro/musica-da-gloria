@@ -856,6 +856,26 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Song' }
+  /songs/{songId}/chord-review:
+    parameters:
+      - { $ref: '#/components/parameters/SongId' }
+    patch:
+      tags: [Songs]
+      operationId: setSongChordReview
+      description: Marca a versão atual da cifra da biblioteca como revisada ou reabre sua revisão. Alterar a cifra remove automaticamente a aprovação anterior.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SongChordReviewInput' }
+      responses:
+        '200':
+          description: Estado de revisão atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Song' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /news:
     get:
       tags: [News]
@@ -1430,11 +1450,17 @@ components:
           required: [externalUrl]
           properties:
             contentMode: { const: EXTERNAL_EMBED }
+    SongChordReviewInput:
+      type: object
+      required: [reviewed]
+      additionalProperties: false
+      properties:
+        reviewed: { type: boolean }
     Song:
       allOf:
         - { $ref: '#/components/schemas/SongInput' }
         - type: object
-          required: [id, status, rightsStatus, rightsType, sourceUrl, attribution]
+          required: [id, status, rightsStatus, rightsType, sourceUrl, attribution, chordsReviewed]
           properties:
             id: { type: string, format: uuid }
             status: { type: string, enum: [ACTIVE, ARCHIVED] }
@@ -1442,6 +1468,8 @@ components:
             rightsType: { type: [string, 'null'] }
             sourceUrl: { type: [string, 'null'], format: uri }
             attribution: { type: [string, 'null'] }
+            chordsReviewed: { type: boolean }
+            chordsReviewedAt: { type: [string, 'null'], format: date-time }
     NewsInput:
       type: object
       required: [title, body]

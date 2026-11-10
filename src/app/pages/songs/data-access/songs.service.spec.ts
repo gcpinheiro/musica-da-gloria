@@ -15,6 +15,12 @@ describe('SongsService', () => {
     const song = await firstValueFrom(service.create({ title: 'Canto de teste', author: 'Pastoral', defaultKey: 'C', liturgicalMoments: ['Entrada'], lyrics: 'Letra', chords: 'C Letra' }));
     expect((await firstValueFrom(service.list())).some((item) => item.id === song.id)).toBeTrue();
   });
+  it('marks only the library song chord sheet as reviewed', async () => {
+    const song = await firstValueFrom(service.setChordReview('song-001', true));
+    expect(song.chordsReviewed).toBeTrue();
+    expect(song.chordsReviewedAt).toBeTruthy();
+    expect((await firstValueFrom(service.getById('song-001'))).chordsReviewed).toBeTrue();
+  });
 
   it('provides a complete demonstration with plain lyrics and aligned chords', async () => {
     const song = await firstValueFrom(service.getById('song-008'));

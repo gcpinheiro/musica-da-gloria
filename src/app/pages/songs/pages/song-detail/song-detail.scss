@@ -2,6 +2,13 @@
 .song-header>div:nth-child(2) { flex:1; }
 .song-header p,.song-header small { margin:0; color:var(--color-muted); font-size:.7rem; }
 .song-header h1 { margin:.2rem 0; }
+.song-review-actions { display:flex; align-items:flex-end; flex-direction:column; gap:.55rem; }
+.review-status { display:inline-flex; align-items:center; gap:.4rem; border:1px solid; border-radius:999px; padding:.35rem .65rem; font-size:.68rem; font-weight:600; white-space:nowrap; }
+.review-status>span { display:grid; width:18px; height:18px; place-items:center; border-radius:50%; color:white; font-size:.65rem; }
+.review-status--approved { border-color:#9bcaaa; background:#edf8f0; color:#22613a; }
+.review-status--approved>span { background:#2d7d46; }
+.review-status--pending { border-color:#e0c37a; background:#fff8e8; color:#755615; }
+.review-status--pending>span { background:#a67816; }
 .key { display:flex; width:68px; height:68px; flex:0 0 auto; align-items:center; flex-direction:column; justify-content:center; border:1px solid #d9bd78; border-radius:15px; background:linear-gradient(145deg,var(--color-navy-900),#28598a); color:white; box-shadow:0 7px 18px rgb(23 60 103 / 20%); font-size:1.25rem; font-weight:600; }
 .key::before { margin-bottom:.1rem;color:#ead7a4;content:'Tom';font-size:.52rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase; }
 .song-reader { min-width:0; max-width:100%; overflow:hidden; margin-top:1rem; }
@@ -60,6 +67,7 @@
 @media(max-width:760px){
   .song-header{align-items:flex-start;flex-wrap:wrap}
   .song-header .button{width:100%}
+  .song-review-actions{width:100%;align-items:stretch}
   .reader-toolbar{flex-direction:column}
   .reader-tabs{width:100%}
   .reader-tabs button{flex:1}

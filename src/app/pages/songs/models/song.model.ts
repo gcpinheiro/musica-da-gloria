@@ -11,7 +11,9 @@ export interface Song {
   readonly contentMode?: SongContentMode;
   readonly externalUrl?: string | null;
   readonly youtubeUrl?: string | null;
+  readonly chordsReviewed?: boolean;
+  readonly chordsReviewedAt?: string | null;
   readonly active: boolean;
 }
 
-export type SongInput = Omit<Song, 'id' | 'active'>;
+export type SongInput = Omit<Song, 'id' | 'active' | 'chordsReviewed' | 'chordsReviewedAt'>;

@@ -136,6 +136,11 @@ export class SongDetail implements OnInit, OnDestroy {
   protected adjustFontSize(change: number): void { this.fontSize.update((size) => Math.min(32, Math.max(14, size + change))); }
   protected resetFontSize(): void { this.fontSize.set(18); }
   protected toggleReaderTheme(): void { this.readerTheme.update((theme) => theme === 'dark' ? 'light' : 'dark'); }
+  protected toggleChordReview(): void {
+    const song = this.facade.selected();
+    if (!song || this.facade.contextSchedule()) return;
+    this.facade.setChordReview(song.id, !song.chordsReviewed);
+  }
   protected transpose(change: number): void {
     if (!this.hasOriginalMusicalKey() || this.previewKey()) {
       const currentRoot = this.currentKey().match(/^([A-G](?:#|b)?)/)?.[1];

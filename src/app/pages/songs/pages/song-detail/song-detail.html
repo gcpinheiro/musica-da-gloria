@@ -50,14 +50,25 @@
         @else { Tom original {{ song.defaultKey }} }
       </small>
     </div>
-    @if (authFacade.canManage()) {
-      @if (facade.contextSchedule(); as schedule) {
+    @if (facade.contextSchedule(); as schedule) {
+      @if (authFacade.canManage()) {
         @if (schedule.canEdit !== false) {
           <button class="button button--secondary" type="button" (click)="startSetlistItemEditing()">Editar música desta escala</button>
         }
-      } @else {
-        <a class="button button--secondary" [routerLink]="['/repertorio/musicas',song.id,'editar']">Editar música</a>
       }
+    } @else {
+      <div class="song-review-actions">
+        <span class="review-status" [class.review-status--approved]="song.chordsReviewed" [class.review-status--pending]="!song.chordsReviewed">
+          <span aria-hidden="true">{{ song.chordsReviewed ? '✓' : '!' }}</span>
+          {{ song.chordsReviewed ? 'Cifra revisada' : 'Revisão pendente' }}
+        </span>
+        @if (authFacade.canManage()) {
+          <button class="button button--secondary" type="button" (click)="toggleChordReview()" [disabled]="facade.saving()">
+            {{ facade.saving() ? 'Salvando…' : (song.chordsReviewed ? 'Reabrir revisão' : 'Marcar como revisada') }}
+          </button>
+          <a class="button button--secondary" [routerLink]="['/repertorio/musicas',song.id,'editar']">Editar música</a>
+        }
+      </div>
     }
   </header>
 

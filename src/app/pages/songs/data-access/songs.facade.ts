@@ -34,6 +34,18 @@ export class SongsFacade {
       .subscribe({ next: ({ song, songs, schedule }) => { this.songsState.set(songs); this.selectedState.set(song); this.contextScheduleState.set(schedule); }, error: () => this.errorState.set('Música não encontrada.') });
   }
   save(input: SongInput, id?: string): void { this.savingState.set(true); const request = id ? this.service.update(id, input) : this.service.create(input); request.pipe(finalize(() => this.savingState.set(false))).subscribe({ next: (song) => void this.router.navigate(['/repertorio', 'musicas', song.id]), error: () => this.errorState.set('Não foi possível salvar a música.') }); }
+  setChordReview(id: string, reviewed: boolean): void {
+    if (this.contextScheduleState()) return;
+    this.savingState.set(true);
+    this.errorState.set(null);
+    this.service.setChordReview(id, reviewed).pipe(finalize(() => this.savingState.set(false))).subscribe({
+      next: (song) => {
+        this.selectedState.set(song);
+        this.songsState.update((songs) => songs.map((item) => item.id === song.id ? song : item));
+      },
+      error: () => this.errorState.set('Não foi possível atualizar a revisão da cifra.'),
+    });
+  }
   saveSetlistLyrics(itemId: string, content: LyricsDocument): void {
     const schedule = this.contextScheduleState();
     if (!schedule) return;
