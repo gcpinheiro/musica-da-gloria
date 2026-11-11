@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, OnInit, signal } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SongsFacade } from '../../data-access/songs.facade';
@@ -20,8 +20,10 @@ const youtubeSourceValidator: ValidatorFn = (control: AbstractControl): Validati
 })
 export class SongForm implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   protected readonly facade = inject(SongsFacade);
   protected readonly id = this.route.snapshot.paramMap.get('id');
+  protected readonly submitAttempted = signal(false);
   protected readonly form = new FormGroup({
     title: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     author: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -57,8 +59,10 @@ export class SongForm implements OnInit {
   }
 
   protected submit(): void {
+    this.submitAttempted.set(true);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      queueMicrotask(() => this.focusFirstInvalidField());
       return;
     }
     const value = this.form.getRawValue();
@@ -74,6 +78,14 @@ export class SongForm implements OnInit {
       lyrics: external ? '' : value.lyrics,
       chords: external ? '' : value.chords,
     }, this.id ?? undefined);
+  }
+
+  protected showError(control: AbstractControl): boolean {
+    return control.invalid && (control.touched || this.submitAttempted());
+  }
+
+  private focusFirstInvalidField(): void {
+    this.host.nativeElement.querySelector<HTMLElement>('.ng-invalid:not(form)')?.focus();
   }
 
   private configureContentValidators(mode: SongContentMode): void {

@@ -1,11 +1,34 @@
 <a class="back-link" routerLink="/repertorio">← Voltar ao repertório</a>
 <header class="page-header"><div><h1 class="display-title">{{ id ? 'Editar música' : 'Nova música' }}</h1><p>Cadastre o conteúdo autorizado ou indique uma cifra mantida pela fonte original.</p></div></header>
 <form class="card song-form" [formGroup]="form" (ngSubmit)="submit()">
+  <p class="required-help"><span aria-hidden="true">*</span> Campos obrigatórios</p>
+  @if (submitAttempted() && form.invalid) {
+    <div class="form-error-summary" role="alert" tabindex="-1">
+      <strong>Não foi possível salvar a música.</strong>
+      <span>Revise os campos destacados abaixo.</span>
+    </div>
+  }
   <div class="form-grid">
-    <div class="field"><label for="title">Título</label><input id="title" formControlName="title" /></div>
-    <div class="field"><label for="author">Autor ou origem</label><input id="author" formControlName="author" /></div>
-    <div class="field"><label for="key">Tom padrão</label><input id="key" formControlName="defaultKey" /></div>
-    <div class="field"><label for="moments">Momentos litúrgicos</label><input id="moments" formControlName="moments" placeholder="Entrada, Envio" /></div>
+    <div class="field">
+      <label for="title">Título <span class="required-mark" aria-hidden="true">*</span></label>
+      <input id="title" formControlName="title" required [attr.aria-invalid]="showError(form.controls.title)" aria-describedby="title-error" />
+      @if (showError(form.controls.title)) { <span id="title-error" class="field-error">Informe o título da música.</span> }
+    </div>
+    <div class="field">
+      <label for="author">Autor ou origem <span class="required-mark" aria-hidden="true">*</span></label>
+      <input id="author" formControlName="author" required [attr.aria-invalid]="showError(form.controls.author)" aria-describedby="author-error" />
+      @if (showError(form.controls.author)) { <span id="author-error" class="field-error">Informe o autor ou a origem da música.</span> }
+    </div>
+    <div class="field">
+      <label for="key">Tom padrão <span class="required-mark" aria-hidden="true">*</span></label>
+      <input id="key" formControlName="defaultKey" required [attr.aria-invalid]="showError(form.controls.defaultKey)" aria-describedby="key-error" />
+      @if (showError(form.controls.defaultKey)) { <span id="key-error" class="field-error">Informe o tom padrão.</span> }
+    </div>
+    <div class="field">
+      <label for="moments">Momentos litúrgicos <span class="required-mark" aria-hidden="true">*</span></label>
+      <input id="moments" formControlName="moments" required placeholder="Entrada, Envio" [attr.aria-invalid]="showError(form.controls.moments)" aria-describedby="moments-error" />
+      @if (showError(form.controls.moments)) { <span id="moments-error" class="field-error">Informe ao menos um momento litúrgico.</span> }
+    </div>
 
     <fieldset class="content-mode field--wide">
       <legend>Onde está a letra e a cifra?</legend>
@@ -15,22 +38,32 @@
 
     <div class="field field--wide">
       <label for="youtubeUrl">Vídeo de apoio no YouTube <span>(opcional)</span></label>
-      <input id="youtubeUrl" type="url" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
-      <small>Use o vídeo oficial ou a versão de referência usada pelo ministério. Ele será exibido no detalhe da música.</small>
-      @if (form.controls.youtubeUrl.touched && form.controls.youtubeUrl.invalid) { <span class="field-error">Informe um link HTTPS válido do YouTube.</span> }
+      <input id="youtubeUrl" type="url" formControlName="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." [attr.aria-invalid]="showError(form.controls.youtubeUrl)" aria-describedby="youtube-help youtube-error" />
+      <small id="youtube-help">Use o vídeo oficial ou a versão de referência usada pelo ministério. Ele será exibido no detalhe da música.</small>
+      @if (showError(form.controls.youtubeUrl)) { <span id="youtube-error" class="field-error">Informe um link HTTPS válido do YouTube.</span> }
     </div>
 
     @if (form.controls.contentMode.value === 'EXTERNAL_EMBED') {
       <div class="field field--wide">
-        <label for="externalUrl">Link da cifra</label>
-        <input id="externalUrl" type="url" formControlName="externalUrl" placeholder="https://cifrascatolicas.com.br/..." />
-        <small>Fontes permitidas: Cifras Católicas e Cifra Club. O conteúdo não será copiado para o nosso banco.</small>
-        @if (form.controls.externalUrl.touched && form.controls.externalUrl.invalid) { <span class="field-error">Informe um link HTTPS de uma fonte permitida.</span> }
+        <label for="externalUrl">Link da cifra <span class="required-mark" aria-hidden="true">*</span></label>
+        <input id="externalUrl" type="url" formControlName="externalUrl" required placeholder="https://cifrascatolicas.com.br/..." [attr.aria-invalid]="showError(form.controls.externalUrl)" aria-describedby="external-help external-error" />
+        <small id="external-help">Fontes permitidas: Cifras Católicas e Cifra Club. O conteúdo não será copiado para o nosso banco.</small>
+        @if (showError(form.controls.externalUrl)) { <span id="external-error" class="field-error">Informe um link HTTPS de uma fonte permitida.</span> }
       </div>
     } @else {
-      <div class="field field--wide"><label for="chords">Cifra acompanhando a letra</label><textarea id="chords" rows="16" formControlName="chords" placeholder="G        D/F#&#10;Texto cantado nesta linha&#10;C        Am   D&#10;Texto cantado na linha seguinte"></textarea><small>Coloque os acordes na linha imediatamente acima do verso correspondente.</small></div>
-      <div class="field field--wide"><label for="lyrics">Letra limpa</label><textarea id="lyrics" rows="10" formControlName="lyrics"></textarea><small>Use apenas conteúdo fornecido ou autorizado pela paróquia, ou com licença compatível.</small></div>
+      <div class="field field--wide">
+        <label for="chords">Cifra acompanhando a letra <span class="required-mark" aria-hidden="true">*</span></label>
+        <textarea id="chords" rows="16" formControlName="chords" required placeholder="G        D/F#&#10;Texto cantado nesta linha&#10;C        Am   D&#10;Texto cantado na linha seguinte" [attr.aria-invalid]="showError(form.controls.chords)" aria-describedby="chords-help chords-error"></textarea>
+        <small id="chords-help">Coloque os acordes na linha imediatamente acima do verso correspondente.</small>
+        @if (showError(form.controls.chords)) { <span id="chords-error" class="field-error">Informe a letra acompanhada dos acordes.</span> }
+      </div>
+      <div class="field field--wide">
+        <label for="lyrics">Letra limpa <span class="required-mark" aria-hidden="true">*</span></label>
+        <textarea id="lyrics" rows="10" formControlName="lyrics" required [attr.aria-invalid]="showError(form.controls.lyrics)" aria-describedby="lyrics-help lyrics-error"></textarea>
+        <small id="lyrics-help">Use apenas conteúdo fornecido ou autorizado pela paróquia, ou com licença compatível.</small>
+        @if (showError(form.controls.lyrics)) { <span id="lyrics-error" class="field-error">Informe a letra limpa, sem os acordes.</span> }
+      </div>
     }
   </div>
-  <footer><a class="button button--secondary" routerLink="/repertorio">Cancelar</a><button class="button button--primary" [disabled]="facade.saving()">Salvar música</button></footer>
+  <footer><a class="button button--secondary" routerLink="/repertorio">Cancelar</a><button class="button button--primary" [disabled]="facade.saving()">{{ facade.saving() ? 'Salvando…' : 'Salvar música' }}</button></footer>
 </form>
