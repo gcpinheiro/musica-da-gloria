@@ -29,7 +29,9 @@
             "security": {
               "allowedHosts": [
                 "musica-da-gloria.egcastro96.workers.dev",
-                "localhost"
+                "localhost",
+                "pastoralmusica.com.br",
+                "*.pastoralmusica.com.br"
               ]
             },
             "styles": [
@@ -67,6 +69,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "demo": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.demo.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": false
             }
           },
           "defaultConfiguration": "production"
@@ -80,6 +93,9 @@
             "development": {
               "buildTarget": "musica-da-gloria:build:development",
               "proxyConfig": "proxy.conf.json"
+            },
+            "demo": {
+              "buildTarget": "musica-da-gloria:build:demo"
             }
           },
           "defaultConfiguration": "development"
