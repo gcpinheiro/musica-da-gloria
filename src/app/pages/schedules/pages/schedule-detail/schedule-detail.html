@@ -58,8 +58,48 @@
           <nav class="picker-pages" aria-label="Paginação das músicas"><button type="button" [disabled]="facade.songPage() === 1" (click)="changeSongPage(facade.songPage() - 1)">Anterior</button><span>Página {{ facade.songPage() }} de {{ facade.songPageCount() }}</span><button type="button" [disabled]="facade.songPage() >= facade.songPageCount()" (click)="changeSongPage(facade.songPage() + 1)">Próxima</button></nav>
         </div>
       }
-      <ol class="song-list">
-        @for (song of schedule.songs; track song.id; let order = $index) { <li><span>{{ order + 1 }}</span><div><strong>{{ song.title }}</strong><small>{{ song.liturgicalMoment }} · Tom {{ song.key }}</small></div><a [routerLink]="['/escalas', schedule.id, 'repertorio', song.songId]">Ver cifra</a>@if (authFacade.canManage()) {<div class="song-order"><button type="button" [disabled]="order === 0 || facade.saving()" (click)="facade.moveSong(song.id, -1)" aria-label="Mover {{ song.title }} para cima">↑</button><button type="button" [disabled]="order === schedule.songs.length - 1 || facade.saving()" (click)="facade.moveSong(song.id, 1)" aria-label="Mover {{ song.title }} para baixo">↓</button></div><button class="remove-action" type="button" (click)="facade.removeSong(song.id)" aria-label="Remover {{ song.title }}">Remover</button>}</li> }
+      @if (authFacade.canManage() && schedule.songs.length > 1) {
+        <p class="song-list__reorder-hint" id="reorder-hint">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="6" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>
+          Pressione a alça e arraste para ordenar as músicas.
+        </p>
+      }
+      <ol
+        class="song-list"
+        cdkDropList
+        cdkDropListLockAxis="y"
+        [cdkDropListData]="schedule.songs"
+        [cdkDropListDisabled]="!authFacade.canManage() || facade.saving()"
+        (cdkDropListDropped)="reorderSongs($event)"
+      >
+        @for (song of schedule.songs; track song.id; let order = $index) {
+          <li
+            cdkDrag
+            cdkDragLockAxis="y"
+            cdkDragPreviewClass="schedule-song-preview"
+            [cdkDragData]="song"
+            [cdkDragDisabled]="!authFacade.canManage() || facade.saving()"
+            [cdkDragStartDelay]="{ touch: 180, mouse: 0 }"
+          >
+            @if (authFacade.canManage() && schedule.songs.length > 1) {
+              <button
+                class="song-drag-handle"
+                type="button"
+                cdkDragHandle
+                [disabled]="facade.saving()"
+                aria-describedby="reorder-hint"
+                aria-label="Reordenar {{ song.title }}, posição {{ order + 1 }} de {{ schedule.songs.length }}. Arraste ou use as setas para cima e para baixo."
+                (keydown)="reorderSongWithKeyboard($event, order)"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="6" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>
+              </button>
+            }
+            <span class="song-position">{{ order + 1 }}</span>
+            <div class="song-list__details"><strong>{{ song.title }}</strong><small>{{ song.liturgicalMoment }} · Tom {{ song.key }}</small></div>
+            <a [routerLink]="['/escalas', schedule.id, 'repertorio', song.songId]">Ver cifra</a>
+            @if (authFacade.canManage()) {<button class="remove-action" type="button" (click)="facade.removeSong(song.id)" [disabled]="facade.saving()" aria-label="Remover {{ song.title }}">Remover</button>}
+          </li>
+        }
         @empty { <li class="empty">Nenhuma música definida.</li> }
       </ol>
     </section>

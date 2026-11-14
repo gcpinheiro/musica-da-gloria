@@ -41,6 +41,13 @@ testem.log
 /typings
 __screenshots__/
 
+# Local product demo artifacts and caches
+/.argo/
+/artifacts/demo-video/
+/playwright-report/
+/test-results/
+/tools/demo/voices/
+
 # System files
 .DS_Store
 Thumbs.db

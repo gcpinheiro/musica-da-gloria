@@ -75,7 +75,11 @@ export class SchedulesService {
       date: `${slot.date.slice(0, 10)}T${slot.time}:00-03:00`,
       time: slot.time,
       location: slot.location,
-      ministry: input.ministryId,
+      ministry: ({
+        'min-santa-cecilia': 'Ministério Santa Cecília',
+        'min-gregorio': 'Ministério São Gregório Magno',
+        'min-gloria': 'Ministério Nossa Senhora da Glória',
+      } as Record<string, string>)[input.ministryId] ?? input.ministryId,
       ministryId: input.ministryId,
       timezone: 'America/Fortaleza',
       status: 'DRAFT',

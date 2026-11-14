@@ -1,12 +1,13 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
-import { ConfirmationStatus, Schedule, ScheduleBatchInput, ScheduleInput, ScheduledPerson, ScheduledSong, ScheduleSongOption, ScheduleStatus, ScheduleMemberOption } from '../models/schedule.model';
+import { ConfirmationStatus, Schedule, ScheduleBatchInput, ScheduleInput, ScheduledPerson, ScheduleSongOption, ScheduleStatus, ScheduleMemberOption } from '../models/schedule.model';
 import { SchedulesService } from './schedules.service';
 import { MinistriesService } from '../../ministries/data-access/ministries.service';
 import { Ministry } from '../../ministries/models/ministry.model';
 import { filterSchedules, ScheduleAssignmentFilter } from '../utils/schedule-filters';
 import { AuthFacade } from '../../../core/auth/auth.facade';
+import { reorderScheduleSongs } from '../utils/reorder-schedule-songs';
 export type { ScheduleAssignmentFilter } from '../utils/schedule-filters';
 
 @Injectable({ providedIn: 'root' })
@@ -147,10 +148,13 @@ export class SchedulesFacade {
     const schedule = this.selectedState();
     if (!schedule) return;
     const current = schedule.songs.findIndex((item) => item.id === itemId);
-    const target = current + direction;
-    if (current < 0 || target < 0 || target >= schedule.songs.length) return;
-    const songs: ScheduledSong[] = [...schedule.songs];
-    [songs[current], songs[target]] = [songs[target], songs[current]];
+    this.reorderSongs(current, current + direction);
+  }
+  reorderSongs(previousIndex: number, currentIndex: number): void {
+    const schedule = this.selectedState();
+    if (!schedule || this.savingState()) return;
+    const songs = reorderScheduleSongs(schedule.songs, previousIndex, currentIndex);
+    if (songs === schedule.songs) return;
     this.updateSelected(this.service.reorderSongs(schedule.id, songs), 'Ordem do repertório atualizada.');
   }
   publish(): void { this.updateSelected(this.service.publish(this.selectedState()?.id ?? ''), 'Escala publicada. Os membros escalados já podem responder.'); }

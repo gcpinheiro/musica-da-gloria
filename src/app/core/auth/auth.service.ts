@@ -43,7 +43,7 @@ export class AuthService {
       return throwError(() => new Error('INVALID_CREDENTIALS')).pipe(delay(450));
     }
 
-    return of(user).pipe(delay(550));
+    return of(this.presentDemoUser(user)).pipe(delay(550));
   }
 
   logout(): Observable<void> {
@@ -78,5 +78,11 @@ export class AuthService {
 
   private present(user: AuthUser): AuthUser {
     return { ...user, photoUrl: user.memberId ? memberPhotoUrl(user.memberId, user.hasPhoto) : undefined };
+  }
+
+  private presentDemoUser(user: AuthUser): AuthUser {
+    if (user.role !== 'LEADER' || !environment.demoLeaderName) return user;
+    const name = environment.demoLeaderName;
+    return { ...user, name, initials: name.slice(0, 1).toLocaleUpperCase('pt-BR') };
   }
 }

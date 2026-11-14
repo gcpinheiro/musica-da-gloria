@@ -1,0 +1,74 @@
+.song-position {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--color-gold-soft);
+  color: #715a29;
+  font-size: .65rem;
+  font-weight: 800;
+}
+
+.song-list__details { min-width: 0; flex: 1; }
+
+.song-list__reorder-hint {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 0;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface-warm);
+  color: var(--color-muted);
+  padding: .55rem 1rem;
+  font-size: .66rem;
+}
+
+.song-list__reorder-hint svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+.song-drag-handle {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: white !important;
+  color: var(--color-sky) !important;
+  cursor: grab !important;
+  touch-action: none;
+}
+
+.song-drag-handle:active { cursor: grabbing !important; }
+.song-drag-handle:hover { border-color: var(--color-sky); background: var(--color-sky-soft) !important; }
+.song-drag-handle:focus-visible { outline: 3px solid color-mix(in srgb, var(--color-sky) 28%, transparent); outline-offset: 2px; }
+.song-drag-handle:disabled { cursor: wait !important; opacity: .55; }
+.song-drag-handle svg { width: 21px; height: 21px; fill: currentColor; pointer-events: none; }
+
+.schedule-song-preview {
+  border: 1px solid color-mix(in srgb, var(--color-sky) 36%, var(--color-line));
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 14px 32px rgb(23 60 103 / 20%);
+}
+
+.song-list .cdk-drag-placeholder { opacity: .25; }
+.song-list.cdk-drop-list-dragging li:not(.cdk-drag-placeholder),
+.song-list li.cdk-drag-animating { transition: transform 180ms ease; }
+
+@media (max-width: 580px) {
+  .song-drag-handle { width: 42px; height: 42px; }
+  .song-position { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .song-list.cdk-drop-list-dragging li:not(.cdk-drag-placeholder),
+  .song-list li.cdk-drag-animating { transition: none; }
+}

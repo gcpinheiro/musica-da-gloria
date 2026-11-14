@@ -1,13 +1,14 @@
 import { DatePipe } from '@angular/common';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SchedulesFacade } from '../../data-access/schedules.facade';
-import { ScheduleMemberOption, ScheduleSongOption } from '../../models/schedule.model';
+import { ScheduledSong, ScheduleMemberOption, ScheduleSongOption } from '../../models/schedule.model';
 import { AuthFacade } from '../../../../core/auth/auth.facade';
 import { canMemberViewScheduleContacts } from '../../utils/schedule-contact';
 import { Avatar } from '../../../../shared/components/avatar/avatar';
 
-@Component({ selector: 'app-schedule-detail', imports: [DatePipe, RouterLink, Avatar], templateUrl: './schedule-detail.html', styleUrls: ['./schedule-detail.scss', './schedule-song-picker.scss', './delete-schedule-dialog.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-schedule-detail', imports: [DatePipe, RouterLink, Avatar, DragDropModule], templateUrl: './schedule-detail.html', styleUrls: ['./schedule-detail.scss', './schedule-song-picker.scss', './delete-schedule-dialog.scss'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class ScheduleDetail implements OnInit, OnDestroy {
   private songSearchTimer?: ReturnType<typeof setTimeout>;
   private readonly route = inject(ActivatedRoute);
@@ -24,6 +25,14 @@ export class ScheduleDetail implements OnInit, OnDestroy {
   protected addSong(song: ScheduleSongOption): void { this.facade.addSong(song); }
   protected searchSongs(event: Event): void { const query = (event.target as HTMLInputElement).value; clearTimeout(this.songSearchTimer); this.songSearchTimer = setTimeout(() => this.facade.loadSongOptions(query, 1), 250); }
   protected changeSongPage(page: number): void { if (page >= 1 && page <= this.facade.songPageCount()) this.facade.loadSongOptions(this.facade.songQuery(), page); }
+  protected reorderSongs(event: CdkDragDrop<readonly ScheduledSong[]>): void {
+    if (event.previousIndex !== event.currentIndex) this.facade.reorderSongs(event.previousIndex, event.currentIndex);
+  }
+  protected reorderSongWithKeyboard(event: KeyboardEvent, index: number): void {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    this.facade.moveSong(this.facade.selected()?.songs[index]?.id ?? '', event.key === 'ArrowUp' ? -1 : 1);
+  }
   protected openDeleteDialog(): void { this.deleteDialogOpen.set(true); queueMicrotask(() => this.deleteDialogCancel()?.nativeElement.focus()); }
   protected closeDeleteDialog(): void { this.deleteDialogOpen.set(false); queueMicrotask(() => this.deleteTrigger()?.nativeElement.focus()); }
   protected confirmDelete(): void { this.closeDeleteDialog(); this.facade.archive(); }

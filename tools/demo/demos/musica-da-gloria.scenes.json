@@ -1,0 +1,73 @@
+[
+  {
+    "scene": "abertura",
+    "text": "Conheça o Música da Glória, uma plataforma feita para organizar escalas, formações e repertórios da pastoral de forma simples e colaborativa.",
+    "voice": "pt_BR-faber-medium-f32-v1",
+    "overlay": {
+      "type": "headline-card",
+      "kicker": "Paróquia Nossa Senhora da Glória",
+      "title": "Da criação da escala à execução da cifra",
+      "body": "Acompanhe o fluxo completo em uma navegação real.",
+      "placement": "center",
+      "motion": "fade-in"
+    }
+  },
+  {
+    "scene": "navegar_escalas",
+    "text": "Gabriel entra em Escalas e inicia uma nova programação. Todo o processo acontece no próprio sistema, sem planilhas ou mensagens espalhadas.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "dados_celebracao",
+    "text": "Primeiro, ele escolhe o ministério. A formação habitual, o horário e a celebração já são sugeridos. Depois informa data, local, tempo litúrgico e orientações para a equipe.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "participantes",
+    "text": "A formação habitual aparece automaticamente. Para esta missa, Gabriel pode retirar alguém ou incluir outro talento da paróquia. A alteração vale apenas para esta data e o painel mostra claramente quem foi selecionado.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "repertorio_formulario",
+    "text": "No mesmo formulário, ele escolhe as músicas da biblioteca e organiza a ordem de execução. Assim, cada participante recebe um repertório completo, já ordenado pelos momentos da celebração.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "criar_escala",
+    "text": "Ao criar a escala, o sistema reúne data, horário, local, ministério e tempo litúrgico em uma única visão. A nova programação fica pronta para revisão e publicação.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "detalhes_escala",
+    "text": "No detalhe, a equipe consulta a formação e o repertório daquele dia. Os contatos, as confirmações e a ordem das músicas ficam acessíveis no mesmo lugar.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "editar_vozes",
+    "text": "Para preparar o arranjo, Gabriel abre a letra, seleciona um trecho e marca a voz das mulheres. Também é possível indicar homens ou todos. Essa divisão de vozes fica salva somente nesta escala, sem modificar a música original da biblioteca.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "experiencia_usuario",
+    "text": "Na experiência do participante, basta abrir a escala e entrar no repertório. A navegação superior mostra a música atual e permite avançar ou voltar sem perder o contexto da celebração.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "cifra_tela_cheia",
+    "text": "Durante o ensaio ou a missa, a cifra pode ocupar a tela inteira. O músico aumenta a fonte e ativa a autorrolagem, mantendo as mãos livres e a leitura confortável.",
+    "voice": "pt_BR-faber-medium-f32-v1"
+  },
+  {
+    "scene": "encerramento",
+    "text": "O Música da Glória reduz retrabalho, centraliza a comunicação e dá segurança para líderes e músicos. Mais organização para que a equipe possa se concentrar no essencial: servir bem em cada celebração.",
+    "voice": "pt_BR-faber-medium-f32-v1",
+    "overlay": {
+      "type": "headline-card",
+      "kicker": "Música da Glória",
+      "title": "Organização a serviço da liturgia",
+      "body": "Escalas, pessoas, repertórios e arranjos em um só lugar.",
+      "placement": "center",
+      "motion": "fade-in"
+    }
+  }
+]
